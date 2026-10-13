@@ -1,0 +1,2 @@
+# fujigoko
+my homelab
