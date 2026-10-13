@@ -43,11 +43,15 @@ Intended permanent workloads:
 - Komf
 - Tachidesk
 
+Manga remains part of the Kawaguchi media role.
+
 Primary storage responsibilities:
 
 - `/mnt/user/media`
 - `/mnt/user/downloads`
 - media-related application data
+
+Kawaguchi is intentionally treated as relatively easy to rebuild. Most of the large movie and TV library originates from Usenet and can be reacquired. The priority is preserving enough configuration and metadata to restore the media stack without treating the media payload itself as irreplaceable.
 
 Kawaguchi should not become the permanent host for unrelated personal applications just because it has spare compute capacity.
 
@@ -109,11 +113,14 @@ Candidate workloads currently running on Kawaguchi that may move here:
 - Linkwarden
 - Stirling PDF
 - Endurain
-- RomM
 - Homepage
 - Prometheus
 - Grafana
-- supporting PostgreSQL, MariaDB, Redis, and similar service dependencies
+- supporting PostgreSQL, Redis, and similar service dependencies
+
+RomM is currently expected to be deleted rather than migrated.
+
+Yamanaka will not host game servers. Game-server hosting remains a separate role from the always-on general application host.
 
 Only applications that prove useful should be migrated. Experimental containers can be removed instead of preserved indefinitely.
 
@@ -142,15 +149,18 @@ Services should stay near the data and role they primarily depend on.
 
 ```text
 media pipeline and Plex data      -> kawaguchi
+manga services and manga data     -> kawaguchi
 Immich and photo data             -> motosu
 general personal applications     -> yamanaka
 monitoring control plane          -> yamanaka
 host-specific exporters/agents    -> monitored host
+game servers                      -> not yamanaka
 ```
 
 Examples:
 
 - Sonarr and Radarr stay on Kawaguchi because they manage media stored there.
+- Komga, Komf, and Tachidesk stay on Kawaguchi because manga remains part of the media role.
 - Immich stays on Motosu because its library and database are stored there.
 - Paperless, Actual Budget, Linkwarden, HomeBox, and similar personal applications should move to Yamanaka if retained.
 - Prometheus and Grafana should eventually live on Yamanaka while lightweight exporters can remain on the machines being monitored.
@@ -169,7 +179,7 @@ Backup effort should follow data value rather than raw size.
 ### medium priority
 
 - Kawaguchi Unraid flash/configuration
-- Kawaguchi application data
+- Kawaguchi application configuration and selected metadata
 - Plex metadata and configuration
 - media automation configuration
 
@@ -182,7 +192,7 @@ Backup effort should follow data value rather than raw size.
 - machine-learning model cache
 - other data that can be recreated or reacquired
 
-Kawaguchi currently has local application-generated backups for several services but no verified independent backup system. Those local backups are not sufficient protection against loss of the host or cache pool.
+Kawaguchi currently has local application-generated backups for several services but no verified independent backup system. Because the host is mostly a Usenet-backed media system, recovery should prioritize configuration over bulk media backup.
 
 ## current transition state
 
@@ -205,7 +215,7 @@ bandai
                          target
 
 kawaguchi
-└── media
+└── media + manga
 
 motosu
 └── photos
