@@ -13,21 +13,40 @@ This is the current working infrastructure map for Fujigoko. It reflects the act
                                      |
                               usw-aggregation
                               /      |       \
-                         2.5 gbe    1 gbe    10 gbe
+                          10 gbe    1 gbe    10 gbe
                             |         |         |
                          u7 pro   usw-lite     kawaguchi
                                     8-poe       unraid
-                                      |            |
-                                    1 gbe          +-- docker services
-                                      |            +-- /mnt/user/appdata
-                                    motosu         +-- /mnt/user/media
-                                  immich nas       +-- /mnt/user/downloads
-                                      |            `-- /mnt/user/roms
-                                      |
-                                      +-- immich_server
-                                      +-- immich_postgres
-                                      +-- immich_redis
-                                      `-- immich_machine_learning
+                                   /    \          |
+                              1 gbe      fe         +-- docker services
+                                |         |         +-- /mnt/user/appdata
+                              motosu   doorbell     +-- /mnt/user/media
+                            immich nas   lite       +-- /mnt/user/downloads
+                                |                   `-- /mnt/user/roms
+                                |
+                                +-- immich_server
+                                +-- immich_postgres
+                                +-- immich_redis
+                                `-- immich_machine_learning
+```
+
+## verified switch ports
+
+```text
+udm-pro
+├── port 10 / sfp+ 1 -> bluepeak wan            10 gbe
+└── port 11 / sfp+ 2 -> usw-aggregation port 1  10 gbe
+
+usw-aggregation
+├── port 1 -> udm-pro port 11                    10 gbe
+├── port 2 -> u7 pro                             10 gbe
+├── port 7 -> kawaguchi                          10 gbe
+└── port 8 -> usw-lite-8-poe port 7               1 gbe
+
+usw-lite-8-poe
+├── port 4 -> motosu                              1 gbe
+├── port 6 -> doorbell lite                          fe
+└── port 7 -> usw-aggregation port 8              1 gbe
 ```
 
 ## logical network overlay
@@ -40,7 +59,7 @@ default / trusted — 192.168.1.0/24
 iot — vlan 20 — 192.168.20.0/24
 
 servers — vlan 30 — 192.168.30.0/24
-└── bandai — 192.168.30.211
+└── bandai — 192.168.30.211 — offline / packed for move
 ```
 
 ## primary service flow
@@ -82,4 +101,5 @@ motosu
 
 - The U7 Pro is the only currently active AP while preparing for the move.
 - U6 Enterprise, U6 Lite, and AC Pro remain part of the hardware inventory but are intentionally offline.
+- Bandai is offline and packed for the move.
 - This map should be updated when the physical network is rebuilt after the move.
