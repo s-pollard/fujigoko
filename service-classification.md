@@ -10,6 +10,8 @@ motosu    = photos
 yamanaka  = non-media applications + monitoring
 ```
 
+Yamanaka is not intended to host game servers.
+
 ## media
 
 These services directly manage, acquire, index, subtitle, serve, or monitor media stored on Kawaguchi. They should remain on Kawaguchi.
@@ -36,7 +38,9 @@ Primary data dependencies:
 /mnt/user/downloads
 ```
 
-The movie, TV, and download payloads are largely replaceable. Application configuration and metadata are more useful to preserve than the media itself.
+Manga remains on Kawaguchi along with the rest of the media stack.
+
+Kawaguchi is intentionally treated as a relatively easy-to-rebuild media host. Most of its large data set comes from Usenet and can be reacquired. Configuration and metadata are useful to preserve, but the media payload itself is not a high-priority backup target.
 
 ## photos
 
@@ -71,7 +75,6 @@ These are non-media applications currently running on Kawaguchi while being eval
 | HomeBox | kawaguchi | yamanaka | transitional | high |
 | Linkwarden | kawaguchi | yamanaka | transitional | high |
 | Endurain | kawaguchi | yamanaka | transitional | high |
-| RomM | kawaguchi | yamanaka | transitional | medium-high |
 
 These services should not remain on Kawaguchi solely because spare compute capacity is available there.
 
@@ -105,14 +108,15 @@ Databases and caches belong with the application that depends on them rather tha
 | service | current host | target host | parent application | backup priority |
 | --- | --- | --- | --- | --- |
 | postgresql17-linkwarden | kawaguchi | yamanaka | Linkwarden | high |
-| MariaDB | kawaguchi | yamanaka | RomM | medium-high |
 | Redis | kawaguchi | yamanaka | Paperless-ngx | low-medium |
 | endurain-postgres | kawaguchi | yamanaka | Endurain | high |
 | endurain Redis | kawaguchi | yamanaka | Endurain | low |
 
+MariaDB currently exists primarily for RomM. If RomM is removed, the MariaDB deployment should be reviewed and removed if nothing else depends on it.
+
 Database backups should follow the importance of the parent application's data.
 
-## experimental / review before migration
+## planned removal / review before migration
 
 A container should not automatically move to Yamanaka just because it currently exists on Kawaguchi.
 
@@ -124,6 +128,14 @@ replace  -> deploy preferred replacement on yamanaka
 delete   -> remove after confirming nothing depends on it
 ```
 
+Current decisions:
+
+```text
+romm -> delete
+```
+
+RomM will probably be removed rather than migrated because emulation is not a significant enough use case to justify keeping the service.
+
 Known appdata directories that should be reviewed before cleanup include:
 
 ```text
@@ -133,6 +145,12 @@ kometa
 ```
 
 Their presence does not prove they are still actively used.
+
+## game servers
+
+Yamanaka will not host game servers.
+
+Game-server hosting should remain separate from the always-on general application role. Bandai historically hosted Palworld and Valheim, but that does not make game-server hosting part of Yamanaka's target workload.
 
 ## migration rule
 
