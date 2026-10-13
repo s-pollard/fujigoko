@@ -6,11 +6,13 @@ The current design is intentionally simple: document what exists first, then aut
 
 ## Core hosts
 
-- **kawaguchi** — primary Unraid server and main Docker host
+- **kawaguchi** — primary media server and Unraid host
 - **motosu** — Immich NAS
+- **future lake host** — planned low-power general application server
 
 ## Documentation
 
+- [architecture](architecture.md)
 - [hosts](hosts.md)
 - [network](network.md)
 - [services](services.md)
@@ -21,4 +23,5 @@ The current design is intentionally simple: document what exists first, then aut
 1. Keep an accurate inventory of hosts, services, storage, and network dependencies.
 2. Document service-to-service and service-to-storage relationships.
 3. Build the infrastructure map from the documented source of truth.
-4. Add automation only where it solves a real maintenance or recovery problem.
+4. Separate media, photo, and general application workloads by host role.
+5. Add automation only where it solves a real maintenance or recovery problem.
