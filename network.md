@@ -12,15 +12,35 @@ udm-pro
 10 gbe
   |
 usw-aggregation
+  |-- 10 gbe --> u7 pro
   |-- 10 gbe --> kawaguchi
-  |-- 2.5 gbe -> u7 pro
   |
   `-- 1 gbe --> usw-lite-8-poe
-                 |
-                 `-- 1 gbe --> motosu
+                 |-- 1 gbe --> motosu
+                 `-- fe ----> doorbell lite
 ```
 
 Only the U7 Pro is currently active on the wireless side while preparing for the move. Other owned UniFi APs are intentionally offline.
+
+## verified port mapping
+
+### UDM-Pro
+
+- port 10 / SFP+ 1 -> Bluepeak WAN — 10 GbE
+- port 11 / SFP+ 2 -> USW-Aggregation port 1 — 10 GbE
+
+### USW-Aggregation
+
+- port 1 -> UDM-Pro port 11 — 10 GbE
+- port 2 -> U7 Pro — 10 GbE link shown in UniFi
+- port 7 -> kawaguchi — 10 GbE
+- port 8 -> USW-Lite-8-PoE port 7 — 1 GbE
+
+### USW-Lite-8-PoE
+
+- port 4 -> motosu — 1 GbE
+- port 6 -> Doorbell Lite — Fast Ethernet
+- port 7 -> USW-Aggregation port 8 — 1 GbE
 
 ## unifi hardware inventory
 
@@ -46,6 +66,10 @@ Only the U7 Pro is currently active on the wireless side while preparing for the
 - U6 Enterprise — currently offline for move
 - U6 Lite — currently offline for move
 - AC Pro — currently offline for move
+
+### other networked devices
+
+- Doorbell Lite — active on USW-Lite-8-PoE port 6
 
 ### power
 
@@ -83,5 +107,6 @@ Only the U7 Pro is currently active on the wireless side while preparing for the
 
 - `bandai`
   - fixed ip: `192.168.30.211`
-  - game server
+  - role: game server
+  - status: offline / packed for move
   - WireGuard relay path documented separately in the home repo
