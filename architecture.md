@@ -9,10 +9,10 @@ The target model is:
 ```text
 kawaguchi = media
 motosu    = photos
-future lake host = general applications
+yamanaka  = general applications
 ```
 
-The current deployment on `kawaguchi` is transitional. It still runs a number of non-media applications that are being tested and may move to the future general-purpose application host if they remain useful.
+The current deployment on `kawaguchi` is transitional. It still runs a number of non-media applications that are being tested and may move to Yamanaka if they remain useful.
 
 ## host roles
 
@@ -82,11 +82,11 @@ Important persistent paths:
 
 Motosu should remain focused on the photo library rather than becoming a second general-purpose Docker host.
 
-### future lake host — general applications
+### yamanaka — general applications
 
 Primary role: small, quiet, low-power 24/7 application server.
 
-The final hostname has not been selected. It should use one of the remaining Fuji Five Lakes names.
+Yamanaka will take over non-media self-hosted applications from Kawaguchi.
 
 Desired characteristics:
 
@@ -132,9 +132,9 @@ Known hardware:
 
 Historically it ran Bazzite and also hosted Palworld and Valheim through Podman and a WireGuard/VPS relay.
 
-Bandai is powerful enough to host the future application workload, but its large 4U form factor and desktop-class hardware conflict with the desired low-power, compact always-on role. Reuse versus replacement remains undecided.
+Bandai is powerful enough to host the application workload, but its large 4U form factor and desktop-class hardware conflict with the desired low-power, compact always-on role. The current plan is to use a separate low-power host named Yamanaka for general applications.
 
-If Bandai is replaced as the application-host candidate, the new machine should receive a Fuji Five Lakes hostname. Bandai does not need to remain part of the permanent Fujigoko naming scheme.
+Bandai does not need to remain part of the permanent Fujigoko naming scheme.
 
 ## service placement rule
 
@@ -143,8 +143,8 @@ Services should stay near the data and role they primarily depend on.
 ```text
 media pipeline and Plex data      -> kawaguchi
 Immich and photo data             -> motosu
-general personal applications     -> future lake host
-monitoring control plane          -> future lake host
+general personal applications     -> yamanaka
+monitoring control plane          -> yamanaka
 host-specific exporters/agents    -> monitored host
 ```
 
@@ -152,8 +152,8 @@ Examples:
 
 - Sonarr and Radarr stay on Kawaguchi because they manage media stored there.
 - Immich stays on Motosu because its library and database are stored there.
-- Paperless, Actual Budget, Linkwarden, HomeBox, and similar personal applications should move to the general application host if retained.
-- Prometheus and Grafana should eventually live on the application host while lightweight exporters can remain on the machines being monitored.
+- Paperless, Actual Budget, Linkwarden, HomeBox, and similar personal applications should move to Yamanaka if retained.
+- Prometheus and Grafana should eventually live on Yamanaka while lightweight exporters can remain on the machines being monitored.
 
 ## backup priorities
 
@@ -163,7 +163,7 @@ Backup effort should follow data value rather than raw size.
 
 - Motosu Immich library
 - Motosu Immich PostgreSQL data
-- future application-host databases and persistent application data
+- Yamanaka databases and persistent application data
 - irreplaceable personal documents and records
 
 ### medium priority
@@ -199,7 +199,7 @@ motosu
 └── immich stack                   permanent
 
 bandai
-└── offline / packed               legacy / undecided
+└── offline / packed               legacy
 
 
                          target
@@ -210,9 +210,11 @@ kawaguchi
 motosu
 └── photos
 
-future lake host
+yamanaka
 └── general applications + monitoring
 ```
+
+Kawaguchi cleanup is deferred until either the Miami rebuild or Yamanaka deployment. The migration order is migrate, verify, back up, then remove the old deployment.
 
 ## principles
 
