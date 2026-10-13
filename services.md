@@ -1,0 +1,150 @@
+# services
+
+## kawaguchi
+
+### monitoring
+
+- prometheus
+- grafana
+- cadvisor
+
+### media
+
+- plex
+- sonarr
+- radarr
+- sabnzbd
+- bazarr
+- seerr
+- tautulli
+- recyclarr
+- unpackerr
+
+### manga / books / games
+
+- komga
+- komf
+- tachidesk
+- romm
+
+### documents / utilities / personal
+
+- paperless-ngx
+- stirling pdf
+- linkwarden
+- mealie
+- homebox
+- actual budget
+- homepage
+
+### fitness
+
+- endurain
+
+### supporting services
+
+- postgresql17-linkwarden
+- mariadb
+- redis
+- endurain-postgres
+- endurain redis
+
+## verified kawaguchi dependencies
+
+```text
+sabnzbd
+  -> /mnt/user/downloads/complete
+  -> /mnt/user/downloads/incomplete-downloads
+
+sonarr
+  -> /mnt/user/downloads/complete
+  -> /mnt/user/media/tv
+
+radarr
+  -> /mnt/user/downloads/complete
+  -> /mnt/user/media/movies
+
+unpackerr
+  -> /mnt/user/downloads/complete
+
+bazarr
+  -> /mnt/user/media/tv
+  -> /mnt/user/media/movies
+
+plex
+  -> /mnt/user/media
+
+komga
+  -> /mnt/user/media/manga
+
+komf
+  -> /mnt/user/media/manga
+  -> /mnt/user/Media/books  # legacy/unused candidate
+
+tachidesk
+  -> /mnt/user/media/manga
+
+paperless-ngx
+  -> /mnt/user/media/paperless/consume
+  -> /mnt/user/media/paperless/export
+  -> /mnt/user/media/paperless/media
+
+linkwarden
+  -> postgresql17-linkwarden via kawaguchi:5432
+
+romm
+  -> mariadb via kawaguchi:3306
+
+paperless-ngx
+  -> redis via kawaguchi:6379
+
+endurain-app
+  -> endurain-postgres
+  -> redis
+```
+
+## kawaguchi docker networking
+
+- `host`
+  - Plex-Media-Server
+- `endurain_default`
+  - endurain-app
+  - endurain-postgres
+  - redis
+- default `bridge`
+  - most remaining services
+- currently unused networks
+  - `homelable`
+  - `wg0`
+
+## motosu
+
+### immich stack
+
+- immich_server
+- immich_postgres
+- immich_redis
+- immich_machine_learning
+
+All four Immich containers use the dedicated `immich_default` Docker bridge.
+
+### immich persistent data
+
+```text
+/volume1/docker/immich/library
+  -> immich_server:/data
+
+/volume1/docker/immich/postgres
+  -> immich_postgres:/var/lib/postgresql/data
+
+immich_model-cache docker volume
+  -> immich_machine_learning:/cache
+```
+
+The model cache is rebuildable. The library and PostgreSQL data are the critical Immich persistence paths.
+
+### remote access
+
+- tailscale
+  - network mode: host
+  - state: `/volume1/docker/tailscale/state`
