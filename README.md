@@ -8,7 +8,7 @@ The current design is intentionally simple: document what exists first, then aut
 
 - **kawaguchi** — primary media server and Unraid host
 - **motosu** — Immich NAS
-- **future lake host** — planned low-power general application server
+- **yamanaka** — planned low-power general application server
 
 ## Documentation
 
@@ -16,6 +16,7 @@ The current design is intentionally simple: document what exists first, then aut
 - [hosts](hosts.md)
 - [network](network.md)
 - [services](services.md)
+- [service classification](service-classification.md)
 - [topology](topology.md)
 
 ## Current priorities
