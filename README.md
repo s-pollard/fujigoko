@@ -25,6 +25,8 @@ The design is intentionally simple: document what exists first, keep host roles 
 ├── services/
 │   ├── README.md
 │   └── classification.md
+├── storage/
+│   └── README.md
 └── migration/
     └── yamanaka.md
 ```
@@ -37,6 +39,7 @@ The design is intentionally simple: document what exists first, keep host roles 
 - [topology](network/topology.md) — physical/logical topology and service flows
 - [services](services/README.md) — current service inventory and dependencies
 - [service classification](services/classification.md) — permanent, transitional, and retirement decisions
+- [storage](storage/README.md) — arrays, pools, shares, persistent data, and storage criticality
 - [Yamanaka migration](migration/yamanaka.md) — migration plan for non-media workloads
 
 ## Current priorities
