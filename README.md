@@ -17,6 +17,7 @@ The current design is intentionally simple: document what exists first, then aut
 - [network](network.md)
 - [services](services.md)
 - [service classification](service-classification.md)
+- [migration plan](migration.md)
 - [topology](topology.md)
 
 ## Current priorities
