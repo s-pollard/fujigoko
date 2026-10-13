@@ -3,12 +3,13 @@
 ## kawaguchi
 
 - role: primary homelab server
+- hardware: UGREEN iDX6011 6-Bay AI NAS
 - platform: Unraid 7.3.2
 - ip: `192.168.1.220`
 - network: 10 GbE active link to USW-Aggregation
 - cpu: Intel Core Ultra 5 125H
 - cpu layout: 14 cores / 18 logical CPUs
-- ram: 62 GiB
+- memory: 64 GB installed; 62 GiB reported usable by Unraid
 - remote access: Tailscale and WireGuard
 - primary responsibilities: Docker services, media stack, monitoring, document/personal apps, bulk media storage
 
