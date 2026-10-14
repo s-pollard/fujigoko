@@ -2,11 +2,13 @@
 
 ## kawaguchi
 
-### monitoring
+### monitoring / infrastructure
 
 - prometheus
 - grafana
 - cadvisor
+- uptime-kuma
+- adguard-home
 
 ### media
 
@@ -101,6 +103,10 @@ paperless-ngx
 endurain-app
   -> endurain-postgres
   -> redis
+
+adguard-home
+  -> LAN DNS service at 192.168.1.53
+  -> upstream DNS via Quad9 DNS-over-HTTPS
 ```
 
 ## kawaguchi docker networking
@@ -111,6 +117,8 @@ endurain-app
   - endurain-app
   - endurain-postgres
   - redis
+- custom `br0`
+  - adguard-home at `192.168.1.53`
 - default `bridge`
   - most remaining services
 - currently unused networks
