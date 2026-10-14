@@ -81,8 +81,11 @@ Only the U7 Pro is currently active on the wireless side while preparing for the
 
 - subnet: `192.168.1.0/24`
 - purpose: normal trusted clients and primary NAS/Unraid systems
+- gateway: `192.168.1.1`
 - kawaguchi: `192.168.1.220`
 - motosu: `192.168.1.169`
+- adguard-home: `192.168.1.53`
+- DHCP DNS server: `192.168.1.53`
 
 ### iot
 
@@ -102,6 +105,29 @@ Only the U7 Pro is currently active on the wireless side while preparing for the
 - default -> servers: allow
 - servers -> default: block new connections
 - servers -> internet: allow
+
+## dns
+
+AdGuard Home currently runs as a Docker container on Kawaguchi using a dedicated `br0` address.
+
+```text
+lan clients
+  -> DHCP from UniFi
+  -> DNS 192.168.1.53
+  -> AdGuard Home
+  -> Quad9 DNS-over-HTTPS
+```
+
+Current configuration:
+
+- AdGuard Home address: `192.168.1.53`
+- DNS port: `53`
+- admin interface: `http://192.168.1.53`
+- upstream resolver: `https://dns10.quad9.net/dns-query`
+- UniFi default/trusted network hands out `192.168.1.53` as the only DNS server
+- default AdGuard DNS filtering is enabled
+
+This is currently a single-resolver design. If Kawaguchi or AdGuard Home is unavailable, normal LAN DNS resolution may fail until another resolver is configured. A second AdGuard instance on a different host can be considered after Yamanaka is deployed.
 
 ## known server vlan host
 
