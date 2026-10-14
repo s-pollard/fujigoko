@@ -97,7 +97,11 @@ The monitoring control plane should move to Yamanaka. Lightweight host-specific 
 | --- | --- | --- | --- | --- |
 | Prometheus | kawaguchi | yamanaka | transitional | medium |
 | Grafana | kawaguchi | yamanaka | transitional | medium-high |
+| Uptime Kuma | kawaguchi | yamanaka | transitional | low-medium |
 | cAdvisor | kawaguchi | kawaguchi | permanent host agent | low |
+| AdGuard Home | kawaguchi | TBD | current infrastructure | medium |
+
+AdGuard Home currently provides LAN DNS at `192.168.1.53`. Its eventual placement is intentionally undecided because DNS availability should be considered separately from the general application migration. A future second resolver on another host may be preferable to moving the only resolver without redundancy.
 
 Future exporters or agents should remain near the host they monitor, while dashboards, metrics storage, and monitoring coordination live on Yamanaka.
 
