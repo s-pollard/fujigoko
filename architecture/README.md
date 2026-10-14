@@ -114,6 +114,7 @@ Candidate workloads currently running on Kawaguchi that may move here:
 - Stirling PDF
 - Endurain
 - Homepage
+- Uptime Kuma
 - Prometheus
 - Grafana
 - supporting PostgreSQL, Redis, and similar service dependencies
@@ -154,6 +155,7 @@ Immich and photo data             -> motosu
 general personal applications     -> yamanaka
 monitoring control plane          -> yamanaka
 host-specific exporters/agents    -> monitored host
+network infrastructure            -> place for availability, not convenience
 game servers                      -> not yamanaka
 ```
 
@@ -163,7 +165,8 @@ Examples:
 - Komga, Komf, and Tachidesk stay on Kawaguchi because manga remains part of the media role.
 - Immich stays on Motosu because its library and database are stored there.
 - Paperless, Actual Budget, Linkwarden, HomeBox, and similar personal applications should move to Yamanaka if retained.
-- Prometheus and Grafana should eventually live on Yamanaka while lightweight exporters can remain on the machines being monitored.
+- Uptime Kuma, Prometheus, and Grafana should eventually live on Yamanaka while lightweight exporters can remain on the machines being monitored.
+- AdGuard Home currently runs on Kawaguchi at `192.168.1.53`, but its final placement is intentionally undecided because DNS availability is more important than keeping it with general applications. A second resolver on another host may eventually be preferable.
 
 ## backup priorities
 
@@ -182,6 +185,7 @@ Backup effort should follow data value rather than raw size.
 - Kawaguchi application configuration and selected metadata
 - Plex metadata and configuration
 - media automation configuration
+- AdGuard Home configuration
 
 ### low priority / replaceable
 
@@ -202,6 +206,7 @@ Kawaguchi currently has local application-generated backups for several services
 kawaguchi
 ├── media workloads                permanent
 ├── monitoring                     transitional
+├── network infrastructure         current / placement under review
 ├── personal applications         transitional
 └── supporting databases          transitional
 
