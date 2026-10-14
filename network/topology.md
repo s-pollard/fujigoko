@@ -22,6 +22,7 @@ This is the current working infrastructure map for Fujigoko. It reflects the act
                                 |         |         +-- /mnt/user/appdata
                               motosu   doorbell     +-- /mnt/user/media
                             immich nas   lite       +-- /mnt/user/downloads
+                                |                   +-- adguard-home 192.168.1.53
                                 |                   `-- /mnt/user/roms
                                 |
                                 +-- immich_server
@@ -53,14 +54,32 @@ usw-lite-8-poe
 
 ```text
 default / trusted — 192.168.1.0/24
-├── kawaguchi — 192.168.1.220
-└── motosu    — 192.168.1.169
+├── adguard-home — 192.168.1.53
+├── kawaguchi    — 192.168.1.220
+└── motosu       — 192.168.1.169
 
 iot — vlan 20 — 192.168.20.0/24
 
 servers — vlan 30 — 192.168.30.0/24
 └── bandai — 192.168.30.211 — offline / packed for move
 ```
+
+## dns flow
+
+```text
+lan client
+   |
+   | DHCP DNS = 192.168.1.53
+   v
+adguard-home
+192.168.1.53
+   |
+   | DNS-over-HTTPS
+   v
+quad9
+```
+
+AdGuard Home currently runs on Kawaguchi but has its own `br0` address. It is the only DNS server handed out by the default/trusted UniFi network.
 
 ## primary service flow
 
@@ -102,4 +121,5 @@ motosu
 - The U7 Pro is the only currently active AP while preparing for the move.
 - U6 Enterprise, U6 Lite, and AC Pro remain part of the hardware inventory but are intentionally offline.
 - Bandai is offline and packed for the move.
+- AdGuard Home at `192.168.1.53` is currently a single DNS dependency for the default/trusted network.
 - This map should be updated when the physical network is rebuilt after the move.
