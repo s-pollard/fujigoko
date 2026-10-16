@@ -5,12 +5,14 @@ Services are classified by function, current placement, intended placement, and 
 The target host model is:
 
 ```text
-kawaguchi = media
+kawaguchi = media + independent uptime watchdog
 motosu    = photos
-yamanaka  = non-media applications + monitoring
+yamanaka  = non-media applications + centralized monitoring
+saiko     = Proxmox lab / experimentation
+shoji     = reserved / role undecided
 ```
 
-Yamanaka is not intended to host game servers.
+Yamanaka is not intended to host game servers. Saiko is not intended to host required production services.
 
 ## media
 
@@ -54,12 +56,7 @@ The Immich stack stays together on Motosu because its primary library and databa
 | Immich machine learning | motosu | motosu | permanent | low |
 | Tailscale | motosu | motosu | permanent | medium |
 
-Critical persistence:
-
-```text
-/volume1/docker/immich/library
-/volume1/docker/immich/postgres
-```
+Motosu itself is planned to move from UGOS to TrueNAS SCALE with a two-disk ZFS mirror. Immich remains the phone/family photo library and the destination for finished GFX exports. The main GFX RAW archive will also live on Motosu as normal filesystem data, with its exact dataset layout finalized after the TrueNAS migration is proven.
 
 The machine-learning model cache and Redis state are rebuildable.
 
@@ -91,19 +88,41 @@ Utility services with little or no unique state can be recreated instead of heav
 
 ## monitoring and infrastructure
 
-The monitoring control plane should move to Yamanaka. Lightweight host-specific agents can remain on the systems they monitor.
+Centralized monitoring belongs on Yamanaka, while Uptime Kuma remains on Kawaguchi as an independent watchdog and lightweight host-specific agents remain near the systems they monitor.
 
 | service | current host | target host | status | backup priority |
 | --- | --- | --- | --- | --- |
 | Prometheus | kawaguchi | yamanaka | transitional | medium |
 | Grafana | kawaguchi | yamanaka | transitional | medium-high |
-| Uptime Kuma | kawaguchi | yamanaka | transitional | low-medium |
+| Loki | not installed | yamanaka | planned | low-medium |
+| Uptime Kuma | kawaguchi | kawaguchi | permanent independent watchdog | low-medium |
 | cAdvisor | kawaguchi | kawaguchi | permanent host agent | low |
-| AdGuard Home | kawaguchi | TBD | current infrastructure | medium |
+| AdGuard Home | kawaguchi | TBD, not kawaguchi | temporary infrastructure placement | medium |
 
-AdGuard Home currently provides LAN DNS at `192.168.1.53`. Its eventual placement is intentionally undecided because DNS availability should be considered separately from the general application migration. A future second resolver on another host may be preferable to moving the only resolver without redundancy.
+Monitoring target:
 
-Future exporters or agents should remain near the host they monitor, while dashboards, metrics storage, and monitoring coordination live on Yamanaka.
+```text
+                yamanaka
+        prometheus / grafana / loki
+             /       |       \
+            /        |        \
+     kawaguchi     motosu     saiko
+      metrics      metrics    metrics
+
+
+                kawaguchi
+              uptime kuma
+             /     |      \
+            /      |       \
+       yamanaka  motosu    saiko
+        uptime    uptime    uptime
+```
+
+Yamanaka should also expose its own host/container metrics so Prometheus can monitor the monitoring host itself.
+
+AdGuard Home currently provides LAN DNS at `192.168.1.53`, but this is not part of the target state. DNS will move off Kawaguchi. Final placement and whether to run redundant resolvers remain intentionally undecided.
+
+Future exporters or agents should remain near the host they monitor, while dashboards, metrics storage, logs, and monitoring coordination live on Yamanaka.
 
 ## supporting services
 
@@ -116,7 +135,7 @@ Databases and caches belong with the application that depends on them rather tha
 | endurain-postgres | kawaguchi | yamanaka | Endurain | high |
 | endurain Redis | kawaguchi | yamanaka | Endurain | low |
 
-MariaDB currently exists primarily for RomM. If RomM is removed, the MariaDB deployment should be reviewed and removed if nothing else depends on it.
+MariaDB currently exists primarily for RomM. If RomM is removed, MariaDB should also be removed if nothing else depends on it.
 
 Database backups should follow the importance of the parent application's data.
 
@@ -135,10 +154,9 @@ delete   -> remove after confirming nothing depends on it
 Current decisions:
 
 ```text
-romm -> delete
+romm    -> delete
+mariadb -> delete if romm is its only consumer
 ```
-
-RomM will probably be removed rather than migrated because emulation is not a significant enough use case to justify keeping the service.
 
 Known appdata directories that should be reviewed before cleanup include:
 
@@ -150,11 +168,39 @@ kometa
 
 Their presence does not prove they are still actively used.
 
-## game servers
+## lab / experimentation
 
-Yamanaka will not host game servers.
+Saiko is the former Bandai machine and will become the Proxmox lab host.
 
-Game-server hosting should remain separate from the always-on general application role. Bandai historically hosted Palworld and Valheim, but that does not make game-server hosting part of Yamanaka's target workload.
+Expected experiments include:
+
+- OPNsense VMs
+- Linux VMs
+- Kubernetes/k3s
+- networking labs
+- temporary game servers/services
+- GPU passthrough if useful
+
+Kubernetes is an experiment, not a production migration plan. Shoji remains unassigned.
+
+## maybe / under consideration
+
+Strongest current candidates:
+
+- Grafana Alloy — log/metric collection and forwarding, likely companion to Loki
+- Scrutiny — disk SMART/health monitoring
+- Dozzle — quick Docker log viewer
+- OpenSpeedTest — browser-based LAN throughput testing
+
+Other candidates:
+
+- NUT — UPS monitoring and graceful shutdown
+- PeaNUT — NUT web UI
+- Rackula — rack visualization/documentation
+- Paperless AI / Paperless-GPT — automatic document classification/tagging
+- Beszel — likely redundant with the chosen Prometheus/Grafana/Uptime Kuma design
+- Changedetection.io — only if a concrete webpage-monitoring use appears
+- container update notifier — notify about outdated containers without automatic updates
 
 ## migration rule
 
