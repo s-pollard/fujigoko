@@ -59,7 +59,7 @@ Kawaguchi is intentionally treated as relatively easy to rebuild. Most of the la
 
 Kawaguchi should not become the permanent host for unrelated personal applications just because it has spare compute capacity.
 
-AdGuard Home currently runs on Kawaguchi but is not part of its target role. DNS will move off Kawaguchi; final placement and redundancy are still to be designed.
+AdGuard Home currently runs on Kawaguchi but is not part of its target role. DNS will move to redundant AdGuard Home instances on Yamanaka and Motosu.
 
 ### motosu — photos
 
@@ -88,10 +88,11 @@ Permanent workloads:
 - Immich Valkey/Redis
 - Immich machine learning
 - Tailscale
+- AdGuard Home as one of the two redundant LAN DNS resolvers
 
 Motosu will also become the home of the GFX photo archive once the TrueNAS migration, Immich phone sync, ZFS snapshots, and B2 backup are verified. Immich itself is intended primarily for phone photos and finished/exported GFX photos; the main GFX RAW archive will remain normal files on Motosu storage rather than being treated as an Immich-only library.
 
-Motosu should remain focused on photos rather than becoming a general-purpose application host.
+Motosu should remain focused on photos rather than becoming a general-purpose application host. AdGuard Home is an intentional infrastructure exception because DNS redundancy benefits from being split across independent always-on hosts.
 
 ### yamanaka — general applications
 
@@ -122,6 +123,7 @@ Target workloads:
 - Prometheus
 - Grafana
 - Loki
+- AdGuard Home as one of the two redundant LAN DNS resolvers
 - supporting PostgreSQL, Redis, and similar service dependencies
 
 Yamanaka itself should expose host/container metrics so the central monitoring stack can monitor its own host.
@@ -177,7 +179,7 @@ monitoring control plane          -> yamanaka
 host-specific exporters/agents    -> monitored host
 lab / disposable VMs              -> saiko
 network infrastructure            -> place for availability, not convenience
-DNS                               -> not kawaguchi in target state
+DNS                               -> redundant AdGuard on yamanaka + motosu
 ```
 
 Examples:
@@ -188,7 +190,7 @@ Examples:
 - Paperless, Actual Budget, Linkwarden, HomeBox, and similar personal applications move to Yamanaka.
 - Prometheus, Grafana, and Loki live on Yamanaka while lightweight exporters/agents remain on the machines being monitored.
 - Uptime Kuma stays on Kawaguchi as an independent watchdog so monitoring is not entirely dependent on Yamanaka.
-- AdGuard Home leaves Kawaguchi; its replacement/final placement should prioritize DNS availability and redundancy.
+- AdGuard Home runs on both Yamanaka and Motosu so either host can be maintained or fail without making one machine the LAN-wide DNS single point of failure.
 
 ## monitoring architecture
 
@@ -228,6 +230,7 @@ Backup effort should follow data value rather than raw size.
 - Kawaguchi application configuration and selected metadata
 - Plex metadata and configuration
 - media automation configuration
+- AdGuard Home configuration
 
 ### low priority / replaceable
 
@@ -266,10 +269,10 @@ kawaguchi
 └── media + manga + uptime kuma + host monitoring
 
 motosu
-└── truenas scale + photos + immich + gfx archive
+└── truenas scale + photos + immich + gfx archive + adguard
 
 yamanaka
-└── debian + general applications + centralized monitoring
+└── debian + general applications + centralized monitoring + adguard
 
 saiko
 └── proxmox lab / experimentation
