@@ -97,7 +97,7 @@ Centralized monitoring belongs on Yamanaka, while Uptime Kuma remains on Kawaguc
 | Loki | not installed | yamanaka | planned | low-medium |
 | Uptime Kuma | kawaguchi | kawaguchi | permanent independent watchdog | low-medium |
 | cAdvisor | kawaguchi | kawaguchi | permanent host agent | low |
-| AdGuard Home | kawaguchi | TBD, not kawaguchi | temporary infrastructure placement | medium |
+| AdGuard Home | kawaguchi | yamanaka + motosu | planned redundant DNS pair | medium |
 
 Monitoring target:
 
@@ -120,7 +120,7 @@ Monitoring target:
 
 Yamanaka should also expose its own host/container metrics so Prometheus can monitor the monitoring host itself.
 
-AdGuard Home currently provides LAN DNS at `192.168.1.53`, but this is not part of the target state. DNS will move off Kawaguchi. Final placement and whether to run redundant resolvers remain intentionally undecided.
+AdGuard Home currently provides LAN DNS at `192.168.1.53` on Kawaguchi. The target design replaces this single resolver with two AdGuard Home instances on different physical hosts: one on Yamanaka and one on Motosu after its TrueNAS SCALE migration is stable. DHCP should advertise both resolver addresses, and their filtering policy/configuration should be kept aligned. Exact IPs, configuration synchronization, and upstream resolver design remain to be finalized during the network rebuild.
 
 Future exporters or agents should remain near the host they monitor, while dashboards, metrics storage, logs, and monitoring coordination live on Yamanaka.
 
