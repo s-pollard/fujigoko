@@ -10,9 +10,11 @@ The target model is:
 kawaguchi = media
 motosu    = photos
 yamanaka  = general applications
+saiko     = Proxmox lab / experimentation
+shoji     = reserved / role undecided
 ```
 
-The current deployment on `kawaguchi` is transitional. It still runs a number of non-media applications that are being tested and may move to Yamanaka if they remain useful.
+The current deployment on `kawaguchi` is transitional. It still runs a number of non-media applications that will move to Yamanaka if retained.
 
 ## host roles
 
@@ -42,6 +44,8 @@ Intended permanent workloads:
 - Komga
 - Komf
 - Tachidesk
+- Uptime Kuma
+- cAdvisor / host-specific monitoring agents
 
 Manga remains part of the Kawaguchi media role.
 
@@ -55,18 +59,27 @@ Kawaguchi is intentionally treated as relatively easy to rebuild. Most of the la
 
 Kawaguchi should not become the permanent host for unrelated personal applications just because it has spare compute capacity.
 
+AdGuard Home currently runs on Kawaguchi but is not part of its target role. DNS will move off Kawaguchi; final placement and redundancy are still to be designed.
+
 ### motosu — photos
 
 Primary role: dedicated photo storage and Immich host.
 
-Hardware:
+Current hardware:
 
 - UGREEN NASync DXP2800
 - Intel N100
 - 7.5 GiB usable memory
 - 2 × 6 TB Seagate drives
-- Linux RAID1
-- Btrfs
+- current UGOS / Debian-based platform
+- current Linux RAID1 + Btrfs storage
+
+Planned platform:
+
+- TrueNAS SCALE
+- 2-disk ZFS mirror using the existing 6 TB drives initially
+- ZFS snapshots for local rollback
+- Restic backup to Backblaze B2 retained as the independent off-site backup
 
 Permanent workloads:
 
@@ -76,35 +89,27 @@ Permanent workloads:
 - Immich machine learning
 - Tailscale
 
-Important persistent paths:
+Motosu will also become the home of the GFX photo archive once the TrueNAS migration, Immich phone sync, ZFS snapshots, and B2 backup are verified. Immich itself is intended primarily for phone photos and finished/exported GFX photos; the main GFX RAW archive will remain normal files on Motosu storage rather than being treated as an Immich-only library.
 
-```text
-/volume1/docker/immich/library
-/volume1/docker/immich/postgres
-/volume1/docker/tailscale/state
-```
-
-Motosu should remain focused on the photo library rather than becoming a second general-purpose Docker host.
+Motosu should remain focused on photos rather than becoming a general-purpose application host.
 
 ### yamanaka — general applications
 
-Primary role: small, quiet, low-power 24/7 application server.
+Primary role: simple, always-on production application server.
 
 Yamanaka will take over non-media self-hosted applications from Kawaguchi.
 
-Desired characteristics:
+Target characteristics:
 
-- physically small
-- low idle power
-- quiet
+- SFF business PC
+- Debian
+- Docker Engine + Docker Compose
 - 32 GB RAM target
-- NVMe application storage
+- 1–2 TB NVMe application storage
 - at least 2.5 GbE preferred
 - no discrete GPU requirement
-- Linux server OS
-- Docker Compose
 
-Candidate workloads currently running on Kawaguchi that may move here:
+Target workloads:
 
 - Paperless-ngx
 - Mealie
@@ -114,20 +119,18 @@ Candidate workloads currently running on Kawaguchi that may move here:
 - Stirling PDF
 - Endurain
 - Homepage
-- Uptime Kuma
 - Prometheus
 - Grafana
+- Loki
 - supporting PostgreSQL, Redis, and similar service dependencies
 
-RomM is currently expected to be deleted rather than migrated.
+Yamanaka itself should expose host/container metrics so the central monitoring stack can monitor its own host.
 
-Yamanaka will not host game servers. Game-server hosting remains a separate role from the always-on general application host.
+Yamanaka will not host game servers. Only applications that prove useful should be migrated. Experimental containers can be removed instead of preserved indefinitely.
 
-Only applications that prove useful should be migrated. Experimental containers can be removed instead of preserved indefinitely.
+### saiko — lab / experimentation
 
-## bandai
-
-`bandai` is the current legacy game/TV-gaming host and is presently offline and packed for the move.
+`saiko` is the server formerly known as `bandai`.
 
 Known hardware:
 
@@ -138,11 +141,26 @@ Known hardware:
 - WD Blue 500 GB SSD
 - 4U rackmount chassis
 
-Historically it ran Bazzite and also hosted Palworld and Valheim through Podman and a WireGuard/VPS relay.
+Planned platform:
 
-Bandai is powerful enough to host the application workload, but its large 4U form factor and desktop-class hardware conflict with the desired low-power, compact always-on role. The current plan is to use a separate low-power host named Yamanaka for general applications.
+- Proxmox VE
 
-Bandai does not need to remain part of the permanent Fujigoko naming scheme.
+Intended use:
+
+- OPNsense test VMs
+- Linux test VMs
+- Kubernetes / k3s experiments
+- networking labs
+- temporary game-server or service experiments
+- GPU passthrough experiments if useful
+
+Saiko is not intended to host required production services. It may remain powered off when not in use so experiments can be broken or rebuilt without affecting normal Fujigoko operation.
+
+### shoji — reserved
+
+Shoji has no decided role. Keep the name reserved until a future major Fujigoko host or platform has a clear purpose.
+
+Kubernetes is currently a Saiko lab experiment, not a planned production architecture. Shoji should not be assigned to Kubernetes or any other role until that role is actually justified.
 
 ## service placement rule
 
@@ -151,12 +169,15 @@ Services should stay near the data and role they primarily depend on.
 ```text
 media pipeline and Plex data      -> kawaguchi
 manga services and manga data     -> kawaguchi
+independent uptime watchdog       -> kawaguchi
 Immich and photo data             -> motosu
+GFX RAW/archive storage           -> motosu
 general personal applications     -> yamanaka
 monitoring control plane          -> yamanaka
 host-specific exporters/agents    -> monitored host
+lab / disposable VMs              -> saiko
 network infrastructure            -> place for availability, not convenience
-game servers                      -> not yamanaka
+DNS                               -> not kawaguchi in target state
 ```
 
 Examples:
@@ -164,9 +185,31 @@ Examples:
 - Sonarr and Radarr stay on Kawaguchi because they manage media stored there.
 - Komga, Komf, and Tachidesk stay on Kawaguchi because manga remains part of the media role.
 - Immich stays on Motosu because its library and database are stored there.
-- Paperless, Actual Budget, Linkwarden, HomeBox, and similar personal applications should move to Yamanaka if retained.
-- Uptime Kuma, Prometheus, and Grafana should eventually live on Yamanaka while lightweight exporters can remain on the machines being monitored.
-- AdGuard Home currently runs on Kawaguchi at `192.168.1.53`, but its final placement is intentionally undecided because DNS availability is more important than keeping it with general applications. A second resolver on another host may eventually be preferable.
+- Paperless, Actual Budget, Linkwarden, HomeBox, and similar personal applications move to Yamanaka.
+- Prometheus, Grafana, and Loki live on Yamanaka while lightweight exporters/agents remain on the machines being monitored.
+- Uptime Kuma stays on Kawaguchi as an independent watchdog so monitoring is not entirely dependent on Yamanaka.
+- AdGuard Home leaves Kawaguchi; its replacement/final placement should prioritize DNS availability and redundancy.
+
+## monitoring architecture
+
+```text
+                yamanaka
+        prometheus / grafana / loki
+             /       |       \
+            /        |        \
+     kawaguchi     motosu     saiko
+      metrics      metrics    metrics
+
+
+                kawaguchi
+              uptime kuma
+             /     |      \
+            /      |       \
+       yamanaka  motosu    saiko
+        uptime    uptime    uptime
+```
+
+Optional external monitoring can be added later if detection of a complete homelab or Internet outage becomes useful.
 
 ## backup priorities
 
@@ -174,8 +217,8 @@ Backup effort should follow data value rather than raw size.
 
 ### high priority
 
-- Motosu Immich library
-- Motosu Immich PostgreSQL data
+- Motosu Immich library and database backups
+- Motosu GFX archive once established
 - Yamanaka databases and persistent application data
 - irreplaceable personal documents and records
 
@@ -185,7 +228,6 @@ Backup effort should follow data value rather than raw size.
 - Kawaguchi application configuration and selected metadata
 - Plex metadata and configuration
 - media automation configuration
-- AdGuard Home configuration
 
 ### low priority / replaceable
 
@@ -194,6 +236,7 @@ Backup effort should follow data value rather than raw size.
 - downloads
 - caches
 - machine-learning model cache
+- Saiko lab VMs unless a specific experiment becomes worth preserving
 - other data that can be recreated or reacquired
 
 Kawaguchi currently has local application-generated backups for several services but no verified independent backup system. Because the host is mostly a Usenet-backed media system, recovery should prioritize configuration over bulk media backup.
@@ -205,28 +248,34 @@ Kawaguchi currently has local application-generated backups for several services
 
 kawaguchi
 ├── media workloads                permanent
-├── monitoring                     transitional
-├── network infrastructure         current / placement under review
+├── monitoring                     mixed permanent/transitional
+├── adguard home                   temporary placement
 ├── personal applications         transitional
 └── supporting databases          transitional
 
 motosu
-└── immich stack                   permanent
+└── immich stack                   permanent; OS/storage rebuild planned
 
 bandai
-└── offline / packed               legacy
+└── offline / packed               becoming saiko
 
 
                          target
 
 kawaguchi
-└── media + manga
+└── media + manga + uptime kuma + host monitoring
 
 motosu
-└── photos
+└── truenas scale + photos + immich + gfx archive
 
 yamanaka
-└── general applications + monitoring
+└── debian + general applications + centralized monitoring
+
+saiko
+└── proxmox lab / experimentation
+
+shoji
+└── reserved
 ```
 
 Kawaguchi cleanup is deferred until either the Miami rebuild or Yamanaka deployment. The migration order is migrate, verify, back up, then remove the old deployment.
@@ -235,7 +284,8 @@ Kawaguchi cleanup is deferred until either the Miami rebuild or Yamanaka deploym
 
 1. Keep host roles obvious.
 2. Prefer a small number of understandable systems over unnecessary clustering or orchestration.
-3. Use Docker Compose for general application deployment unless a concrete requirement justifies something more complex.
-4. Document services, storage, dependencies, and recovery paths before adding automation.
-5. Do not preserve experimental services solely because they already exist.
-6. Treat the documentation as the source of truth for the infrastructure map.
+3. Use Docker Compose for Yamanaka unless a concrete requirement justifies something more complex.
+4. Keep production and experimentation separate: Yamanaka is production; Saiko is the lab.
+5. Document services, storage, dependencies, and recovery paths before adding automation.
+6. Do not preserve experimental services solely because they already exist.
+7. Treat the documentation as the source of truth for the infrastructure map.
