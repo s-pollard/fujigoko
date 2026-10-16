@@ -7,8 +7,10 @@ The design is intentionally simple: document what exists first, keep host roles 
 ## Core hosts
 
 - **kawaguchi** — media server and Unraid host
-- **motosu** — Immich / photo NAS
-- **yamanaka** — planned low-power general application server
+- **motosu** — photo NAS / Immich host; planned migration to TrueNAS SCALE with a two-disk ZFS mirror
+- **yamanaka** — planned general application server running Debian and Docker Compose
+- **saiko** — planned Proxmox lab / experimentation host; formerly `bandai`
+- **shoji** — reserved; role undecided
 
 ## Repository structure
 
@@ -43,7 +45,7 @@ The design is intentionally simple: document what exists first, keep host roles 
 
 - [architecture](architecture/README.md) — design intent, host roles, placement rules, and backup priorities
 - [hosts](hosts/README.md) — host hardware, platform, addressing, and storage summary
-- [network](network/README.md) — UniFi inventory, ports, VLANs, and network state
+- [network](network/README.md) — network inventory, ports, VLANs, and network state
 - [topology](network/topology.md) — physical/logical topology and service flows
 - [services](services/README.md) — current service inventory and dependencies
 - [service classification](services/classification.md) — permanent, transitional, and retirement decisions
@@ -56,7 +58,9 @@ The design is intentionally simple: document what exists first, keep host roles 
 
 1. Keep an accurate inventory of hosts, services, storage, backups, and network dependencies.
 2. Separate media, photo, and general application workloads by host role.
-3. Build the infrastructure map from documented state rather than memory.
+3. Rebuild Motosu on TrueNAS SCALE while preserving and verifying Immich and Backblaze B2 recovery.
 4. Complete the Yamanaka migration before cleaning transitional services from Kawaguchi.
-5. Make irreplaceable data independently recoverable before optimizing convenience services.
-6. Add automation only where it improves maintenance, repeatability, or recovery.
+5. Convert the former Bandai system into Saiko as an on-demand Proxmox lab.
+6. Move DNS infrastructure off Kawaguchi; final AdGuard placement and redundancy remain to be designed.
+7. Make irreplaceable data independently recoverable before optimizing convenience services.
+8. Add automation or orchestration only where it improves maintenance, repeatability, recovery, or is useful experimentation.
