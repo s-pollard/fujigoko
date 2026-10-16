@@ -40,24 +40,24 @@ Kawaguchi remains on Unraid for the current generation. A future custom successo
 - planned array/filesystem: 2-disk ZFS mirror
 - current main volume: `/volume1`
 - remote access: Tailscale
-- target responsibilities: Immich, phone photo sync, finished GFX photos, GFX RAW/archive storage, ZFS snapshots, Backblaze B2 backup
+- target responsibilities: Immich, phone photo sync, finished GFX photos, GFX RAW/archive storage, ZFS snapshots, Backblaze B2 backup, redundant AdGuard Home
 
 The TrueNAS migration will be performed only after independent copies of Immich exist and can be verified. The existing Restic/B2 repository remains the off-site recovery layer.
 
 ## yamanaka
 
 - role: always-on general application server
-- status: planned
-- target hardware: used SFF business PC
+- status: planned; hardware selection in progress
 - target platform: Debian
 - deployment: Docker Engine + Docker Compose
 - memory target: 32 GB
 - storage target: 1–2 TB NVMe
-- networking: 2.5 GbE preferred
+- networking: 2.5 GbE preferred; add-in NIC acceptable
 - GPU: not required
-- target responsibilities: non-media self-hosted applications and centralized monitoring
+- form factor: flexible; small/low-power preferred, but SFF is not a hard requirement
+- target responsibilities: non-media self-hosted applications, centralized monitoring, redundant AdGuard Home
 
-Yamanaka is intended to be simple production infrastructure rather than a virtualization or experimentation host.
+Yamanaka is intended to be simple production infrastructure rather than a virtualization or experimentation host. Hardware selection should prioritize low idle power, sufficient RAM, reliable NVMe storage, and reasonable expandability over a specific chassis class.
 
 ## saiko
 
@@ -80,3 +80,18 @@ Saiko should not carry required production services and can remain powered off w
 - status: undecided
 
 Do not assign Shoji a permanent purpose until an actual future Fujigoko role justifies another major host or platform.
+
+## opnsense router appliance
+
+Planned Miami production router/firewall, replacing the UDM-Pro routing role.
+
+- cpu: Intel Core i5-8500
+- memory: 8 GB DDR4
+- storage: 128 GB SSD
+- 10 GbE: dual SFP+ Intel X520 / 82599ES-class adapter
+- 1 GbE: dual-port Intel I350 adapter
+- onboard NIC: Intel I219-LM 1 GbE
+- platform: OPNsense
+- target role: primary router/firewall for the Miami network
+
+The UDM-Pro will remain in the current pre-move network and be sold after the Miami network is migrated and stable.
