@@ -6,8 +6,9 @@ The storage model follows the host-role split:
 
 ```text
 kawaguchi = bulk media + media application state
-motosu    = photo library + Immich state
+motosu    = photo library + Immich + GFX archive
 yamanaka  = personal application state (planned)
+saiko     = disposable/experimental VM storage
 ```
 
 ## kawaguchi
@@ -123,7 +124,7 @@ Manga remains on Kawaguchi as part of the permanent media role.
 
 Motosu is the dedicated photo-storage host.
 
-### physical storage
+### current physical storage
 
 - 2 × Seagate ST6000NM0024 6 TB drives
 - Linux md RAID1
@@ -135,9 +136,51 @@ Motosu is the dedicated photo-storage host.
 
 Unlike Kawaguchi media, Motosu contains irreplaceable photo data and should be treated as high-priority storage.
 
-### Immich persistence
+### planned TrueNAS storage
 
-Critical paths:
+Motosu will be rebuilt on TrueNAS SCALE.
+
+Initial target storage:
+
+```text
+2 × 6 TB HDD
+└── ZFS mirror
+    └── ~6 TB-class usable capacity
+```
+
+The mirror provides single-disk fault tolerance. ZFS snapshots provide local rollback/versioning, while Restic to Backblaze B2 remains the independent off-site backup layer.
+
+Future capacity upgrades can replace the two mirror members one at a time with larger drives, allowing the mirror to expand after both members have been replaced and resilvered.
+
+### photo roles
+
+Motosu will hold two related but distinct photo workloads:
+
+```text
+Immich
+├── phone photos
+├── family phone sync
+└── finished/exported GFX photos
+
+GFX archive
+├── RAW/original files
+├── sidecars / edit metadata
+├── edited masters as needed
+└── normal filesystem storage independent of Immich
+```
+
+The GFX archive design will be finalized only after the TrueNAS migration is complete and these are verified:
+
+1. Immich runs correctly on the rebuilt Motosu.
+2. Phone sync works normally.
+3. ZFS snapshots work as intended.
+4. Restic/B2 backups and recovery are confirmed.
+
+Immich should remain a convenient photo library rather than the only copy or organizational structure for GFX RAW files.
+
+### current Immich persistence
+
+Current critical paths before the TrueNAS migration:
 
 ```text
 /volume1/docker/immich/library
@@ -157,13 +200,13 @@ immich redis / valkey state
 immich machine-learning model cache
 ```
 
-The Immich library and PostgreSQL data should be backed up independently of the RAID1 array. RAID protects against a single-drive failure; it is not a backup.
+The Immich library and database backups must remain independently recoverable throughout the TrueNAS migration.
 
 ## yamanaka
 
 Yamanaka will hold persistent state for non-media self-hosted applications.
 
-Final hardware and storage are still being selected, so no exact device or filesystem assumptions are documented yet.
+The target host is a small SFF system running Debian with Docker Compose and NVMe application storage.
 
 The planned logical layout is:
 
@@ -186,6 +229,12 @@ Expected high-value data includes:
 
 Yamanaka data should have an independent backup before the corresponding Kawaguchi copy is permanently removed.
 
+## saiko
+
+Saiko is an experimentation host rather than a primary storage host.
+
+Proxmox VM disks and lab state are generally considered disposable unless a particular experiment becomes worth preserving. Important production data should not depend on Saiko storage.
+
 ## storage ownership
 
 ```text
@@ -196,19 +245,26 @@ kawaguchi
 └── media-service state
 
 motosu
-├── photo library
-└── immich database/state
+├── phone / Immich photo library
+├── Immich database/state
+└── GFX archive
 
 yamanaka
 └── non-media application state
+
+saiko
+└── lab / experimental VM storage
 ```
 
-Services should remain close to the storage they primarily operate on. This is why media automation stays on Kawaguchi, Immich stays on Motosu, and general personal applications move to Yamanaka.
+Services should remain close to the storage they primarily operate on. This is why media automation stays on Kawaguchi, photos remain on Motosu, and general personal applications move to Yamanaka.
 
 ## future documentation
 
 Update this document when:
 
+- Motosu has been rebuilt on TrueNAS SCALE
+- ZFS datasets and snapshot policies are finalized
+- the GFX archive layout is selected
 - Yamanaka hardware and storage are selected
 - Kawaguchi is cleaned after the migration
 - the legacy uppercase `Media` share is removed
