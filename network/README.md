@@ -127,7 +127,28 @@ Current configuration:
 - UniFi default/trusted network hands out `192.168.1.53` as the only DNS server
 - default AdGuard DNS filtering is enabled
 
-This is currently a single-resolver design. If Kawaguchi or AdGuard Home is unavailable, normal LAN DNS resolution may fail until another resolver is configured. A second AdGuard instance on a different host can be considered after Yamanaka is deployed.
+This is currently a single-resolver design. If Kawaguchi or AdGuard Home is unavailable, normal LAN DNS resolution may fail until another resolver is configured.
+
+### target DNS design
+
+AdGuard Home will move off Kawaguchi and become a redundant two-host service:
+
+```text
+lan clients
+  |-- DNS --> yamanaka / AdGuard Home
+  `-- DNS --> motosu / AdGuard Home
+```
+
+Target rules:
+
+- run one AdGuard Home instance on Yamanaka
+- run one AdGuard Home instance on Motosu after its TrueNAS SCALE migration is stable
+- advertise both resolver addresses to clients through DHCP
+- keep both resolvers on different physical hosts so maintenance or failure of one host does not remove LAN DNS
+- keep filtering policy and important configuration aligned between both instances
+- do not make Kawaguchi part of the permanent DNS design
+
+Exact resolver IPs, configuration synchronization method, and upstream resolver design will be finalized during the network rebuild.
 
 ## known server vlan host
 
