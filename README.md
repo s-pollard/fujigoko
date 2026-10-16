@@ -8,9 +8,18 @@ The design is intentionally simple: document what exists first, keep host roles 
 
 - **kawaguchi** — media server and Unraid host
 - **motosu** — photo NAS / Immich host; planned migration to TrueNAS SCALE with a two-disk ZFS mirror
-- **yamanaka** — planned general application server running Debian and Docker Compose
+- **yamanaka** — planned always-on general application server running Debian and Docker Compose
 - **saiko** — planned Proxmox lab / experimentation host; formerly `bandai`
 - **shoji** — reserved; role undecided
+
+## Network direction
+
+- current pre-move gateway: UDM-Pro
+- Miami target gateway/firewall: dedicated OPNsense appliance
+- UDM-Pro: retire from routing and sell after the Miami network is stable
+- current aggregation: USW-Aggregation
+- future core-switch main candidate: Mellanox SX3016F
+- permanent DNS target: redundant AdGuard Home on Yamanaka + Motosu
 
 ## Repository structure
 
@@ -18,7 +27,8 @@ The design is intentionally simple: document what exists first, keep host roles 
 .
 ├── README.md
 ├── architecture/
-│   └── README.md
+│   ├── README.md
+│   └── naming.md
 ├── hosts/
 │   └── README.md
 ├── network/
@@ -43,12 +53,13 @@ The design is intentionally simple: document what exists first, keep host roles 
 
 ## Documentation
 
-- [architecture](architecture/README.md) — design intent, host roles, placement rules, and backup priorities
+- [architecture](architecture/README.md) — design intent, host roles, placement rules, network direction, and backup priorities
+- [naming](architecture/naming.md) — Japan-based naming conventions for hosts and infrastructure
 - [hosts](hosts/README.md) — host hardware, platform, addressing, and storage summary
-- [network](network/README.md) — network inventory, ports, VLANs, and network state
-- [topology](network/topology.md) — physical/logical topology and service flows
+- [network](network/README.md) — current network state and Miami target design
+- [topology](network/topology.md) — current and target physical/logical topology and service flows
 - [services](services/README.md) — current service inventory and dependencies
-- [service classification](services/classification.md) — permanent, transitional, and retirement decisions
+- [service classification](services/classification.md) — permanent, transitional, planned, and retirement decisions
 - [storage](storage/README.md) — arrays, pools, shares, persistent data, and storage criticality
 - [backups](backups/README.md) — verified backup state, priorities, retention, and known gaps
 - [Yamanaka migration](migration/yamanaka.md) — migration plan for non-media workloads
@@ -57,10 +68,11 @@ The design is intentionally simple: document what exists first, keep host roles 
 ## Current priorities
 
 1. Keep an accurate inventory of hosts, services, storage, backups, and network dependencies.
-2. Separate media, photo, and general application workloads by host role.
+2. Rebuild the Miami network around OPNsense; the SX3016F remains the main core-switch candidate until purchased and verified.
 3. Rebuild Motosu on TrueNAS SCALE while preserving and verifying Immich and Backblaze B2 recovery.
-4. Complete the Yamanaka migration before cleaning transitional services from Kawaguchi.
+4. Select and deploy Yamanaka, then migrate retained non-media containers off Kawaguchi.
 5. Convert the former Bandai system into Saiko as an on-demand Proxmox lab.
-6. Move DNS infrastructure off Kawaguchi; final AdGuard placement and redundancy remain to be designed.
-7. Make irreplaceable data independently recoverable before optimizing convenience services.
-8. Add automation or orchestration only where it improves maintenance, repeatability, recovery, or is useful experimentation.
+6. Move DNS from the temporary single AdGuard instance on Kawaguchi to redundant AdGuard Home instances on Yamanaka and Motosu.
+7. Establish a Miami UPS/power-protection plan; the existing APC SMT2200RM2U is not assumed usable at the new location.
+8. Make irreplaceable data independently recoverable before optimizing convenience services.
+9. Add automation or orchestration only where it improves maintenance, repeatability, recovery, or is useful experimentation.
