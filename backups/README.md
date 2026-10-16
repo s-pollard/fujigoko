@@ -2,13 +2,13 @@
 
 Backup effort follows data value and rebuild cost rather than raw storage size.
 
-The homelab has three different recovery profiles:
+The homelab has different recovery profiles:
 
 ```text
 kawaguchi = mostly rebuildable media infrastructure
-motosu    = irreplaceable photo library
-
+motosu    = irreplaceable photo library and future GFX archive
 yamanaka  = irreplaceable application state
+saiko     = mostly disposable lab state
 ```
 
 ## policy
@@ -22,7 +22,7 @@ The preferred model is:
 ```text
 source data
    |
-   +--> local application/database backup where useful
+   +--> local snapshot/application/database backup where useful
    |
    `--> independent backup destination
             |
@@ -35,9 +35,9 @@ Secrets, repository passwords, API keys, and backup credentials must not be comm
 
 Motosu has the strongest verified backup implementation because it stores the Immich photo library.
 
-### protected data
+### current protected data
 
-Restic backs up:
+Restic currently backs up:
 
 ```text
 /volume1/docker/immich/library
@@ -62,7 +62,7 @@ Backblaze B2
 
 The Restic repository is encrypted before storage in B2.
 
-### schedule
+### current schedule
 
 ```text
 ~01:00  Immich database backup
@@ -75,7 +75,7 @@ Root cron entry:
 0 4 * * * /volume1/docker/restic/immich-backup.sh >> /volume1/docker/restic/backup.log 2>&1
 ```
 
-### retention
+### current retention
 
 ```text
 7 daily
@@ -93,6 +93,48 @@ Root cron entry:
 ```
 
 The Restic repository password is required for recovery. Losing it makes the encrypted repository unusable.
+
+### TrueNAS migration protection
+
+Before wiping UGOS and rebuilding Motosu on TrueNAS SCALE:
+
+1. create a fresh Immich database backup
+2. stop Immich so the final copies represent a stable state
+3. make an independent copy to a Samsung external SSD
+4. make a second independent local copy to Kawaguchi
+5. confirm the existing Backblaze B2 repository is current
+6. verify both local copies before touching the source filesystem
+7. keep the SSD and Kawaguchi copies untouched until the restored TrueNAS/Immich deployment is proven
+
+The two local copies may be created in parallel after Immich has been stopped.
+
+The goal before destructive migration work is effectively:
+
+```text
+motosu original
+├── samsung external SSD copy
+├── kawaguchi copy
+└── backblaze B2 restic repository
+```
+
+### planned TrueNAS protection model
+
+After the rebuild:
+
+```text
+single-drive failure
+-> ZFS mirror
+
+accidental deletion / unwanted changes
+-> ZFS snapshots
+
+host loss / theft / disaster
+-> Restic + Backblaze B2
+```
+
+Local ZFS snapshots and Restic snapshots serve different purposes. The local snapshot tree does not need to be copied wholesale to B2; Restic will continue to provide its own deduplicated off-site history from the live datasets selected for backup.
+
+The future GFX RAW/archive data on Motosu is also high-priority data and should be included in the off-site backup design once its dataset layout is finalized.
 
 ### verification commands
 
@@ -124,15 +166,18 @@ Manual backup:
 sudo /volume1/docker/restic/immich-backup.sh
 ```
 
+These paths/commands describe the current UGOS deployment and must be rewritten after the TrueNAS migration.
+
 ### recovery priority
 
 Highest priority:
 
 ```text
-1. photo/media library
+1. original photo/media files
 2. Immich database backup
-3. configuration needed to recreate the stack
-4. Tailscale state if convenient
+3. future GFX RAW/archive files
+4. configuration needed to recreate the stack
+5. Tailscale state if convenient
 ```
 
 Redis/Valkey state and the machine-learning model cache are rebuildable.
@@ -156,6 +201,7 @@ medium
 ├── Plex metadata/configuration
 ├── Sonarr/Radarr configuration
 ├── request/subtitle/statistics configuration
+├── Uptime Kuma configuration
 └── manga application metadata where useful
 
 low / normally not backed up
@@ -167,6 +213,8 @@ low / normally not backed up
 ```
 
 The manga library should be considered separately from Usenet-reacquirable movie/TV media if any of it would be difficult to replace.
+
+AdGuard Home is expected to leave Kawaguchi, so its long-term configuration backup belongs with whatever DNS design replaces the current deployment.
 
 ### current gap
 
@@ -203,14 +251,20 @@ A migrated application should not be permanently removed from Kawaguchi until it
 
 For database-backed applications, prefer application-aware or database-native exports rather than copying live database files.
 
+## saiko
+
+Saiko is a Proxmox lab host and should not hold unique production data.
+
+Most lab VMs are disposable. Back up only specific VM images/configuration that become valuable enough to justify preservation.
+
 ## backup classes
 
 | class | examples | expectation |
 | --- | --- | --- |
-| irreplaceable | Immich photos, Paperless documents, budgets, personal databases | independent backup; off-site preferred |
+| irreplaceable | Immich photos, GFX archive, Paperless documents, budgets, personal databases | independent backup; off-site preferred |
 | important configuration | Unraid config, Plex metadata, Arr configuration, Compose files | independent backup |
-| convenient | dashboards, metrics history, caches | back up only if recovery value justifies it |
-| replaceable | Usenet movie/TV payloads, downloads, ML cache | normally recreate instead of backing up |
+| convenient | dashboards, metrics history, selected lab VMs, caches | back up only if recovery value justifies it |
+| replaceable | Usenet movie/TV payloads, downloads, ML cache, disposable lab VMs | normally recreate instead of backing up |
 
 ## verification
 
@@ -231,6 +285,8 @@ Current known gaps are:
 - no verified independent Kawaguchi configuration/appdata backup
 - Yamanaka backup design not selected yet
 - no documented full restore test for Motosu from B2 yet
+- TrueNAS/ZFS snapshot policy for Motosu not yet implemented
+- GFX archive dataset/backup policy not yet finalized
 - no common alerting for failed backup jobs yet
 
 These should be resolved based on risk rather than by backing up every byte in the homelab.
