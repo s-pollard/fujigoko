@@ -102,12 +102,13 @@ Yamanaka will take over non-media self-hosted applications from Kawaguchi.
 
 Target characteristics:
 
-- SFF business PC
+- low idle power
+- physically compact preferred, but no hard SFF requirement
 - Debian
 - Docker Engine + Docker Compose
 - 32 GB RAM target
 - 1–2 TB NVMe application storage
-- at least 2.5 GbE preferred
+- at least 2.5 GbE preferred; add-in NIC acceptable
 - no discrete GPU requirement
 
 Target workloads:
@@ -164,6 +165,26 @@ Shoji has no decided role. Keep the name reserved until a future major Fujigoko 
 
 Kubernetes is currently a Saiko lab experiment, not a planned production architecture. Shoji should not be assigned to Kubernetes or any other role until that role is actually justified.
 
+## network architecture
+
+The current pre-move network still uses the UDM-Pro as the production gateway. The Miami target replaces that routing role with the dedicated OPNsense appliance.
+
+```text
+current
+bluepeak -> udm-pro -> usw-aggregation -> hosts
+
+Miami target
+AT&T -> opnsense -> core switching -> hosts
+```
+
+Network decisions:
+
+- OPNsense is the permanent Miami router/firewall
+- the UDM-Pro will be removed from routing and sold eventually
+- the Mellanox SX3016F is the main candidate for the future core/aggregation switch, but is not yet treated as deployed hardware
+- exact Miami VLANs, IP reservations, AP placement, and switch-port layout are finalized after the physical rebuild
+- the existing APC SMT2200RM2U is not assumed to be part of the initial Miami deployment because the required receptacle will not be available
+
 ## service placement rule
 
 Services should stay near the data and role they primarily depend on.
@@ -180,6 +201,7 @@ host-specific exporters/agents    -> monitored host
 lab / disposable VMs              -> saiko
 network infrastructure            -> place for availability, not convenience
 DNS                               -> redundant AdGuard on yamanaka + motosu
+routing / firewall                -> OPNsense appliance
 ```
 
 Examples:
@@ -262,6 +284,9 @@ motosu
 bandai
 └── offline / packed               becoming saiko
 
+network
+└── udm-pro routing                temporary until Miami rebuild
+
 
                          target
 
@@ -279,6 +304,9 @@ saiko
 
 shoji
 └── reserved
+
+network
+└── opnsense routing + future core switching
 ```
 
 Kawaguchi cleanup is deferred until either the Miami rebuild or Yamanaka deployment. The migration order is migrate, verify, back up, then remove the old deployment.
