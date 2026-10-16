@@ -156,3 +156,19 @@ The model cache is rebuildable. The library and PostgreSQL data are the critical
 - tailscale
   - network mode: host
   - state: `/volume1/docker/tailscale/state`
+
+## planned DNS target
+
+The current single AdGuard Home instance on Kawaguchi is temporary.
+
+Target placement:
+
+```text
+yamanaka
+└── adguard-home
+
+motosu
+└── adguard-home
+```
+
+Both instances should be advertised to clients through DHCP and kept aligned so either resolver can continue serving filtered DNS when the other host is unavailable. Exact addresses and synchronization/upstream details will be finalized during the network rebuild.
