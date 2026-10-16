@@ -7,12 +7,14 @@ Move non-media self-hosted applications off `kawaguchi` and onto `yamanaka` with
 The final role split is:
 
 ```text
-kawaguchi = media
+kawaguchi = media + independent uptime watchdog
 motosu    = photos
-yamanaka  = non-media applications + monitoring
+yamanaka  = non-media applications + centralized monitoring
+saiko     = Proxmox lab / experimentation
+shoji     = reserved / role undecided
 ```
 
-Yamanaka will not host game servers.
+Yamanaka will not host game servers or lab workloads.
 
 Kawaguchi cleanup is intentionally deferred until either the Miami rebuild or the Yamanaka migration. The migration order is always:
 
@@ -40,9 +42,12 @@ Media and manga services remain on Kawaguchi:
 - Komga
 - Komf
 - Tachidesk
+- Uptime Kuma
 - cAdvisor or other Kawaguchi-specific monitoring agents
 
 Kawaguchi bulk media is considered largely replaceable because most of it can be reacquired from Usenet. Backups should favor configuration and metadata rather than the movie and TV payloads themselves.
+
+AdGuard Home does not remain on Kawaguchi in the target state. Its final replacement/placement is a separate DNS availability decision.
 
 ### stays on motosu
 
@@ -51,6 +56,8 @@ Kawaguchi bulk media is considered largely replaceable because most of it can be
 - Immich Valkey/Redis
 - Immich machine learning
 - Tailscale
+
+Motosu is being handled as a separate migration project from UGOS to TrueNAS SCALE with a two-disk ZFS mirror. That work is outside the Yamanaka migration.
 
 ### moves to yamanaka
 
@@ -64,6 +71,7 @@ Kawaguchi bulk media is considered largely replaceable because most of it can be
 - Homepage
 - Prometheus
 - Grafana
+- Loki
 - supporting databases and caches required by those applications
 
 ### delete instead of migrate
@@ -83,18 +91,17 @@ If they are no longer in use, remove them only after confirming that no active s
 
 ## phase 0 — hardware selection
 
-Hardware selection is handled separately.
+Target Yamanaka design:
+
+- used SFF business PC
+- Debian
+- Docker Engine with Docker Compose
+- 32 GB RAM target
+- 1–2 TB NVMe application storage
+- 2.5 GbE preferred
+- no discrete GPU requirement
 
 The migration should not begin until Yamanaka is physically available and stable enough to become an always-on host.
-
-Minimum deployment assumptions currently are:
-
-- Linux server OS
-- Docker Engine with Docker Compose
-- persistent NVMe storage
-- enough RAM for the application stack and databases
-- wired Ethernet
-- static or reserved LAN address
 
 Do not hard-code hardware-specific assumptions into service definitions unless the selected machine requires them.
 
@@ -102,7 +109,7 @@ Do not hard-code hardware-specific assumptions into service definitions unless t
 
 Before moving any application:
 
-1. Install the selected Linux server OS.
+1. Install Debian.
 2. Set hostname to `yamanaka`.
 3. Configure updates, time synchronization, SSH, and basic administration.
 4. Install Docker Engine and the Docker Compose plugin.
@@ -135,7 +142,8 @@ Recommended directory pattern:
     ├── endurain/
     ├── homepage/
     ├── prometheus/
-    └── grafana/
+    ├── grafana/
+    └── loki/
 ```
 
 The exact path can change during installation. The important rule is that Compose definitions and persistent data have predictable locations and are documented.
@@ -186,7 +194,8 @@ endurain/
 
 monitoring/
 ├── prometheus
-└── grafana
+├── grafana
+└── loki
 ```
 
 Where practical, use Docker-internal DNS names for application-to-database communication instead of sending traffic back through Yamanaka's LAN address and published database ports.
@@ -317,20 +326,43 @@ Migration requirements:
 
 ### wave 4 — monitoring
 
-Move:
+Move/deploy:
 
 - Prometheus
 - Grafana
+- Loki
 
-Keep host-local agents where they belong. For example, cAdvisor can remain on Kawaguchi while Prometheus and Grafana run on Yamanaka.
+Keep host-local agents where they belong. cAdvisor can remain on Kawaguchi; appropriate exporters/agents should be added to Motosu, Saiko, and Yamanaka as needed.
+
+Uptime Kuma remains on Kawaguchi as a separate availability check rather than moving into the same failure domain as the centralized monitoring stack.
+
+Target design:
+
+```text
+                yamanaka
+        prometheus / grafana / loki
+             /       |       \
+            /        |        \
+     kawaguchi     motosu     saiko
+      metrics      metrics    metrics
+
+
+                kawaguchi
+              uptime kuma
+             /     |      \
+            /      |       \
+       yamanaka  motosu    saiko
+        uptime    uptime    uptime
+```
 
 Migration requirements:
 
-- copy Grafana persistent data or export the dashboards/configuration that matter
+- copy Grafana persistent data or export dashboards/configuration that matter
 - decide whether historical Prometheus metrics are worth preserving
+- configure Loki and the selected log collector/forwarder
 - update Prometheus scrape targets for the post-move network
-- verify Kawaguchi and Yamanaka metrics
-- later add Motosu metrics only if useful
+- verify Kawaguchi, Motosu, Saiko, and Yamanaka metrics as each host becomes available
+- verify Uptime Kuma remains independent of Yamanaka
 
 Historical metrics are less important than recreating the monitoring configuration cleanly.
 
@@ -400,9 +432,10 @@ Cleanup scope:
 - remove unused Docker networks such as `homelable` and Docker `wg0` only after confirming they remain unused
 - remove the uppercase `/mnt/user/Media` share after removing the obsolete Komf `/library` mount and confirming nothing else uses it
 - leave manga services and `/mnt/user/media/manga` on Kawaguchi
-- retain only monitoring agents that specifically need to run on Kawaguchi
+- retain Uptime Kuma and monitoring agents that specifically belong on Kawaguchi
+- migrate/remove AdGuard Home only after the replacement DNS design is ready
 
-The desired end state is that looking at Kawaguchi's Docker list immediately makes sense as a media server.
+The desired end state is that looking at Kawaguchi's Docker list immediately makes sense as a media server plus its independent uptime watchdog.
 
 ## final target
 
@@ -412,10 +445,11 @@ kawaguchi
 ├── media acquisition / automation
 ├── subtitles / requests / statistics
 ├── manga services
+├── uptime kuma
 └── local monitoring agent
 
 motosu
-└── immich stack
+└── immich / photo stack
 
 yamanaka
 ├── paperless
@@ -428,7 +462,14 @@ yamanaka
 ├── homepage
 ├── prometheus
 ├── grafana
+├── loki
 └── future non-media self-hosted applications
+
+saiko
+└── proxmox lab / experimentation
+
+shoji
+└── reserved
 ```
 
 Game servers are outside Yamanaka's role.
@@ -440,8 +481,9 @@ The migration is complete when:
 - every retained non-media application runs from Yamanaka
 - important Yamanaka application data has an independent backup
 - no retained application on Yamanaka depends on an old Kawaguchi database or appdata path
-- Kawaguchi contains only media/manga workloads and host-specific agents
-- Motosu remains dedicated to Immich/photos
+- Kawaguchi contains only media/manga workloads, Uptime Kuma, and host-specific agents
+- AdGuard Home no longer makes Kawaguchi a DNS dependency
+- Motosu remains dedicated to photos
 - RomM is retired
 - obsolete Kawaguchi containers, networks, mounts, and appdata have been cleaned up
 - the Fujigoko documentation reflects the deployed state rather than the transitional state
