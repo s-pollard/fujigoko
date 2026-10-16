@@ -6,7 +6,7 @@ Restore basic Fujigoko network connectivity after gateway, switch, VLAN, or addr
 
 The goal is to recover trusted LAN connectivity first, then restore segmentation and nonessential network services.
 
-## expected core path
+## current pre-move core path
 
 ```text
 internet
@@ -30,6 +30,7 @@ Current known host addresses:
 ```text
 kawaguchi  192.168.1.220
 motosu     192.168.1.169
+adguard    192.168.1.53
 ```
 
 Current VLANs:
@@ -40,6 +41,23 @@ IoT VLAN 20      192.168.20.0/24
 Servers VLAN 30  192.168.30.0/24
 ```
 
+## Miami target core path
+
+```text
+AT&T
+  |
+opnsense
+  |
+core switching
+(SX3016F main candidate)
+  |-- kawaguchi
+  |-- motosu
+  |-- yamanaka
+  `-- access / AP switching
+```
+
+The OPNsense appliance is the permanent Miami router/firewall. The UDM-Pro remains relevant only to the current pre-move network and will eventually be sold after the new network is stable.
+
 ## recovery order
 
 ```text
@@ -47,44 +65,65 @@ Servers VLAN 30  192.168.30.0/24
 2. restore switching uplinks
 3. restore one known-good AP or wired admin path
 4. restore server/NAS connectivity
-5. restore VLANs/firewall policy
-6. restore IoT and optional devices
-7. verify Internet and inter-VLAN behavior
+5. restore DNS
+6. restore VLANs/firewall policy
+7. restore IoT and optional devices
+8. verify Internet and inter-VLAN behavior
 ```
 
 ## gateway failure
 
-If the UDM-Pro is unavailable:
+### current pre-move UDM-Pro
 
-1. verify power and UPS state
+If the UDM-Pro is unavailable before the Miami migration:
+
+1. verify power
 2. verify Bluepeak handoff/link
 3. verify the UDM-Pro boots and can be reached locally
 4. restore known-good UniFi configuration if required and available
 5. verify trusted LAN DHCP/gateway function
-6. confirm access to `192.168.1.220` and `192.168.1.169`
+6. confirm access to Kawaguchi and Motosu
 7. restore VLANs and firewall rules only after basic LAN function is stable
+
+### Miami OPNsense
+
+After the Miami migration, if OPNsense is unavailable:
+
+1. verify appliance power and physical WAN/LAN links
+2. verify the AT&T handoff/gateway path is up
+3. connect through a known-good management/LAN interface if normal switching is suspect
+4. verify OPNsense boots and interfaces are assigned as documented
+5. restore the latest known-good OPNsense configuration backup if necessary
+6. restore trusted LAN DHCP/routing first
+7. verify access to Kawaguchi, Motosu, and Yamanaka
+8. restore DNS and then VLAN/firewall policy
 
 Do not troubleshoot every downstream device before confirming the gateway itself works.
 
 ## switching failure
 
-### aggregation switch
+### current USW-Aggregation
 
-Expected important links:
+Current important links:
 
 ```text
 port 1 -> UDM-Pro
 port 7 -> kawaguchi
 port 8 -> USW-Lite-8-PoE
+port 2 -> U7 Pro
 ```
 
-The U7 Pro is also attached to the aggregation switch, currently documented on port 2.
+The U7 Pro link speed should be re-verified after the move rather than assuming the old 10 GbE interpretation was correct.
 
-If the aggregation switch fails, restore a temporary trusted-LAN path for critical hosts before reproducing the final topology. A direct or temporary 1 GbE connection is acceptable during recovery.
+If the aggregation switch fails, restore a temporary trusted-LAN path for critical hosts before reproducing the final topology. A direct or temporary lower-speed connection is acceptable during recovery.
+
+### Miami core switch
+
+The Mellanox SX3016F is the main candidate, not yet deployed hardware. Once the Miami switch is finalized, replace this section with actual ports and recovery steps.
 
 ### USW-Lite-8-PoE
 
-Expected important links:
+Current important links:
 
 ```text
 port 4 -> motosu
@@ -94,6 +133,29 @@ port 7 -> USW-Aggregation uplink
 
 If this switch fails, prioritize restoring Motosu connectivity; the doorbell is lower priority.
 
+## DNS recovery
+
+### current
+
+Kawaguchi-hosted AdGuard Home at `192.168.1.53` is currently the only resolver handed out to trusted clients.
+
+If it fails:
+
+1. confirm Kawaguchi itself is reachable
+2. confirm the AdGuard container is running and listening on port 53
+3. if necessary, temporarily change DHCP/client DNS to a known external resolver to restore basic name resolution
+4. fix AdGuard and return clients to the intended configuration
+
+### target
+
+Miami DNS is designed as two AdGuard Home instances:
+
+```text
+yamanaka + motosu
+```
+
+If one resolver fails, verify clients continue resolving through the other before changing infrastructure. Restore the failed instance without taking down the surviving resolver.
+
 ## VLAN recovery
 
 ### trusted/default
@@ -102,7 +164,7 @@ If this switch fails, prioritize restoring Motosu connectivity; the doorbell is 
 subnet: 192.168.1.0/24
 ```
 
-Purpose: trusted clients, Kawaguchi, Motosu, and core management.
+Purpose: trusted clients, Kawaguchi, Motosu, and core management in the current design.
 
 ### IoT
 
@@ -111,7 +173,7 @@ VLAN: 20
 subnet: 192.168.20.0/24
 ```
 
-Expected policy:
+Expected current policy:
 
 ```text
 trusted -> IoT     allow
@@ -127,7 +189,7 @@ subnet: 192.168.30.0/24
 gateway: 192.168.30.1
 ```
 
-Expected policy:
+Expected current policy:
 
 ```text
 trusted -> servers   allow
@@ -135,7 +197,9 @@ servers -> trusted   block new connections
 servers -> internet  allow
 ```
 
-Bandai historically used this network at `192.168.30.211`, but it is not part of the current always-on target architecture.
+Bandai historically used this network at `192.168.30.211`. That machine becomes Saiko and is not part of required production infrastructure.
+
+The exact Miami VLAN/IP plan should be documented after the OPNsense rebuild rather than assumed to remain identical.
 
 ## verification
 
@@ -144,31 +208,30 @@ After basic recovery, verify from a trusted client:
 ```text
 1. gateway reachable
 2. internet reachable
-3. kawaguchi reachable
-4. motosu reachable
-5. UniFi devices adopt/connect normally
-6. trusted clients can initiate toward Servers and IoT as intended
-7. IoT cannot initiate new connections into trusted LAN
-8. Servers cannot initiate new connections into trusted LAN
+3. DNS resolution works
+4. kawaguchi reachable
+5. motosu reachable
+6. yamanaka reachable once deployed
+7. active switches/APs reachable
+8. inter-VLAN behavior matches the documented policy
 ```
 
-Then verify application-level access such as Plex and Immich.
+Then verify application-level access such as Plex, Immich, and the Yamanaka application stack.
 
-## post-move note
+## power note
 
-The physical topology is currently documented from the pre-Miami/move-preparation state. Update this runbook after the Miami network is physically rebuilt.
-
-Do not treat old switch-port assignments as immutable if cabling changes during the move.
+The APC Smart-UPS SMT2200RM2U is owned but is not expected to be usable in the initial Miami setup because the required receptacle will not be available. Do not assume UPS-backed runtime or automated shutdown exists until the Miami replacement power plan is documented and tested.
 
 ## completion criteria
 
 Recovery is complete when:
 
-- UDM-Pro provides gateway/DHCP/routing normally
+- the active production gateway provides DHCP/routing normally
+- DNS resolution works through the intended resolver design
 - critical switches are reachable
-- Kawaguchi and Motosu are reachable from trusted clients
+- Kawaguchi, Motosu, and Yamanaka (when deployed) are reachable from trusted clients
 - Internet access works
-- VLAN segmentation matches policy
+- VLAN segmentation matches the currently documented policy
 - at least the intended active AP works
 - critical self-hosted services are reachable
 - documentation matches the recovered physical topology
