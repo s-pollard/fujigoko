@@ -1,6 +1,6 @@
 # network
 
-## active physical topology
+## current pre-move physical topology
 
 ```text
 internet
@@ -12,7 +12,7 @@ udm-pro
 10 gbe
   |
 usw-aggregation
-  |-- 10 gbe --> u7 pro
+  |-- u7 pro
   |-- 10 gbe --> kawaguchi
   |
   `-- 1 gbe --> usw-lite-8-poe
@@ -22,7 +22,7 @@ usw-aggregation
 
 Only the U7 Pro is currently active on the wireless side while preparing for the move. Other owned UniFi APs are intentionally offline.
 
-## verified port mapping
+## current verified port mapping
 
 ### UDM-Pro
 
@@ -32,7 +32,7 @@ Only the U7 Pro is currently active on the wireless side while preparing for the
 ### USW-Aggregation
 
 - port 1 -> UDM-Pro port 11 — 10 GbE
-- port 2 -> U7 Pro — 10 GbE link shown in UniFi
+- port 2 -> U7 Pro — connected; U7 Pro is 2.5 GbE-capable, and the final negotiated link should be re-verified after the move
 - port 7 -> kawaguchi — 10 GbE
 - port 8 -> USW-Lite-8-PoE port 7 — 1 GbE
 
@@ -42,23 +42,37 @@ Only the U7 Pro is currently active on the wireless side while preparing for the
 - port 6 -> Doorbell Lite — Fast Ethernet
 - port 7 -> USW-Aggregation port 8 — 1 GbE
 
-## unifi hardware inventory
+## owned network hardware
 
-### gateway / controller
+### current gateway / controller
 
 - UDM-Pro
-  - gateway
-  - UniFi controller
-  - 10 GbE SFP+ connectivity
+  - current gateway and UniFi controller
+  - will be retired from routing after the Miami OPNsense migration is proven
+  - planned to be sold eventually
+
+### planned Miami router / firewall
+
+- OPNsense appliance
+  - Intel Core i5-8500
+  - 8 GB DDR4
+  - 128 GB SSD
+  - dual 10 GbE SFP+ Intel X520 / 82599ES-class adapter
+  - dual 1 GbE Intel I350 adapter
+  - onboard Intel I219-LM 1 GbE
 
 ### switching
 
 - USW-Aggregation
   - eight 10 GbE SFP+ ports
+  - current production aggregation switch
 - USW-Lite-8-PoE
   - eight 1 GbE ports
   - four PoE+ outputs
   - 52 W shared PoE budget
+- Mellanox SX3016F
+  - main candidate for the future core/aggregation switch
+  - not yet acquired / not yet part of the active topology
 
 ### wireless inventory
 
@@ -74,8 +88,11 @@ Only the U7 Pro is currently active on the wireless side while preparing for the
 ### power
 
 - APC Smart-UPS SMT2200RM2U
+  - owned
+  - not expected to be usable in the initial Miami setup because the required receptacle will not be available
+  - replacement UPS / Miami power-protection plan remains TBD
 
-## networks
+## current networks
 
 ### default / trusted
 
@@ -106,7 +123,7 @@ Only the U7 Pro is currently active on the wireless side while preparing for the
 - servers -> default: block new connections
 - servers -> internet: allow
 
-## dns
+## current dns
 
 AdGuard Home currently runs as a Docker container on Kawaguchi using a dedicated `br0` address.
 
@@ -129,9 +146,35 @@ Current configuration:
 
 This is currently a single-resolver design. If Kawaguchi or AdGuard Home is unavailable, normal LAN DNS resolution may fail until another resolver is configured.
 
-### target DNS design
+## target Miami network
 
-AdGuard Home will move off Kawaguchi and become a redundant two-host service:
+The Miami rebuild separates routing from UniFi and moves required DNS off Kawaguchi.
+
+```text
+AT&T fiber / ONT-gateway path
+          |
+          v
+      OPNsense
+          |
+          v
+   core switching
+   (SX3016F is the main candidate)
+      /      |       \
+     /       |        \
+kawaguchi  motosu   yamanaka
+```
+
+Target rules:
+
+- OPNsense becomes the permanent production router/firewall
+- UDM-Pro is retired from routing and eventually sold
+- SX3016F is the main candidate for the future core switch, but is not considered purchased or deployed yet
+- exact Miami switch-port mapping, VLAN layout, and IP plan will be finalized after the physical rebuild
+- AdGuard Home runs on both Yamanaka and Motosu
+- DHCP advertises both AdGuard resolvers
+- Kawaguchi is removed from the permanent DNS design
+
+## target DNS design
 
 ```text
 lan clients
@@ -150,10 +193,11 @@ Target rules:
 
 Exact resolver IPs, configuration synchronization method, and upstream resolver design will be finalized during the network rebuild.
 
-## known server vlan host
+## legacy server VLAN host
 
 - `bandai`
   - fixed ip: `192.168.30.211`
-  - role: game server
+  - former game-server role
   - status: offline / packed for move
+  - becoming `saiko`, the Proxmox lab host
   - WireGuard relay path documented separately in the home repo
