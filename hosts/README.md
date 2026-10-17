@@ -50,19 +50,28 @@ The TrueNAS migration is gated on independent recovery copies of Immich. A full 
 ## yamanaka
 
 - role: always-on general application server
-- status: planned; hardware selection in progress
-- target platform: Debian
-- deployment: Docker Engine + Docker Compose
-- memory target: 32 GB
-- storage target: 1–2 TB NVMe
-- networking: 2.5 GbE preferred; add-in NIC acceptable
-- GPU: not required
-- form factor: flexible; small/low-power preferred, but SFF is not a hard requirement
+- status: hardware selected; base Debian deployment complete; hardware upgrades/application deployment in progress
+- hardware: Dell OptiPlex 3070 SFF
+- cpu: Intel Core i5-9500
+- cpu layout: 6 cores / 6 threads
+- platform: Debian GNU/Linux 13 (trixie)
+- kernel: 6.12.113+deb13-amd64 at initial inventory
+- boot: UEFI
+- deployment: Docker Engine + Docker Compose planned
+- memory: 16 GB installed as 2 × 8 GB SK hynix HMA81GU6JJR8N-VK DDR4-2666 UDIMM
+- memory capacity: 32 GB maximum across 2 DIMM slots
+- memory upgrade policy: remain at 16 GB initially; move to 2 × 16 GB only if real application usage justifies it
+- current storage: Patriot P300 128 GB NVMe
+- application storage: 500 GB NVMe ordered
+- onboard network: Realtek RTL8111/8168-family 1 GbE
+- network upgrade: low-profile Intel X520-DA2 dual-port 10 GbE SFP+ adapter ordered
+- GPU: Intel UHD Graphics 630; no discrete GPU required
+- remote access: SSH working
 - target responsibilities: non-media self-hosted applications, centralized monitoring, redundant AdGuard Home
 
 Yamanaka is intended to be simple production infrastructure rather than a virtualization or experimentation host. Important files, application exports, database dumps, and configuration backups from Yamanaka should be copied to Motosu, which then provides mirrored local storage, snapshots, and the path to off-site B2 protection.
 
-Hardware selection should prioritize low idle power, sufficient RAM, reliable NVMe storage, and reasonable expandability over a specific chassis class.
+The selected OptiPlex is intentionally being deployed with 16 GB first rather than upgrading memory preemptively. Docker workloads should be deployed and observed before deciding whether the 32 GB maximum is necessary.
 
 ## saiko
 
