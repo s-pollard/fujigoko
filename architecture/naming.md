@@ -1,83 +1,57 @@
 # naming conventions
 
-Fujigoko uses a Japan-based naming scheme. Names should describe infrastructure roles consistently rather than being assigned randomly.
+Fujigoko uses a Japan-based naming scheme. Names should identify infrastructure consistently without encoding sensitive or personal information.
 
 ## homelab
 
-### Fujigoko
-
-`fujigoko` is the name of the overall homelab and repository.
-
-The name refers to the Fuji Five Lakes and establishes the naming family used for major compute/storage hosts.
+`fujigoko` is the production homelab/repository name, referring to the Fuji Five Lakes.
 
 ## major hosts — Fuji Five Lakes
 
-Major servers use names from the Fuji Five Lakes.
+Major Fujigoko physical servers use Fuji Five Lakes names.
 
 ```text
 kawaguchi  -> media / Unraid
-motosu     -> photos / NAS / Immich
+motosu     -> photos / TrueNAS / Immich / backups
 yamanaka   -> general applications
-saiko      -> Proxmox lab / experimentation
-shoji      -> reserved / undecided
+saiko      -> reserved / currently unused in fujigoko
+shoji      -> reserved / currently unused
 ```
 
-The role may evolve, but a lake name should represent a major host rather than a container, VM, or temporary service.
+The physical machine that was briefly documented as `saiko` moved out of Fujigoko into the separate gusuku lab and was renamed `shuri`. Do not use `saiko` and `shuri` interchangeably: `shuri` belongs to gusuku; `saiko` is again only a reserved Fujigoko lake name.
 
-The former host name `bandai` is legacy and is being replaced by `saiko` as that machine becomes the lab host.
+A lake name represents a major Fujigoko host, not a container, VM, or temporary service.
 
 ## physical networking — rivers
 
-Japanese river names are reserved for physical network infrastructure where useful.
+Japanese river names are reserved for physical network infrastructure where useful, such as core, aggregation, or access switching.
 
-Rationale: rivers connect regions and provide a natural naming metaphor for switches, links, or other physical network fabric.
-
-Potential uses include:
-
-- core switch
-- aggregation switch
-- access switches
-- other major physical networking devices
-
-Do not rename existing production network hardware solely to satisfy the convention. Apply the convention during a future rebuild or when replacement hardware makes the name useful.
+Do not rename working production hardware solely to satisfy the convention. Apply the convention when it improves clarity during a rebuild or replacement.
 
 ## logical networking / transit — Shinkansen
 
-Shinkansen-related names are reserved for logical or transit-oriented networking concepts.
+Shinkansen-related names are reserved for logical or transit-oriented networking concepts where useful, such as VPN/transit networks, inter-site links, or routing projects.
 
-Potential uses include:
-
-- VPN/transit networks
-- inter-site links
-- logical network backbones
-- routing/transit projects
-
-The convention is conceptual; do not assign a Shinkansen name until a real component needs one.
+Do not assign one until a real component needs it.
 
 ## hubs / centralized infrastructure — stations
 
-Japanese station or major hub names are reserved for centralized infrastructure where the hub metaphor fits.
+Japanese station or major-hub names are reserved for centralized infrastructure where the metaphor fits, such as management/control-plane services or shared infrastructure hubs.
 
-Potential uses include:
-
-- central dashboards
-- management/control-plane services
-- shared infrastructure hubs
-
-Do not use station names for ordinary application containers simply because a name is needed.
+Ordinary application containers should generally keep their normal upstream names.
 
 ## naming rules
 
 1. Keep the Japan theme coherent.
-2. Major physical hosts use Fuji Five Lakes names.
-3. Prefer role-based categories over arbitrary Japanese place names.
+2. Major Fujigoko physical hosts use Fuji Five Lakes names.
+3. Prefer role-based naming categories over arbitrary place names.
 4. Do not rename working infrastructure unless the new name improves clarity.
 5. Do not assign reserved names before a real role exists.
-6. Container/service names should generally remain their normal upstream names unless there is a practical reason to alias them.
-7. Documentation should record both old and new names during transitions.
+6. Service/container names should normally remain upstream names.
+7. Document old/new names during active transitions, then remove obsolete transition language afterward.
 8. Names must not encode personal information, physical addresses, usernames, account IDs, or other identifying data.
 
-## current reserved namespace
+## namespace
 
 ```text
 homelab                 -> Fujigoko
@@ -87,4 +61,4 @@ logical/transit network -> Shinkansen
 central hubs            -> stations / major hubs
 ```
 
-This document is the naming reference; individual host and network documents remain the source of truth for what is actually deployed.
+This file defines naming policy. Host and network documents remain the source of truth for what is actually deployed.
