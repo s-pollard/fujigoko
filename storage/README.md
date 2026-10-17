@@ -7,7 +7,7 @@ The storage model follows the host-role split:
 ```text
 kawaguchi = bulk media + media application state
 motosu    = photo library + Immich + GFX archive + backup storage
-yamanaka  = personal application state (planned)
+yamanaka  = personal application state
 saiko     = disposable/experimental VM storage
 ```
 
@@ -210,9 +210,7 @@ service configuration
 other non-rebuildable application state
 ```
 
-Yamanaka should keep its live application data on local NVMe for normal operation. Motosu stores backup copies on the mirrored ZFS pool, snapshots those backup datasets, and selected high-value backup data is then included in the Motosu-to-B2 off-site policy.
-
-This creates a simple path:
+Yamanaka keeps live application data on local NVMe for normal operation. Motosu stores backup copies on the mirrored ZFS pool, snapshots those backup datasets, and selected high-value backup data is then included in the Motosu-to-B2 off-site policy.
 
 ```text
 yamanaka live data
@@ -252,11 +250,16 @@ A full migration copy currently exists on a Samsung T7 external SSD. The copied 
 
 ## yamanaka
 
-Yamanaka will hold persistent state for non-media self-hosted applications.
+Yamanaka is the selected Dell OptiPlex 3070 SFF production application host.
 
-The target host is a small SFF system running Debian with Docker Compose and NVMe application storage.
+Current storage state:
 
-The planned logical layout is:
+- Patriot P300 128 GB NVMe installed during initial Debian deployment
+- 500 GB NVMe ordered for the production application-storage role
+
+The 500 GB NVMe will hold live non-media application state, databases, Redis/cache state where required, and the Prometheus/Grafana/Loki monitoring stack. Live PostgreSQL or Redis directories should not be placed on SMB/NFS storage.
+
+Planned logical layout:
 
 ```text
 /srv/
@@ -275,7 +278,9 @@ Expected high-value data includes:
 - Grafana configuration
 - Compose definitions and service configuration
 
-Yamanaka data should have an independent backup on Motosu before the corresponding Kawaguchi copy is permanently removed.
+Yamanaka data must have an independent backup on Motosu before the corresponding Kawaguchi copy is permanently removed. Database-backed applications should use native dumps or application-aware exports for backup rather than direct copies of live database directories.
+
+The 500 GB local device is considered sufficient for the planned application role because bulk media and photo storage remain on Kawaguchi and Motosu respectively.
 
 ## saiko
 
@@ -299,7 +304,7 @@ motosu
 └── Yamanaka backup copies
 
 yamanaka
-└── live non-media application state
+└── live non-media application state on local NVMe
 
 saiko
 └── lab / experimental VM storage
@@ -314,7 +319,7 @@ Update this document when:
 - Motosu has been rebuilt on TrueNAS SCALE
 - ZFS datasets and snapshot policies are finalized
 - the GFX archive layout is selected
-- Yamanaka hardware and storage are selected
+- the ordered Yamanaka 500 GB NVMe is installed and its final filesystem/mount layout is established
 - Yamanaka-to-Motosu backup jobs and retention are finalized
 - Motosu-to-B2 dataset selection and retention are finalized
 - Kawaguchi is cleaned after the migration
