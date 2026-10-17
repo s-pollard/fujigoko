@@ -1,8 +1,6 @@
 # service classification
 
-Services are classified by function, current placement, intended placement, and how important their persistent data is.
-
-The target host model is:
+Services are classified by function, current placement, intended placement, and persistence value.
 
 ```text
 kawaguchi = media + independent uptime watchdog
@@ -12,169 +10,95 @@ saiko     = Proxmox lab / experimentation
 shoji     = reserved / role undecided
 ```
 
-Yamanaka is not intended to host game servers. Saiko is not intended to host required production services.
+Yamanaka does not host game servers. Saiko does not host required production services.
 
-## media
+## media — kawaguchi
 
-These services directly manage, acquire, index, subtitle, serve, or monitor media stored on Kawaguchi. They should remain on Kawaguchi.
+Permanent:
 
-| service | current host | target host | status | backup priority |
-| --- | --- | --- | --- | --- |
-| Plex | kawaguchi | kawaguchi | permanent | medium |
-| Sonarr | kawaguchi | kawaguchi | permanent | medium |
-| Radarr | kawaguchi | kawaguchi | permanent | medium |
-| SABnzbd | kawaguchi | kawaguchi | permanent | low-medium |
-| Bazarr | kawaguchi | kawaguchi | permanent | medium |
-| Seerr | kawaguchi | kawaguchi | permanent | medium |
-| Tautulli | kawaguchi | kawaguchi | permanent | medium |
-| Recyclarr | kawaguchi | kawaguchi | permanent | low-medium |
-| Unpackerr | kawaguchi | kawaguchi | permanent | low |
-| Komga | kawaguchi | kawaguchi | permanent | medium |
-| Komf | kawaguchi | kawaguchi | permanent | low-medium |
-| Tachidesk | kawaguchi | kawaguchi | permanent | medium |
+- Plex
+- Sonarr
+- Radarr
+- SABnzbd
+- Bazarr
+- Seerr
+- Tautulli
+- Recyclarr
+- Unpackerr
+- Komga
+- Komf
+- Tachidesk
 
-Primary data dependencies:
+Manga remains on Kawaguchi. Movie/TV payloads are largely reacquirable; configuration and metadata have higher backup value than the bulk media itself.
 
-```text
-/mnt/user/media
-/mnt/user/downloads
-```
+## photos / storage — motosu
 
-Manga remains on Kawaguchi along with the rest of the media stack.
+Permanent:
 
-Kawaguchi is intentionally treated as a relatively easy-to-rebuild media host. Most of its large data set comes from Usenet and can be reacquired. Configuration and metadata are useful to preserve, but the media payload itself is not a high-priority backup target.
+- Immich server
+- Immich PostgreSQL
+- Immich Valkey/Redis
+- Immich machine learning
+- Tailscale
+- one AdGuard Home instance
 
-## photos
+Motosu also becomes the independent local backup target for important Yamanaka exports, database dumps, files, and configuration.
 
-The Immich stack stays together on Motosu because its primary library and database live there.
+High-value persistence includes the Immich library, database backups, photo archive, and selected Yamanaka recovery data. Redis/Valkey state and ML caches are rebuildable.
 
-| service | current host | target host | status | backup priority |
-| --- | --- | --- | --- | --- |
-| Immich server | motosu | motosu | permanent | high |
-| Immich PostgreSQL | motosu | motosu | permanent | high |
-| Immich Valkey/Redis | motosu | motosu | permanent | low |
-| Immich machine learning | motosu | motosu | permanent | low |
-| Tailscale | motosu | motosu | permanent | medium |
+## personal applications — kawaguchi to yamanaka
 
-Motosu itself is planned to move from UGOS to TrueNAS SCALE with a two-disk ZFS mirror. Immich remains the phone/family photo library and the destination for finished GFX exports. The main GFX RAW archive will also live on Motosu as normal filesystem data, with its exact dataset layout finalized after the TrueNAS migration is proven.
+Retained applications migrate to Yamanaka:
 
-Motosu also becomes the independent local backup target for important Yamanaka files, application exports, database dumps, and configuration. Those backups should live in dedicated datasets separate from the photo/Immich data so snapshot and off-site policies can be managed independently.
+| service | status | backup priority |
+| --- | --- | --- |
+| Paperless-ngx | transitional | high |
+| Mealie | transitional | high |
+| Actual Budget | transitional | high |
+| HomeBox | transitional | high |
+| Linkwarden | transitional | high |
+| Endurain | transitional | high |
+| Stirling PDF | transitional | low |
+| Homepage | transitional | medium |
 
-The machine-learning model cache and Redis state are rebuildable.
+Supporting PostgreSQL/Redis services move with their parent applications and remain private to the relevant Compose network unless an external client actually requires access.
 
-## personal applications
+## monitoring / infrastructure
 
-These are non-media applications currently running on Kawaguchi while being evaluated. Services that remain useful should move to Yamanaka.
+| service | target | status | backup priority |
+| --- | --- | --- | --- |
+| Prometheus | yamanaka | transitional | medium |
+| Grafana | yamanaka | transitional | medium-high |
+| Loki | yamanaka | planned | low-medium |
+| Uptime Kuma | kawaguchi | permanent watchdog | low-medium |
+| cAdvisor | monitored host | permanent agent | low |
+| AdGuard Home | yamanaka + motosu | planned redundant pair | medium |
 
-| service | current host | target host | status | backup priority |
-| --- | --- | --- | --- | --- |
-| Paperless-ngx | kawaguchi | yamanaka | transitional | high |
-| Mealie | kawaguchi | yamanaka | transitional | high |
-| Actual Budget | kawaguchi | yamanaka | transitional | high |
-| HomeBox | kawaguchi | yamanaka | transitional | high |
-| Linkwarden | kawaguchi | yamanaka | transitional | high |
-| Endurain | kawaguchi | yamanaka | transitional | high |
+Uptime Kuma remains outside Yamanaka so a Yamanaka failure does not remove every monitoring path.
 
-These services should not remain on Kawaguchi solely because spare compute capacity is available there.
+Exact resolver addresses, scrape addresses, internal ports, management URLs, and credentials are private operational details and are intentionally excluded from this public repository.
 
-## utilities
+## planned additions
 
-These are useful general-purpose tools rather than core media or photo services.
+- Nextcloud — Yamanaka; general file sync/collaboration
+- Vaultwarden — Yamanaka; security-sensitive service, with operational details kept private
 
-| service | current host | target host | status | backup priority |
-| --- | --- | --- | --- | --- |
-| Stirling PDF | kawaguchi | yamanaka | transitional | low |
-| Homepage | kawaguchi | yamanaka | transitional | medium |
-
-Utility services with little or no unique state can be recreated instead of heavily backed up.
-
-## monitoring and infrastructure
-
-Centralized monitoring belongs on Yamanaka, while Uptime Kuma remains on Kawaguchi as the simple independent watchdog. Lightweight host-specific agents remain near the systems they monitor.
-
-| service | current host | target host | status | backup priority |
-| --- | --- | --- | --- | --- |
-| Prometheus | kawaguchi | yamanaka | transitional | medium |
-| Grafana | kawaguchi | yamanaka | transitional | medium-high |
-| Loki | not installed | yamanaka | planned | low-medium |
-| Uptime Kuma | kawaguchi | kawaguchi | permanent independent watchdog | low-medium |
-| cAdvisor | kawaguchi | kawaguchi | permanent host agent | low |
-| AdGuard Home | kawaguchi | yamanaka + motosu | planned redundant DNS pair | medium |
-
-Monitoring target:
-
-```text
-                yamanaka
-        prometheus / grafana / loki
-             /       |       \
-            /        |        \
-     kawaguchi     motosu     saiko
-      metrics      metrics    metrics
-
-
-                kawaguchi
-              uptime kuma
-             /     |      \
-            /      |       \
-       yamanaka  motosu    saiko
-        uptime    uptime    uptime
-```
-
-Uptime Kuma on Kawaguchi is intentionally simple and independent of Yamanaka. Its primary purpose is to answer whether Yamanaka, Motosu, or another core service has gone down even if the centralized monitoring stack itself is unavailable.
-
-Yamanaka should also expose its own host/container metrics so Prometheus can monitor the monitoring host itself.
-
-AdGuard Home currently provides LAN DNS at `192.168.1.53` on Kawaguchi. The target design replaces this single resolver with two AdGuard Home instances on different physical hosts: one on Yamanaka and one on Motosu after its TrueNAS SCALE migration is stable. DHCP should advertise both resolver addresses, and their filtering policy/configuration should be kept aligned. Exact IPs, configuration synchronization, and upstream resolver design remain to be finalized during the network rebuild.
-
-Future exporters or agents should remain near the host they monitor, while dashboards, metrics storage, logs, and monitoring coordination live on Yamanaka.
-
-## supporting services
-
-Databases and caches belong with the application that depends on them rather than being treated as independent infrastructure.
-
-| service | current host | target host | parent application | backup priority |
-| --- | --- | --- | --- | --- |
-| postgresql17-linkwarden | kawaguchi | yamanaka | Linkwarden | high |
-| Redis | kawaguchi | yamanaka | Paperless-ngx | low-medium |
-| endurain-postgres | kawaguchi | yamanaka | Endurain | high |
-| endurain Redis | kawaguchi | yamanaka | Endurain | low |
-
-MariaDB currently exists primarily for RomM. If RomM is removed, MariaDB should also be removed if nothing else depends on it.
-
-Database backups should follow the importance of the parent application's data.
-
-## planned removal / review before migration
-
-A container should not automatically move to Yamanaka just because it currently exists on Kawaguchi.
-
-Before migration, each non-media service should be classified as one of:
-
-```text
-keep     -> migrate to yamanaka
-replace  -> deploy preferred replacement on yamanaka
-delete   -> remove after confirming nothing depends on it
-```
-
-Current decisions:
+## planned removal / review
 
 ```text
 romm    -> delete
 mariadb -> delete if romm is its only consumer
 ```
 
-Known appdata directories that should be reviewed before cleanup include:
+Review before cleanup:
 
-```text
-TitleCardMaker
-lidarr
-kometa
-```
-
-Their presence does not prove they are still actively used.
+- TitleCardMaker
+- Lidarr
+- Kometa
 
 ## lab / experimentation
 
-Saiko is the former Bandai machine and will become the Proxmox lab host.
+Saiko is the former Bandai machine and becomes the Proxmox lab host.
 
 Expected experiments include:
 
@@ -183,43 +107,33 @@ Expected experiments include:
 - Kubernetes/k3s
 - networking labs
 - temporary game servers/services
-- GPU passthrough if useful
+- GPU passthrough
 
 Kubernetes is an experiment, not a production migration plan. Shoji remains unassigned.
 
 ## maybe / under consideration
 
-Strongest current candidates:
-
-- Grafana Alloy — log/metric collection and forwarding, likely companion to Loki
-- Scrutiny — disk SMART/health monitoring
-- Dozzle — quick Docker log viewer
-- OpenSpeedTest — browser-based LAN throughput testing
-
-Other candidates:
-
-- NUT — UPS monitoring and graceful shutdown
-- PeaNUT — NUT web UI
-- Rackula — rack visualization/documentation
-- Paperless AI / Paperless-GPT — automatic document classification/tagging
-- Beszel — likely redundant with the chosen Prometheus/Grafana/Uptime Kuma design
-- Changedetection.io — only if a concrete webpage-monitoring use appears
-- container update notifier — notify about outdated containers without automatic updates
+- Grafana Alloy
+- Scrutiny
+- Dozzle
+- OpenSpeedTest
+- NUT / PeaNUT
+- Rackula
+- Paperless AI / Paperless-GPT
+- container update notifier
 
 ## migration rule
 
-For every service moving from Kawaguchi to Yamanaka:
+For each service moving from Kawaguchi to Yamanaka:
 
 ```text
 1. identify persistent data and dependencies
-2. back up the application and database
+2. back up application/database state
 3. deploy on yamanaka
-4. restore or copy persistent data
-5. verify application behavior
-6. verify dependent services and URLs
-7. establish independent backups from yamanaka to motosu
-8. leave the kawaguchi copy intact until verification is complete
-9. remove the old container and data only after successful cutover
+4. restore/copy persistence
+5. verify behavior
+6. verify dependencies
+7. establish independent backup to motosu
+8. leave the kawaguchi copy intact during observation
+9. remove the old copy only after successful cutover
 ```
-
-Kawaguchi cleanup is intentionally deferred until either the Miami rebuild or Yamanaka deployment.
