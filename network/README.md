@@ -2,7 +2,7 @@
 
 This document intentionally omits exact private addressing, VLAN IDs, MAC addresses, WAN details, management URLs, and other sensitive operational identifiers.
 
-## current physical topology
+## current production topology
 
 ```text
 internet
@@ -19,13 +19,13 @@ usw-aggregation
        `-- doorbell lite
 ```
 
-The U7 Pro is the currently active AP. Other owned UniFi APs are offline during the move/rebuild period.
+The U7 Pro is the currently active AP. Other owned UniFi APs may remain offline during the move/rebuild period.
 
 ## current hardware
 
 ### gateway / controller
 
-- Ubiquiti UniFi Dream Machine Pro (UDM-Pro)
+- Ubiquiti UniFi Dream Machine Pro
   - current production gateway
   - current UniFi Network controller
   - leaves the routing role after the replacement network is proven
@@ -36,19 +36,15 @@ The U7 Pro is the currently active AP. Other owned UniFi APs are offline during 
 - Ubiquiti UniFi Switch Aggregation (USW-Aggregation)
   - 8 × 10 GbE SFP+ ports
   - current production aggregation switch
-- Ubiquiti UniFi Switch Lite 8 PoE (USW-Lite-8-PoE)
-  - 8 × 1 GbE ports
-  - 4 PoE+ ports
-  - 52 W shared PoE budget
+- Ubiquiti UniFi Switch Lite 8 PoE
+  - current access/PoE switching
 
 ### wireless inventory
 
-- Ubiquiti UniFi U7 Pro — active; 2.5 GbE PoE+ uplink
-- Ubiquiti UniFi U6 Enterprise — owned, currently offline
-- Ubiquiti UniFi U6 Lite — owned, currently offline
-- Ubiquiti UniFi AC Pro — owned, currently offline
-
-The U7 Pro should not be documented as a 10 GbE AP. Ubiquiti specifies a 2.5 GbE RJ45 uplink.
+- Ubiquiti UniFi U7 Pro — current active AP; 2.5 GbE-capable uplink
+- Ubiquiti UniFi U6 Enterprise — owned
+- Ubiquiti UniFi U6 Lite — owned
+- Ubiquiti UniFi AC Pro — owned
 
 ## target network
 
@@ -64,7 +60,7 @@ core / aggregation
 
 ### router / firewall
 
-The target OPNsense appliance uses:
+The target OPNsense appliance has the following verified/recorded components:
 
 - Intel Core i5-8500
 - 8 GB DDR4
@@ -73,37 +69,31 @@ The target OPNsense appliance uses:
 - dual-port Intel I350-family 1 GbE
 - Intel I219-LM onboard 1 GbE
 
-No reliable OEM/chassis model is currently documented, so the appliance should be described by its verified components rather than assigned an invented brand/model.
+No reliable OEM/chassis model is documented, so do not invent one.
 
 ### core-switch candidate
 
 - **TP-Link Omada SX3016F**
   - main candidate; not yet purchased/deployed
   - 16 × 10 GbE SFP+ slots
-  - 320 Gbps switching capacity
   - redundant internal power supplies
-
-The SX3016F is a TP-Link Omada switch, not a Mellanox model.
 
 ### target wireless
 
 - **TP-Link Omada EAP775-Wall**
   - planned target AP
-  - Wi-Fi 7 tri-band wall-plate AP
-  - 2 × 2.5 GbE ports, including the PoE input/uplink
-  - additional 1 GbE access ports
+  - Wi-Fi 7 wall-plate AP
+  - 2.5 GbE-capable uplink/access connectivity
 
-Final AP placement and management/controller choice will be decided during deployment.
+Final AP placement and controller/management method are deployment decisions.
 
 ## management-plane dependency
 
-Selling the UDM-Pro removes the current UniFi Network controller. If the USW-Aggregation or other UniFi devices remain in service, establish a replacement UniFi Network management method before the UDM-Pro is removed.
+Selling the UDM-Pro removes the current UniFi Network controller. If UniFi switches remain in service, establish a replacement UniFi management method before removing the UDM-Pro.
 
-The Omada EAP775-Wall can be managed through an Omada controller or an appropriate standalone workflow; final controller placement is not yet selected.
+## segmentation policy
 
-## network policy
-
-The current design separates trusted clients, IoT, and server/lab workloads. The important policy intent is retained here without publishing exact VLAN IDs or subnets:
+The design separates trusted clients, IoT, and server workloads. Exact VLAN IDs and subnets remain private.
 
 ```text
 trusted -> IoT        allowed as needed
@@ -115,18 +105,16 @@ servers -> trusted    blocked by default for new connections
 servers -> internet   allowed as needed
 ```
 
-Exact VLAN IDs, subnets, reservations, and interface assignments belong in private operational documentation.
+Experimental gusuku networking is separate from this production design and must not become a required dependency for Fujigoko.
 
 ## DNS
 
-Current state:
+Current:
 
 - AdGuard Home runs temporarily on Kawaguchi
-- clients receive that resolver through DHCP
-- Quad9 DNS-over-HTTPS is the current upstream design
 - this is a single-resolver dependency
 
-Target state:
+Target:
 
 ```text
 lan clients
@@ -134,42 +122,29 @@ lan clients
   `-- DNS --> motosu / AdGuard Home
 ```
 
-Both resolver instances should remain on separate physical hosts and share equivalent policy/configuration. Exact resolver addresses and synchronization details are intentionally not published here.
+Both instances should provide equivalent policy while remaining on separate physical hosts. Exact resolver addresses and synchronization details are private operational configuration.
 
 ## power
 
-Owned/current power hardware:
-
-- APC Smart-UPS SMT2200RM2U
-  - 2200 VA-class 2U Smart-UPS
-  - do not assume receptacle compatibility at the new site; verify the actual unit nameplate/input plug before deployment
-- CyberPower BN1050M
-  - existing smaller UPS
+Owned/current power hardware includes an APC Smart-UPS SMT2200RM2U and a CyberPower BN1050M.
 
 Preferred server-UPS candidate:
 
 - CyberPower CP1500PFCRM2U
-  - 1500 VA / 1000 W
-  - 2U rackmount
-  - pure sine wave / line-interactive
-  - NEMA 5-15P input
-  - USB management available
-  - NUT integration should be verified during deployment rather than assumed from model name alone
+- 1500 VA / 1000 W
+- 2U rackmount
+- pure sine wave / line-interactive
+- USB management
 
-Power strategy:
+Production power goals:
 
-- Saiko is not required to be UPS-backed
-- Yamanaka and Motosu should perform graceful shutdown on sustained battery operation
+- Yamanaka and Motosu should gracefully shut down on sustained battery operation
 - networking should use a separate long-runtime UPS path if practical
-- final load/runtime thresholds are documented only after the actual UPS topology is built and measured
+- final runtime thresholds should be based on the actual deployed loads
+- verify receptacle/input-plug compatibility before deployment
+
+Lab/gusuku UPS decisions are intentionally outside this production-network document.
 
 ## public-repo boundary
 
-Do not add any of the following to this file:
-
-- WAN/public IPs
-- private IP assignments or DHCP reservations
-- MAC addresses or device serial numbers
-- VPN endpoints/keys
-- management passwords or tokens
-- exact physical address/location details
+Do not add WAN/public IPs, exact private IP assignments, DHCP reservations, MAC addresses, serial numbers, VPN keys/endpoints, management credentials, or personal location details.
