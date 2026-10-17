@@ -237,9 +237,14 @@ The exact mechanism is intentionally undecided until the post-move layout is sta
 
 ## yamanaka
 
-Yamanaka does not exist yet, so no backup implementation is currently verified.
+Yamanaka now exists as the selected Dell OptiPlex 3070 SFF and has Debian 13 installed. The production application stack has not yet been migrated, so the Yamanaka-to-Motosu backup implementation is still pending.
 
-Its backup requirements are stricter than Kawaguchi because it will store personal application state.
+Current relevant storage state:
+
+- Patriot P300 128 GB NVMe currently installed
+- 500 GB NVMe ordered for production application storage
+
+Yamanaka's backup requirements are stricter than Kawaguchi because it will store personal application state.
 
 ### high-priority data
 
@@ -262,10 +267,8 @@ Supporting caches such as Redis generally do not require direct backup when the 
 
 Motosu is the independent local backup destination for Yamanaka.
 
-The intended flow is:
-
 ```text
-yamanaka live data
+yamanaka live data on local NVMe
 ├── application/database-native backup where appropriate
 └── copy to motosu
     ├── ZFS mirror
