@@ -6,7 +6,7 @@ The storage model follows the host-role split:
 
 ```text
 kawaguchi = bulk media + media application state
-motosu    = photo library + Immich + GFX archive
+motosu    = photo library + Immich + GFX archive + backup storage
 yamanaka  = personal application state (planned)
 saiko     = disposable/experimental VM storage
 ```
@@ -122,7 +122,7 @@ Manga remains on Kawaguchi as part of the permanent media role.
 
 ## motosu
 
-Motosu is the dedicated photo-storage host.
+Motosu is the dedicated photo-storage and backup-storage host.
 
 ### current physical storage
 
@@ -138,7 +138,7 @@ Unlike Kawaguchi media, Motosu contains irreplaceable photo data and should be t
 
 ### planned TrueNAS storage
 
-Motosu will be rebuilt on TrueNAS SCALE.
+Motosu will be rebuilt on TrueNAS SCALE, booting from a Patriot P300 128 GB NVMe.
 
 Initial target storage:
 
@@ -148,9 +148,26 @@ Initial target storage:
     └── ~6 TB-class usable capacity
 ```
 
-The mirror provides single-disk fault tolerance. ZFS snapshots provide local rollback/versioning, while Restic to Backblaze B2 remains the independent off-site backup layer.
+The mirror provides single-disk fault tolerance. ZFS snapshots provide local rollback/versioning, while Backblaze B2 remains the independent off-site backup layer for selected high-value datasets.
 
 Future capacity upgrades can replace the two mirror members one at a time with larger drives, allowing the mirror to expand after both members have been replaced and resilvered.
+
+### planned dataset roles
+
+Exact names can change during the TrueNAS build, but Motosu should separate data by purpose rather than mixing everything into one dataset:
+
+```text
+motosu pool
+├── photos
+│   ├── immich
+│   └── gfx-archive
+├── backups
+│   └── yamanaka
+└── service-state
+    └── adguard / other small persistent configuration
+```
+
+Separate datasets allow snapshots, retention, permissions, and B2 policies to be tuned independently.
 
 ### photo roles
 
@@ -174,9 +191,38 @@ The GFX archive design will be finalized only after the TrueNAS migration is com
 1. Immich runs correctly on the rebuilt Motosu.
 2. Phone sync works normally.
 3. ZFS snapshots work as intended.
-4. Restic/B2 backups and recovery are confirmed.
+4. B2 backups and recovery are confirmed.
 
 Immich should remain a convenient photo library rather than the only copy or organizational structure for GFX RAW files.
+
+### yamanaka backup role
+
+Motosu is the independent local backup destination for important Yamanaka data.
+
+Expected Yamanaka backup content includes:
+
+```text
+application exports
+native database dumps
+important user/filesystem data
+compose definitions
+service configuration
+other non-rebuildable application state
+```
+
+Yamanaka should keep its live application data on local NVMe for normal operation. Motosu stores backup copies on the mirrored ZFS pool, snapshots those backup datasets, and selected high-value backup data is then included in the Motosu-to-B2 off-site policy.
+
+This creates a simple path:
+
+```text
+yamanaka live data
+└── motosu backup dataset
+    ├── ZFS mirror
+    ├── ZFS snapshots
+    └── Backblaze B2
+```
+
+The ZFS mirror is fault tolerance, not an independent backup by itself.
 
 ### current Immich persistence
 
@@ -201,6 +247,8 @@ immich machine-learning model cache
 ```
 
 The Immich library and database backups must remain independently recoverable throughout the TrueNAS migration.
+
+A full migration copy currently exists on a Samsung T7 external SSD. The copied Immich library has been verified byte-for-byte with SHA-256, and a PostgreSQL custom-format logical dump was created and validated before the source stack was stopped.
 
 ## yamanaka
 
@@ -227,7 +275,7 @@ Expected high-value data includes:
 - Grafana configuration
 - Compose definitions and service configuration
 
-Yamanaka data should have an independent backup before the corresponding Kawaguchi copy is permanently removed.
+Yamanaka data should have an independent backup on Motosu before the corresponding Kawaguchi copy is permanently removed.
 
 ## saiko
 
@@ -247,16 +295,17 @@ kawaguchi
 motosu
 ├── phone / Immich photo library
 ├── Immich database/state
-└── GFX archive
+├── GFX archive
+└── Yamanaka backup copies
 
 yamanaka
-└── non-media application state
+└── live non-media application state
 
 saiko
 └── lab / experimental VM storage
 ```
 
-Services should remain close to the storage they primarily operate on. This is why media automation stays on Kawaguchi, photos remain on Motosu, and general personal applications move to Yamanaka.
+Services should remain close to the storage they primarily operate on. This is why media automation stays on Kawaguchi, photos remain on Motosu, and general personal applications move to Yamanaka. Backup copies are deliberately separated from Yamanaka onto Motosu so a Yamanaka host/storage failure does not destroy the recovery copy.
 
 ## future documentation
 
@@ -266,8 +315,9 @@ Update this document when:
 - ZFS datasets and snapshot policies are finalized
 - the GFX archive layout is selected
 - Yamanaka hardware and storage are selected
+- Yamanaka-to-Motosu backup jobs and retention are finalized
+- Motosu-to-B2 dataset selection and retention are finalized
 - Kawaguchi is cleaned after the migration
 - the legacy uppercase `Media` share is removed
 - the `roms` share is retired
 - disk layout or pool configuration changes
-- backup destinations and retention policies are finalized
