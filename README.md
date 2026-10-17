@@ -9,7 +9,7 @@ The design is intentionally simple: document what exists first, keep host roles 
 - **kawaguchi** — media server and Unraid host
 - **motosu** — photo NAS / Immich host; planned migration to TrueNAS SCALE with a two-disk ZFS mirror
 - **yamanaka** — OptiPlex 3070 SFF general application server; Debian 13 installed, hardware upgrades/deployment in progress
-- **saiko** — planned Proxmox lab / experimentation host; formerly `bandai`
+- **saiko** — packed/offline Proxmox lab / experimentation host; X520-DA2 ordered; formerly `bandai`
 - **shoji** — reserved; role undecided
 
 ## Network direction
@@ -71,7 +71,7 @@ The design is intentionally simple: document what exists first, keep host roles 
 2. Rebuild the Miami network around OPNsense; the SX3016F remains the main core-switch candidate until purchased and verified.
 3. Rebuild Motosu on TrueNAS SCALE while preserving and verifying Immich and Backblaze B2 recovery.
 4. Finish Yamanaka hardware upgrades, deploy its Docker application stack, and migrate retained non-media containers off Kawaguchi.
-5. Convert the former Bandai system into Saiko as an on-demand Proxmox lab.
+5. Unpack Saiko, install and verify its ordered X520-DA2, then convert it from Bazzite to an on-demand Proxmox lab.
 6. Move DNS from the temporary single AdGuard instance on Kawaguchi to redundant AdGuard Home instances on Yamanaka and Motosu.
 7. Establish a Miami UPS/power-protection plan; the existing APC SMT2200RM2U is not assumed usable at the new location.
 8. Make irreplaceable data independently recoverable before optimizing convenience services.
