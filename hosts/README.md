@@ -76,17 +76,19 @@ The selected OptiPlex is intentionally being deployed with 16 GB first rather th
 ## saiko
 
 - role: Proxmox lab / experimentation
-- status: planned conversion from the machine formerly named `bandai`
+- status: packed / offline; Proxmox conversion planned after unpacking
 - hardware: existing 4U system
 - cpu: AMD Ryzen 9 3900X
 - memory: 32 GB DDR4
 - gpu: EVGA GeForce RTX 3060 Ti FTW3 Ultra 8 GB
 - motherboard: MSI MPG X570 Gaming Edge WiFi
 - storage: WD Blue 500 GB SSD currently documented
+- current platform: Bazzite
 - target platform: Proxmox VE
+- network upgrade: Intel X520-DA2 dual-port 10 GbE SFP+ adapter ordered
 - target responsibilities: OPNsense labs, Linux VMs, Kubernetes/k3s experiments, networking labs, temporary services, GPU passthrough or game-server experiments
 
-Saiko should not carry required production services and can remain powered off when not in use.
+Saiko should not carry required production services and can remain powered off when not in use. After unpacking, install and verify the X520-DA2 before converting the system from Bazzite to Proxmox VE.
 
 ## shoji
 
