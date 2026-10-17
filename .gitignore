@@ -1,0 +1,16 @@
+# local/private operational notes
+private/
+*.private.md
+network/private.md
+network/addressing.private.md
+
+# secrets and environment files
+.env
+.env.*
+*.env
+secrets/
+credentials/
+
+# editor / OS noise
+.DS_Store
+Thumbs.db
