@@ -100,15 +100,18 @@ Primary role: simple, always-on production application server.
 
 Yamanaka will take over non-media self-hosted applications from Kawaguchi.
 
-Target characteristics:
+Selected hardware and platform:
 
-- low idle power
-- physically compact preferred, but no hard SFF requirement
-- Debian
+- Dell OptiPlex 3070 SFF
+- Intel Core i5-9500, 6 cores / 6 threads
+- Debian GNU/Linux 13 (trixie)
 - Docker Engine + Docker Compose
-- 32 GB RAM target
-- 1–2 TB NVMe application storage
-- at least 2.5 GbE preferred; add-in NIC acceptable
+- 16 GB DDR4-2666 installed as 2 × 8 GB
+- 32 GB platform maximum; upgrade only if measured application usage requires it
+- Patriot P300 128 GB NVMe currently installed
+- 500 GB NVMe ordered for application storage
+- onboard Realtek 1 GbE
+- low-profile Intel X520-DA2 dual-port 10 GbE SFP+ adapter ordered
 - no discrete GPU requirement
 
 Target workloads:
@@ -280,6 +283,13 @@ kawaguchi
 
 motosu
 └── immich stack                   permanent; OS/storage rebuild planned
+
+yamanaka
+├── optiplex 3070 / i5-9500        selected and online
+├── debian 13                      installed
+├── 16 gb ram                      current; observe before upgrading
+├── 500 gb nvme                    ordered
+└── x520-da2 10 gbe                ordered
 
 bandai
 └── offline / packed               becoming saiko
