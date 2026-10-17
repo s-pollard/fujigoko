@@ -138,6 +138,13 @@ Yamanaka will not host game servers. Only applications that prove useful should 
 
 `saiko` is the server formerly known as `bandai`.
 
+Current state:
+
+- packed / offline
+- Bazzite remains installed from its last working configuration
+- Intel X520-DA2 dual-port 10 GbE SFP+ adapter ordered
+- Proxmox conversion planned after unpacking and NIC verification
+
 Known hardware:
 
 - AMD Ryzen 9 3900X
@@ -291,8 +298,11 @@ yamanaka
 ├── 500 gb nvme                    ordered
 └── x520-da2 10 gbe                ordered
 
-bandai
-└── offline / packed               becoming saiko
+saiko
+├── packed / offline               current
+├── bazzite                         installed
+├── x520-da2 10 gbe                ordered
+└── proxmox                         next deployment
 
 network
 └── udm-pro routing                temporary until Miami rebuild
