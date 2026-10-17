@@ -1,16 +1,19 @@
 # fujigoko
 
-Fujigoko is my homelab.
+Fujigoko is my production homelab.
 
 The design is intentionally simple: document what exists first, keep host roles clear, and add automation or complexity only when it solves a real problem.
+
+Experimental and career-learning infrastructure belongs in the separate [`gusuku`](https://github.com/s-pollard/gusuku) environment. If something tested in gusuku proves useful for real home operations, it should be redeployed properly on an appropriate fujigoko system.
 
 ## Core hosts
 
 - **kawaguchi** — media server and Unraid host
 - **motosu** — photo NAS / Immich host; planned migration to TrueNAS SCALE with a two-disk ZFS mirror
 - **yamanaka** — Dell OptiPlex 3070 SFF general application server; Debian 13 installed, hardware upgrades/deployment in progress
-- **saiko** — packed/offline Proxmox lab / experimentation host; formerly `bandai`
 - **shoji** — reserved; role undecided
+
+The physical system formerly documented here as **saiko** has moved to the gusuku lab and is now **shuri**. It is no longer part of the fujigoko production environment.
 
 ## Network direction
 
@@ -85,8 +88,7 @@ Exact addressing, credentials, and other sensitive operational details belong in
 2. Rebuild the post-move network around OPNsense; the TP-Link Omada SX3016F remains the main core-switch candidate until purchased and verified.
 3. Rebuild Motosu on TrueNAS SCALE while preserving and verifying Immich and Backblaze B2 recovery.
 4. Finish Yamanaka hardware upgrades, deploy its Docker application stack, and migrate retained non-media containers off Kawaguchi.
-5. Unpack Saiko, verify its ordered Intel X520-DA2, then convert it from Bazzite to an on-demand Proxmox lab.
-6. Move DNS from the temporary single AdGuard instance on Kawaguchi to redundant AdGuard Home instances on Yamanaka and Motosu.
-7. Establish the replacement UPS/power-protection plan and verify actual receptacle compatibility before deployment.
-8. Make irreplaceable data independently recoverable before optimizing convenience services.
-9. Add automation or orchestration only where it improves maintenance, repeatability, recovery, or useful experimentation.
+5. Move DNS from the temporary single AdGuard instance on Kawaguchi to redundant AdGuard Home instances on Yamanaka and Motosu.
+6. Establish the replacement UPS/power-protection plan and verify actual receptacle compatibility before deployment.
+7. Make irreplaceable data independently recoverable before optimizing convenience services.
+8. Add automation or orchestration only where it improves maintenance, repeatability, recovery, or production operations.
