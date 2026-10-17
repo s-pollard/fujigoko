@@ -1,6 +1,6 @@
 # topology
 
-This document shows the useful infrastructure relationships without publishing exact addressing or other sensitive operational identifiers.
+This document shows useful production infrastructure relationships without publishing exact addressing or other sensitive operational identifiers.
 
 ## current topology
 
@@ -18,14 +18,14 @@ This document shows the useful infrastructure relationships without publishing e
                          8-poe       unraid
                         /    \
                    motosu   doorbell
-                 immich nas   lite
+                  truenas     lite
 ```
 
 Current notes:
 
 - U7 Pro is attached to the aggregation switch and has a 2.5 GbE-capable uplink.
 - Kawaguchi uses 10 GbE to the aggregation layer.
-- Motosu currently reaches the network through the 1 GbE access switch even though its onboard NIC supports 2.5 GbE.
+- Motosu currently reaches the network through the access-switch path while its storage/Immich rebuild is being completed.
 - Exact switch-port assignments are intentionally omitted from the public repo.
 
 ## target topology
@@ -41,7 +41,7 @@ Current notes:
           kawaguchi      motosu      yamanaka
             media         photos       apps
                            + backups    + monitoring
-                                       + dns
+                           + dns        + dns
 
              target wireless: EAP775-Wall
              future core candidate: SX3016F
@@ -54,7 +54,7 @@ Target state:
 - TP-Link Omada SX3016F is the main future core-switch candidate, not deployed hardware.
 - TP-Link Omada EAP775-Wall is the planned target AP.
 - Yamanaka and Motosu provide redundant AdGuard Home DNS.
-- Saiko remains a non-production Proxmox lab host.
+- experimental/lab infrastructure belongs in gusuku and is not part of the Fujigoko production topology.
 - exact VLANs, IP reservations, physical ports, management URLs, and WAN details stay out of the public repository.
 
 ## DNS flow
@@ -91,16 +91,9 @@ download storage
 
 ## application dependencies
 
-Current transitional dependencies on Kawaguchi:
+Current transitional dependencies on Kawaguchi include application-local databases/caches for retained services that will move to Yamanaka.
 
-```text
-linkwarden -> postgres
-romm ------> mariadb
-paperless -> redis
-endurain --> postgres + redis
-```
-
-Motosu:
+Motosu Immich stack:
 
 ```text
 immich
