@@ -157,6 +157,45 @@ The model cache is rebuildable. The library and PostgreSQL data are the critical
   - network mode: host
   - state: `/volume1/docker/tailscale/state`
 
+## planned yamanaka additions
+
+### nextcloud
+
+Nextcloud is the selected self-hosted replacement for Google Drive.
+
+- target host: Yamanaka
+- status: planned; not yet deployed
+- live application state and database remain on Yamanaka local NVMe
+- important user files, database backups, configuration, and recovery data should be backed up independently to Motosu
+- Immich remains the photo system; Nextcloud should not replace the Motosu/Immich photo workflow
+
+### vaultwarden
+
+Vaultwarden is the selected self-hosted Bitwarden-compatible password vault.
+
+Initial deployment model:
+
+```text
+Bitwarden Premium / Bitwarden Cloud
+        primary
+          |
+          | daily one-way synchronization
+          v
+Vaultwarden on Yamanaka
+        secondary
+```
+
+- target host: Yamanaka
+- status: planned; not yet deployed
+- Bitwarden Premium remains the authoritative vault until the existing subscription expires sometime in 2027
+- Vaultwarden initially serves as a secondary copy and self-hosting trial
+- synchronization should be one-way from Bitwarden Cloud to Vaultwarden; do not use bidirectional synchronization
+- TOTP secrets stored with Bitwarden login items should be preserved by the vault migration/synchronization process
+- before changing the primary vault, verify representative passwords, attachments, passkeys/TOTP behavior as applicable, backups, and a tested Vaultwarden restore path
+- when Bitwarden Premium expires, reassess whether Vaultwarden should become the primary vault
+
+Vaultwarden contains security-critical data. Its persistent data and configuration require independent backup to Motosu and selected off-site protection through the Yamanaka backup design.
+
 ## planned DNS target
 
 The current single AdGuard Home instance on Kawaguchi is temporary.
