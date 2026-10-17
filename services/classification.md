@@ -6,7 +6,7 @@ The target host model is:
 
 ```text
 kawaguchi = media + independent uptime watchdog
-motosu    = photos
+motosu    = photos + backup storage + redundant DNS
 yamanaka  = non-media applications + centralized monitoring
 saiko     = Proxmox lab / experimentation
 shoji     = reserved / role undecided
@@ -58,6 +58,8 @@ The Immich stack stays together on Motosu because its primary library and databa
 
 Motosu itself is planned to move from UGOS to TrueNAS SCALE with a two-disk ZFS mirror. Immich remains the phone/family photo library and the destination for finished GFX exports. The main GFX RAW archive will also live on Motosu as normal filesystem data, with its exact dataset layout finalized after the TrueNAS migration is proven.
 
+Motosu also becomes the independent local backup target for important Yamanaka files, application exports, database dumps, and configuration. Those backups should live in dedicated datasets separate from the photo/Immich data so snapshot and off-site policies can be managed independently.
+
 The machine-learning model cache and Redis state are rebuildable.
 
 ## personal applications
@@ -88,7 +90,7 @@ Utility services with little or no unique state can be recreated instead of heav
 
 ## monitoring and infrastructure
 
-Centralized monitoring belongs on Yamanaka, while Uptime Kuma remains on Kawaguchi as an independent watchdog and lightweight host-specific agents remain near the systems they monitor.
+Centralized monitoring belongs on Yamanaka, while Uptime Kuma remains on Kawaguchi as the simple independent watchdog. Lightweight host-specific agents remain near the systems they monitor.
 
 | service | current host | target host | status | backup priority |
 | --- | --- | --- | --- | --- |
@@ -117,6 +119,8 @@ Monitoring target:
        yamanaka  motosu    saiko
         uptime    uptime    uptime
 ```
+
+Uptime Kuma on Kawaguchi is intentionally simple and independent of Yamanaka. Its primary purpose is to answer whether Yamanaka, Motosu, or another core service has gone down even if the centralized monitoring stack itself is unavailable.
 
 Yamanaka should also expose its own host/container metrics so Prometheus can monitor the monitoring host itself.
 
@@ -213,8 +217,9 @@ For every service moving from Kawaguchi to Yamanaka:
 4. restore or copy persistent data
 5. verify application behavior
 6. verify dependent services and URLs
-7. leave the kawaguchi copy intact until verification is complete
-8. remove the old container and data only after successful cutover
+7. establish independent backups from yamanaka to motosu
+8. leave the kawaguchi copy intact until verification is complete
+9. remove the old container and data only after successful cutover
 ```
 
 Kawaguchi cleanup is intentionally deferred until either the Miami rebuild or Yamanaka deployment.
