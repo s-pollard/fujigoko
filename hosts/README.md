@@ -25,10 +25,11 @@ Kawaguchi remains on Unraid for the current generation. A future custom successo
 
 ## motosu
 
-- role: photo NAS / Immich host
+- role: photo NAS / backup storage / Immich host
 - hardware: UGREEN NASync DXP2800
 - current platform: UGOS / Debian 12 base
 - planned platform: TrueNAS SCALE
+- planned boot device: Patriot P300 128 GB NVMe
 - ip: `192.168.1.169`
 - network interface: Intel I226-V 2.5 GbE
 - current physical link: 1 GbE to USW-Lite-8-PoE
@@ -40,9 +41,11 @@ Kawaguchi remains on Unraid for the current generation. A future custom successo
 - planned array/filesystem: 2-disk ZFS mirror
 - current main volume: `/volume1`
 - remote access: Tailscale
-- target responsibilities: Immich, phone photo sync, finished GFX photos, GFX RAW/archive storage, ZFS snapshots, Backblaze B2 backup, redundant AdGuard Home
+- target responsibilities: Immich, phone photo sync, finished GFX photos, GFX RAW/archive storage, Yamanaka backup target, ZFS snapshots, Backblaze B2 backup, redundant AdGuard Home
 
-The TrueNAS migration will be performed only after independent copies of Immich exist and can be verified. The existing Restic/B2 repository remains the off-site recovery layer.
+Motosu is the storage/recovery anchor for irreplaceable photo data and important Yamanaka application backups. The ZFS mirror protects against a single-disk failure, local snapshots provide rollback/version history, and selected Motosu datasets are backed up off-site to Backblaze B2.
+
+The TrueNAS migration is gated on independent recovery copies of Immich. A full copy has been made to the Samsung T7 migration SSD, the Immich library was verified byte-for-byte with SHA-256, and a valid PostgreSQL logical dump was created. The existing Restic/B2 repository remains the off-site recovery layer until the TrueNAS deployment and replacement backup jobs are proven.
 
 ## yamanaka
 
@@ -57,7 +60,9 @@ The TrueNAS migration will be performed only after independent copies of Immich 
 - form factor: flexible; small/low-power preferred, but SFF is not a hard requirement
 - target responsibilities: non-media self-hosted applications, centralized monitoring, redundant AdGuard Home
 
-Yamanaka is intended to be simple production infrastructure rather than a virtualization or experimentation host. Hardware selection should prioritize low idle power, sufficient RAM, reliable NVMe storage, and reasonable expandability over a specific chassis class.
+Yamanaka is intended to be simple production infrastructure rather than a virtualization or experimentation host. Important files, application exports, database dumps, and configuration backups from Yamanaka should be copied to Motosu, which then provides mirrored local storage, snapshots, and the path to off-site B2 protection.
+
+Hardware selection should prioritize low idle power, sufficient RAM, reliable NVMe storage, and reasonable expandability over a specific chassis class.
 
 ## saiko
 
