@@ -1,180 +1,132 @@
 # network
 
-## current pre-move physical topology
+This document intentionally omits exact private addressing, VLAN IDs, MAC addresses, WAN details, management URLs, and other sensitive operational identifiers.
+
+## current physical topology
 
 ```text
 internet
   |
-bluepeak
+current ISP handoff
   |
 udm-pro
   |
-10 gbe
-  |
 usw-aggregation
   |-- u7 pro
-  |-- 10 gbe --> kawaguchi
-  |
-  `-- 1 gbe --> usw-lite-8-poe
-                 |-- 1 gbe --> motosu
-                 `-- fe ----> doorbell lite
+  |-- kawaguchi
+  `-- usw-lite-8-poe
+       |-- motosu
+       `-- doorbell lite
 ```
 
-Only the U7 Pro is currently active on the wireless side while preparing for the move. Other owned UniFi APs are intentionally offline.
+The U7 Pro is the currently active AP. Other owned UniFi APs are offline during the move/rebuild period.
 
-## current verified port mapping
+## current hardware
 
-### UDM-Pro
+### gateway / controller
 
-- port 10 / SFP+ 1 -> Bluepeak WAN — 10 GbE
-- port 11 / SFP+ 2 -> USW-Aggregation port 1 — 10 GbE
-
-### USW-Aggregation
-
-- port 1 -> UDM-Pro port 11 — 10 GbE
-- port 2 -> U7 Pro — connected; U7 Pro is 2.5 GbE-capable, and the final negotiated link should be re-verified after the move
-- port 7 -> kawaguchi — 10 GbE
-- port 8 -> USW-Lite-8-PoE port 7 — 1 GbE
-
-### USW-Lite-8-PoE
-
-- port 4 -> motosu — 1 GbE
-- port 6 -> Doorbell Lite — Fast Ethernet
-- port 7 -> USW-Aggregation port 8 — 1 GbE
-
-## owned network hardware
-
-### current gateway / controller
-
-- UDM-Pro
-  - current gateway and UniFi controller
-  - will be retired from routing after the Miami OPNsense migration is proven
-  - planned to be sold eventually
-
-### planned Miami router / firewall
-
-- OPNsense appliance
-  - Intel Core i5-8500
-  - 8 GB DDR4
-  - 128 GB SSD
-  - dual 10 GbE SFP+ Intel X520 / 82599ES-class adapter
-  - dual 1 GbE Intel I350 adapter
-  - onboard Intel I219-LM 1 GbE
+- Ubiquiti UniFi Dream Machine Pro (UDM-Pro)
+  - current production gateway
+  - current UniFi Network controller
+  - leaves the routing role after the replacement network is proven
+  - planned for eventual sale
 
 ### switching
 
-- USW-Aggregation
-  - eight 10 GbE SFP+ ports
+- Ubiquiti UniFi Switch Aggregation (USW-Aggregation)
+  - 8 × 10 GbE SFP+ ports
   - current production aggregation switch
-- USW-Lite-8-PoE
-  - eight 1 GbE ports
-  - four PoE+ outputs
+- Ubiquiti UniFi Switch Lite 8 PoE (USW-Lite-8-PoE)
+  - 8 × 1 GbE ports
+  - 4 PoE+ ports
   - 52 W shared PoE budget
-- Mellanox SX3016F
-  - main candidate for the future core/aggregation switch
-  - not yet acquired / not yet part of the active topology
 
 ### wireless inventory
 
-- U7 Pro — active
-- U6 Enterprise — currently offline for move
-- U6 Lite — currently offline for move
-- AC Pro — currently offline for move
+- Ubiquiti UniFi U7 Pro — active; 2.5 GbE PoE+ uplink
+- Ubiquiti UniFi U6 Enterprise — owned, currently offline
+- Ubiquiti UniFi U6 Lite — owned, currently offline
+- Ubiquiti UniFi AC Pro — owned, currently offline
 
-### other networked devices
+The U7 Pro should not be documented as a 10 GbE AP. Ubiquiti specifies a 2.5 GbE RJ45 uplink.
 
-- Doorbell Lite — active on USW-Lite-8-PoE port 6
-
-### power
-
-- APC Smart-UPS SMT2200RM2U
-  - owned
-  - not expected to be usable in the initial Miami setup because the required receptacle will not be available
-  - replacement UPS / Miami power-protection plan remains TBD
-
-## current networks
-
-### default / trusted
-
-- subnet: `192.168.1.0/24`
-- purpose: normal trusted clients and primary NAS/Unraid systems
-- gateway: `192.168.1.1`
-- kawaguchi: `192.168.1.220`
-- motosu: `192.168.1.169`
-- adguard-home: `192.168.1.53`
-- DHCP DNS server: `192.168.1.53`
-
-### iot
-
-- vlan: `20`
-- subnet: `192.168.20.0/24`
-- purpose: IoT / smart-home devices
-- default -> iot: allow
-- iot -> default: block
-- iot -> internet: allow
-
-### servers
-
-- vlan: `30`
-- subnet: `192.168.30.0/24`
-- gateway: `192.168.30.1`
-- purpose: isolated server workloads
-- default -> servers: allow
-- servers -> default: block new connections
-- servers -> internet: allow
-
-## current dns
-
-AdGuard Home currently runs as a Docker container on Kawaguchi using a dedicated `br0` address.
+## target network
 
 ```text
-lan clients
-  -> DHCP from UniFi
-  -> DNS 192.168.1.53
-  -> AdGuard Home
-  -> Quad9 DNS-over-HTTPS
+fiber handoff
+     |
+  OPNsense
+     |
+core / aggregation
+     |
+  hosts + access switching + APs
 ```
 
-Current configuration:
+### router / firewall
 
-- AdGuard Home address: `192.168.1.53`
-- DNS port: `53`
-- admin interface: `http://192.168.1.53`
-- upstream resolver: `https://dns10.quad9.net/dns-query`
-- UniFi default/trusted network hands out `192.168.1.53` as the only DNS server
-- default AdGuard DNS filtering is enabled
+The target OPNsense appliance uses:
 
-This is currently a single-resolver design. If Kawaguchi or AdGuard Home is unavailable, normal LAN DNS resolution may fail until another resolver is configured.
+- Intel Core i5-8500
+- 8 GB DDR4
+- 128 GB SSD
+- dual-port Intel 82599ES/X520-family 10 GbE SFP+
+- dual-port Intel I350-family 1 GbE
+- Intel I219-LM onboard 1 GbE
 
-## target Miami network
+No reliable OEM/chassis model is currently documented, so the appliance should be described by its verified components rather than assigned an invented brand/model.
 
-The Miami rebuild separates routing from UniFi and moves required DNS off Kawaguchi.
+### core-switch candidate
+
+- **TP-Link Omada SX3016F**
+  - main candidate; not yet purchased/deployed
+  - 16 × 10 GbE SFP+ slots
+  - 320 Gbps switching capacity
+  - redundant internal power supplies
+
+The SX3016F is a TP-Link Omada switch, not a Mellanox model.
+
+### target wireless
+
+- **TP-Link Omada EAP775-Wall**
+  - planned target AP
+  - Wi-Fi 7 tri-band wall-plate AP
+  - 2 × 2.5 GbE ports, including the PoE input/uplink
+  - additional 1 GbE access ports
+
+Final AP placement and management/controller choice will be decided during deployment.
+
+## management-plane dependency
+
+Selling the UDM-Pro removes the current UniFi Network controller. If the USW-Aggregation or other UniFi devices remain in service, establish a replacement UniFi Network management method before the UDM-Pro is removed.
+
+The Omada EAP775-Wall can be managed through an Omada controller or an appropriate standalone workflow; final controller placement is not yet selected.
+
+## network policy
+
+The current design separates trusted clients, IoT, and server/lab workloads. The important policy intent is retained here without publishing exact VLAN IDs or subnets:
 
 ```text
-AT&T fiber / ONT-gateway path
-          |
-          v
-      OPNsense
-          |
-          v
-   core switching
-   (SX3016F is the main candidate)
-      /      |       \
-     /       |        \
-kawaguchi  motosu   yamanaka
+trusted -> IoT        allowed as needed
+IoT -> trusted        blocked by default
+IoT -> internet       allowed
+
+trusted -> servers    allowed as needed
+servers -> trusted    blocked by default for new connections
+servers -> internet   allowed as needed
 ```
 
-Target rules:
+Exact VLAN IDs, subnets, reservations, and interface assignments belong in private operational documentation.
 
-- OPNsense becomes the permanent production router/firewall
-- UDM-Pro is retired from routing and eventually sold
-- SX3016F is the main candidate for the future core switch, but is not considered purchased or deployed yet
-- exact Miami switch-port mapping, VLAN layout, and IP plan will be finalized after the physical rebuild
-- AdGuard Home runs on both Yamanaka and Motosu
-- DHCP advertises both AdGuard resolvers
-- Kawaguchi is removed from the permanent DNS design
+## DNS
 
-## target DNS design
+Current state:
+
+- AdGuard Home runs temporarily on Kawaguchi
+- clients receive that resolver through DHCP
+- Quad9 DNS-over-HTTPS is the current upstream design
+- this is a single-resolver dependency
+
+Target state:
 
 ```text
 lan clients
@@ -182,22 +134,42 @@ lan clients
   `-- DNS --> motosu / AdGuard Home
 ```
 
-Target rules:
+Both resolver instances should remain on separate physical hosts and share equivalent policy/configuration. Exact resolver addresses and synchronization details are intentionally not published here.
 
-- run one AdGuard Home instance on Yamanaka
-- run one AdGuard Home instance on Motosu after its TrueNAS SCALE migration is stable
-- advertise both resolver addresses to clients through DHCP
-- keep both resolvers on different physical hosts so maintenance or failure of one host does not remove LAN DNS
-- keep filtering policy and important configuration aligned between both instances
-- do not make Kawaguchi part of the permanent DNS design
+## power
 
-Exact resolver IPs, configuration synchronization method, and upstream resolver design will be finalized during the network rebuild.
+Owned/current power hardware:
 
-## legacy server VLAN host
+- APC Smart-UPS SMT2200RM2U
+  - 2200 VA-class 2U Smart-UPS
+  - do not assume receptacle compatibility at the new site; verify the actual unit nameplate/input plug before deployment
+- CyberPower BN1050M
+  - existing smaller UPS
 
-- `bandai`
-  - fixed ip: `192.168.30.211`
-  - former game-server role
-  - status: offline / packed for move
-  - becoming `saiko`, the Proxmox lab host
-  - WireGuard relay path documented separately in the home repo
+Preferred server-UPS candidate:
+
+- CyberPower CP1500PFCRM2U
+  - 1500 VA / 1000 W
+  - 2U rackmount
+  - pure sine wave / line-interactive
+  - NEMA 5-15P input
+  - USB management available
+  - NUT integration should be verified during deployment rather than assumed from model name alone
+
+Power strategy:
+
+- Saiko is not required to be UPS-backed
+- Yamanaka and Motosu should perform graceful shutdown on sustained battery operation
+- networking should use a separate long-runtime UPS path if practical
+- final load/runtime thresholds are documented only after the actual UPS topology is built and measured
+
+## public-repo boundary
+
+Do not add any of the following to this file:
+
+- WAN/public IPs
+- private IP assignments or DHCP reservations
+- MAC addresses or device serial numbers
+- VPN endpoints/keys
+- management passwords or tokens
+- exact physical address/location details
