@@ -2,93 +2,56 @@
 
 Fujigoko is my production homelab.
 
-The design is intentionally simple: document what exists first, keep host roles clear, and add automation or complexity only when it solves a real problem.
+The design is intentionally simple: keep host roles clear, document deployed state, preserve recoverability, and add complexity only when it solves a real production problem.
 
-Experimental and career-learning infrastructure belongs in the separate [`gusuku`](https://github.com/s-pollard/gusuku) environment. If something tested in gusuku proves useful for real home operations, it should be redeployed properly on an appropriate fujigoko system.
+Experimental and career-learning infrastructure belongs in the separate [`gusuku`](https://github.com/s-pollard/gusuku) lab. Fujigoko must not depend on gusuku for required home services.
 
 ## Core hosts
 
-- **kawaguchi** — media server and Unraid host
-- **motosu** — photo NAS / Immich host; planned migration to TrueNAS SCALE with a two-disk ZFS mirror
-- **yamanaka** — Dell OptiPlex 3070 SFF general application server; Debian 13 installed, hardware upgrades/deployment in progress
-- **shoji** — reserved; role undecided
+- **kawaguchi** — Unraid media server, manga, bulk media storage, and independent uptime monitoring
+- **motosu** — TrueNAS SCALE photo/Immich host and backup target
+- **yamanaka** — Debian general-application server; deployment and migration in progress
+- **shoji** — reserved; no assigned role
 
-The physical system formerly documented here as **saiko** has moved to the gusuku lab and is now **shuri**. It is no longer part of the fujigoko production environment.
+The physical system formerly documented as **saiko** is no longer part of Fujigoko. It moved to gusuku and is now **shuri**.
 
 ## Network direction
 
 - current gateway: UDM-Pro
 - target gateway/firewall: dedicated OPNsense appliance
-- UDM-Pro: retire from routing and sell after the replacement network is stable
 - current aggregation: USW-Aggregation
 - future core-switch main candidate: TP-Link Omada SX3016F
 - target wireless AP: TP-Link Omada EAP775-Wall
-- permanent DNS target: redundant AdGuard Home on Yamanaka + Motosu
+- target DNS: redundant AdGuard Home on Yamanaka and Motosu
+
+The UDM-Pro can be sold after replacement routing and any required UniFi management are stable.
 
 ## Public repository policy
 
-This repository is intentionally safe to publish. Do not commit:
+This repository is intended to be safe to publish. Do not commit credentials, secrets, public/WAN addressing, exact private addressing, MAC addresses, serial numbers, account identifiers, cloud resource identifiers, management URLs, or personal location details.
 
-- passwords, API keys, tokens, private keys, recovery codes, or `.env` files containing secrets
-- public/WAN IP addresses, VPN endpoints, MAC addresses, serial numbers, or account identifiers
-- exact private addressing, DHCP reservations, VLAN IDs, or management URLs
-- cloud bucket names or other unique external resource identifiers
-- personal location details
-
-Exact addressing, credentials, and other sensitive operational details belong in private/local documentation outside this repository.
-
-## Repository structure
-
-```text
-.
-├── README.md
-├── SECURITY.md
-├── architecture/
-│   ├── README.md
-│   └── naming.md
-├── hosts/
-│   └── README.md
-├── network/
-│   ├── README.md
-│   └── topology.md
-├── services/
-│   ├── README.md
-│   └── classification.md
-├── storage/
-│   └── README.md
-├── backups/
-│   └── README.md
-├── migration/
-│   └── yamanaka.md
-└── runbooks/
-    ├── README.md
-    ├── kawaguchi-recovery.md
-    ├── motosu-recovery.md
-    ├── yamanaka-recovery.md
-    └── network-recovery.md
-```
+See [`SECURITY.md`](SECURITY.md) for the full policy.
 
 ## Documentation
 
-- [architecture](architecture/README.md) — design intent, host roles, placement rules, network direction, and backup priorities
-- [naming](architecture/naming.md) — Japan-based naming conventions for hosts and infrastructure
-- [hosts](hosts/README.md) — host hardware, platform, and storage summary
-- [network](network/README.md) — current network state and target design
-- [topology](network/topology.md) — current and target physical/logical topology and service flows
-- [services](services/README.md) — current service inventory and dependencies
-- [service classification](services/classification.md) — permanent, transitional, planned, and retirement decisions
-- [storage](storage/README.md) — arrays, pools, shares, persistent data, and storage criticality
-- [backups](backups/README.md) — verified backup state, priorities, retention, and known gaps
-- [Yamanaka migration](migration/yamanaka.md) — migration plan for non-media workloads
-- [runbooks](runbooks/README.md) — operational recovery procedures for hosts and network infrastructure
+- [architecture](architecture/README.md) — production roles and placement rules
+- [naming](architecture/naming.md) — naming conventions
+- [hosts](hosts/README.md) — hardware and platform inventory
+- [network](network/README.md) — current and target network design
+- [topology](network/topology.md) — physical/logical topology
+- [services](services/README.md) — service inventory and dependencies
+- [service classification](services/classification.md) — placement and lifecycle decisions
+- [storage](storage/README.md) — storage ownership and data criticality
+- [backups](backups/README.md) — backup policy, verified state, and gaps
+- [Yamanaka migration](migration/yamanaka.md) — non-media workload migration plan
+- [runbooks](runbooks/README.md) — recovery procedures
 
 ## Current priorities
 
-1. Keep an accurate inventory of hosts, services, storage, backups, and network dependencies.
-2. Rebuild the post-move network around OPNsense; the TP-Link Omada SX3016F remains the main core-switch candidate until purchased and verified.
-3. Rebuild Motosu on TrueNAS SCALE while preserving and verifying Immich and Backblaze B2 recovery.
-4. Finish Yamanaka hardware upgrades, deploy its Docker application stack, and migrate retained non-media containers off Kawaguchi.
-5. Move DNS from the temporary single AdGuard instance on Kawaguchi to redundant AdGuard Home instances on Yamanaka and Motosu.
-6. Establish the replacement UPS/power-protection plan and verify actual receptacle compatibility before deployment.
-7. Make irreplaceable data independently recoverable before optimizing convenience services.
-8. Add automation or orchestration only where it improves maintenance, repeatability, recovery, or production operations.
+1. Finish restoring and validating Immich on the rebuilt TrueNAS Motosu.
+2. Finish Yamanaka hardware/application deployment and migrate retained non-media workloads from Kawaguchi.
+3. Establish Yamanaka-to-Motosu backups before deleting migrated Kawaguchi state.
+4. Move DNS from the temporary Kawaguchi instance to redundant AdGuard Home on Yamanaka and Motosu.
+5. Rebuild the post-move network around OPNsense; keep the SX3016F as the main core-switch candidate until purchased and verified.
+6. Finalize the UPS/power plan after verifying real outlet/receptacle compatibility.
+7. Preserve independent recovery for irreplaceable data before optimizing convenience services.
