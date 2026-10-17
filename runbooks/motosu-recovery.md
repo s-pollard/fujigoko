@@ -4,172 +4,153 @@
 
 Restore Motosu and the Immich photo library after host or storage failure.
 
-Motosu contains irreplaceable personal photos, so data preservation takes precedence over fast service restoration.
+Motosu contains irreplaceable photo data, so preservation takes precedence over fast service restoration.
+
+Secrets, cloud bucket names, credential-file locations, exact network addresses, and other sensitive operational details are intentionally excluded from this public runbook.
 
 ## first checks
 
 Determine whether the problem is:
 
 - network only
-- UGOS / OS failure
-- Docker failure
-- one-disk RAID1 degradation
+- OS/platform failure
+- application/container failure
+- one-disk mirror degradation
 - full storage failure
 - application/database corruption
 - complete host loss
 
-Do not initialize, format, or recreate the RAID unless existing data has been evaluated and a restore path is understood.
+Do not initialize, format, or recreate storage until the existing data has been evaluated and a restore path is understood.
 
 ## recovery order
 
 ```text
 1. preserve readable source data
 2. restore host/network access
-3. restore RAID/filesystem availability
+3. restore storage availability
 4. restore Immich media library
 5. restore Immich database
-6. restore Docker stack
+6. restore application stack
 7. verify users/photos/search
 8. restore remote access
+9. verify backup jobs
 ```
 
-## expected storage
+## current pre-TrueNAS state
 
-Primary volume:
+The current deployment uses UGOS Pro / Debian-based storage with Linux RAID1 and Btrfs.
 
-```text
-/volume1
-```
+Critical data:
 
-Critical Immich paths:
+- Immich library
+- Immich PostgreSQL state / validated logical backup
+- Restic backup configuration
 
-```text
-/volume1/docker/immich/library
-/volume1/docker/immich/postgres
-```
+Rebuildable data:
 
-Restic configuration:
+- machine-learning model cache
+- Redis/Valkey cache/state
 
-```text
-/volume1/docker/restic/restic.env
-/volume1/docker/restic/password
-/volume1/docker/restic/immich-backup.sh
-```
+## degraded mirror
 
-The machine-learning model cache and Redis/Valkey state are rebuildable.
+If one of the two HDDs fails but storage remains readable:
 
-## degraded RAID1
-
-If one of the two 6 TB disks fails but the array remains readable:
-
-1. confirm which physical disk failed
-2. record the healthy disk identity and current array state
+1. identify the failed physical disk
+2. record the healthy disk and current array/pool state
 3. avoid unnecessary writes until replacement is ready
 4. replace the failed disk
-5. rebuild the mirror using the platform's normal RAID recovery process
-6. verify Btrfs/filesystem health afterward
-7. confirm Immich files are readable
-8. run a fresh backup after the array is healthy
+5. rebuild/resilver using the active platform's normal recovery process
+6. verify filesystem/pool health
+7. confirm representative Immich files are readable
+8. run a fresh independent backup after storage is healthy
 
-A RAID1 mirror is availability protection, not a substitute for the B2 backup.
+A mirror provides availability, not an independent backup.
 
 ## application-only failure
 
 If storage is intact but Immich is broken:
 
-1. do not modify the photo library unnecessarily
-2. inspect the Immich containers and logs
-3. verify `immich_default` networking
-4. verify PostgreSQL is available
-5. verify the library bind mount points to `/volume1/docker/immich/library`
-6. recreate containers from known configuration if needed
-7. preserve existing persistent paths
+1. avoid modifying the photo library unnecessarily
+2. inspect application logs
+3. verify the database is available
+4. verify persistent storage mounts/datasets
+5. recreate application containers/apps from known configuration if required
+6. preserve existing persistent data
 
-Expected stack:
+Expected logical stack:
 
 ```text
-immich_server
-immich_postgres
-immich_redis
-immich_machine_learning
+immich server
+immich postgres
+immich redis/valkey
+immich machine learning
 ```
 
 ## restore from Backblaze B2
 
-Use this path when local Immich library data is unavailable or cannot be trusted.
+Use this path when local Immich data is unavailable or cannot be trusted.
 
 Prerequisites:
 
-- B2 application credentials
+- B2 application credentials from the private credential store
 - Restic repository password
-- access to the `sjp-immich` repository
+- Restic repository identifier from private operational documentation
 - enough local storage for the restore
 
-The repository contains the Immich library and Immich-generated database backups. It does not directly back up the live PostgreSQL data directory.
+The off-site repository contains the Immich library and application-generated database backups. It does not rely on blindly copying a live PostgreSQL directory.
 
 ### inspect snapshots
 
-```bash
-sudo docker run --rm \
-  --env-file /volume1/docker/restic/restic.env \
-  -v /volume1/docker/restic/password:/restic-password:ro \
-  restic/restic \
-  -p /restic-password snapshots
-```
+Use the locally documented Restic environment and password file to list snapshots. Do not commit the real credential paths or repository identifier here.
 
-Choose a known-good snapshot before restoring.
+Example pattern:
+
+```bash
+restic -r <repository> snapshots
+```
 
 ### restore to a temporary path first
 
 Do not restore directly over uncertain or partially recovered source data.
 
-Example target:
-
-```text
-/volume1/restore/immich
+```bash
+restic -r <repository> restore <snapshot> --target <temporary-restore-path>
 ```
 
-Restore the selected snapshot there, inspect it, and only then place data into the final Immich library path.
+Inspect the restored data before moving it into the final Immich library location.
 
 ### database recovery
 
-Use the Immich-generated database backup contained under the restored library backup rather than copying old live PostgreSQL files into a new database blindly.
+Use a validated application/database backup and follow the Immich version-appropriate restore process at recovery time.
 
-Follow the Immich version-appropriate database restore procedure at recovery time.
-
-The repository intentionally does not hard-code a database restore command because the exact Immich/PostgreSQL restore process may change between releases.
+Do not hard-code a database restore command here because the supported Immich/PostgreSQL restore process may change between releases.
 
 ## complete host loss
 
 If Motosu itself is replaced:
 
-1. prepare replacement storage with suitable redundancy
-2. install the host OS and Docker
+1. prepare redundant replacement storage
+2. install the intended platform
 3. recreate the Immich stack
-4. restore the library from Restic/B2
-5. restore the Immich database from an included database backup
-6. verify ownership and permissions
+4. restore the library from the independent backup
+5. restore the database from a validated backup
+6. verify ownership/permissions
 7. start Immich
 8. verify users, albums, assets, metadata, and search
-9. recreate Tailscale if needed
-10. re-establish the automated Restic backup job
+9. recreate remote access if required
+10. re-establish automated off-site backup
 
-## backup verification after recovery
+## TrueNAS target state
 
-Confirm:
+After the planned TrueNAS SCALE rebuild, update this runbook for:
 
-```bash
-sudo crontab -l
-sudo tail -n 50 /volume1/docker/restic/backup.log
-```
+- ZFS pool/dataset names
+- snapshot policy
+- application deployment method
+- replacement Restic/B2 job
+- Yamanaka backup datasets
 
-Then perform a manual backup:
-
-```bash
-sudo /volume1/docker/restic/immich-backup.sh
-```
-
-Verify a new Restic snapshot appears.
+Keep exact addresses, credentials, cloud resource identifiers, and other sensitive details in private operational documentation rather than this public repository.
 
 ## completion criteria
 
@@ -182,5 +163,5 @@ Recovery is complete when:
 - albums/metadata are present
 - database-backed features work
 - remote access works if required
-- scheduled Restic backup is active
-- a fresh successful B2 snapshot has been verified
+- scheduled independent backup is active
+- a fresh off-site snapshot has been verified
