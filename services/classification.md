@@ -1,16 +1,15 @@
 # service classification
 
-Services are classified by function, current placement, intended placement, and persistence value.
+Services are classified by function, intended production placement, and persistence value.
 
 ```text
-kawaguchi = media + independent uptime watchdog
-motosu    = photos + backup storage + redundant DNS
-yamanaka  = non-media applications + centralized monitoring
-saiko     = Proxmox lab / experimentation
-shoji     = reserved / role undecided
+kawaguchi = media + manga + independent uptime watchdog
+motosu    = photos + Immich + backup storage + redundant DNS
+yamanaka  = non-media applications + centralized monitoring + redundant DNS
+shoji     = reserved / unassigned
 ```
 
-Yamanaka does not host game servers. Saiko does not host required production services.
+Experimental infrastructure belongs in gusuku, not Fujigoko.
 
 ## media — kawaguchi
 
@@ -28,23 +27,25 @@ Permanent:
 - Komga
 - Komf
 - Tachidesk
+- Uptime Kuma
 
-Manga remains on Kawaguchi. Movie/TV payloads are largely reacquirable; configuration and metadata have higher backup value than the bulk media itself.
+Manga remains on Kawaguchi. Movie/TV payloads are largely reacquirable; configuration and metadata have higher backup value than the bulk media.
 
 ## photos / storage — motosu
 
-Permanent:
+Permanent/target:
 
 - Immich server
 - Immich PostgreSQL
 - Immich Valkey/Redis
 - Immich machine learning
-- Tailscale
+- photo/archive storage
+- Yamanaka backup datasets
+- ZFS snapshots
+- selected Backblaze B2 protection
 - one AdGuard Home instance
 
-Motosu also becomes the independent local backup target for important Yamanaka exports, database dumps, files, and configuration.
-
-High-value persistence includes the Immich library, database backups, photo archive, and selected Yamanaka recovery data. Redis/Valkey state and ML caches are rebuildable.
+Motosu is now on TrueNAS SCALE. The Immich library has been copied to the rebuilt system; final application/database restoration is still being validated.
 
 ## personal applications — kawaguchi to yamanaka
 
@@ -61,7 +62,7 @@ Retained applications migrate to Yamanaka:
 | Stirling PDF | transitional | low |
 | Homepage | transitional | medium |
 
-Supporting PostgreSQL/Redis services move with their parent applications and remain private to the relevant Compose network unless an external client actually requires access.
+Supporting PostgreSQL/Redis services move with their parent application and remain private to the relevant Compose network unless external access is actually required.
 
 ## monitoring / infrastructure
 
@@ -71,17 +72,17 @@ Supporting PostgreSQL/Redis services move with their parent applications and rem
 | Grafana | yamanaka | transitional | medium-high |
 | Loki | yamanaka | planned | low-medium |
 | Uptime Kuma | kawaguchi | permanent watchdog | low-medium |
-| cAdvisor | monitored host | permanent agent | low |
+| cAdvisor/exporters | monitored host | permanent agents | low |
 | AdGuard Home | yamanaka + motosu | planned redundant pair | medium |
 
 Uptime Kuma remains outside Yamanaka so a Yamanaka failure does not remove every monitoring path.
 
-Exact resolver addresses, scrape addresses, internal ports, management URLs, and credentials are private operational details and are intentionally excluded from this public repository.
-
 ## planned additions
 
-- Nextcloud — Yamanaka; general file sync/collaboration
-- Vaultwarden — Yamanaka; security-sensitive service, with operational details kept private
+- Nextcloud — Yamanaka; general file sync/collaboration if retained after testing
+- Vaultwarden — Yamanaka; security-sensitive service with operational details kept private
+
+Planned does not mean required. Remove ideas that are no longer useful rather than carrying them indefinitely.
 
 ## planned removal / review
 
@@ -96,44 +97,18 @@ Review before cleanup:
 - Lidarr
 - Kometa
 
-## lab / experimentation
-
-Saiko is the former Bandai machine and becomes the Proxmox lab host.
-
-Expected experiments include:
-
-- OPNsense VMs
-- Linux VMs
-- Kubernetes/k3s
-- networking labs
-- temporary game servers/services
-- GPU passthrough
-
-Kubernetes is an experiment, not a production migration plan. Shoji remains unassigned.
-
-## maybe / under consideration
-
-- Grafana Alloy
-- Scrutiny
-- Dozzle
-- OpenSpeedTest
-- NUT / PeaNUT
-- Rackula
-- Paperless AI / Paperless-GPT
-- container update notifier
-
 ## migration rule
 
-For each service moving from Kawaguchi to Yamanaka:
+For each retained service moving from Kawaguchi to Yamanaka:
 
 ```text
-1. identify persistent data and dependencies
-2. back up application/database state
+1. identify persistence and dependencies
+2. create an independent backup/export
 3. deploy on yamanaka
 4. restore/copy persistence
-5. verify behavior
+5. verify application behavior
 6. verify dependencies
-7. establish independent backup to motosu
-8. leave the kawaguchi copy intact during observation
+7. establish backup to motosu
+8. observe with the kawaguchi copy stopped but intact
 9. remove the old copy only after successful cutover
 ```
