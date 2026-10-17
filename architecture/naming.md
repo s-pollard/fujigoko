@@ -39,7 +39,7 @@ Potential uses include:
 - access switches
 - other major physical networking devices
 
-Do not rename existing production network hardware solely to satisfy the convention. Apply the convention when the Miami network is rebuilt or when replacement hardware makes the name useful.
+Do not rename existing production network hardware solely to satisfy the convention. Apply the convention during a future rebuild or when replacement hardware makes the name useful.
 
 ## logical networking / transit — Shinkansen
 
@@ -75,6 +75,7 @@ Do not use station names for ordinary application containers simply because a na
 5. Do not assign reserved names before a real role exists.
 6. Container/service names should generally remain their normal upstream names unless there is a practical reason to alias them.
 7. Documentation should record both old and new names during transitions.
+8. Names must not encode personal information, physical addresses, usernames, account IDs, or other identifying data.
 
 ## current reserved namespace
 
