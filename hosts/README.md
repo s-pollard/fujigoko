@@ -66,22 +66,11 @@ The TrueNAS migration is gated on verified independent recovery copies of Immich
 
 Important Yamanaka files, exports, database dumps, and configuration backups go to Motosu rather than depending on the Yamanaka system disk alone.
 
-## saiko
+## gusuku lab boundary
 
-- role: Proxmox lab / experimentation
-- status: packed / offline; Proxmox conversion planned after unpacking
-- hardware: existing 4U system
-- cpu: AMD Ryzen 9 3900X
-- memory: 32 GB DDR4
-- gpu: EVGA GeForce RTX 3060 Ti FTW3 ULTRA GAMING 8 GB
-- motherboard: MSI MPG X570 GAMING EDGE WIFI
-- storage: WD Blue 500 GB SSD currently documented
-- current platform: Bazzite
-- target platform: Proxmox VE
-- network upgrade: Intel X520-DA2 dual-port 10 GbE SFP+ adapter ordered
-- target responsibilities: OPNsense labs, Linux VMs, Kubernetes/k3s experiments, networking labs, temporary services, GPU passthrough or game-server experiments
+The physical system formerly documented in fujigoko as `saiko` has moved to the separate [`gusuku`](https://github.com/s-pollard/gusuku) learning and experimentation environment and is now named `shuri`.
 
-Saiko should not carry required production services and can remain powered off when not in use.
+Experimental infrastructure belongs in gusuku. If a gusuku experiment becomes genuinely useful for normal home operations, it should be redeployed on an appropriate fujigoko host rather than making fujigoko dependent on the lab.
 
 ## shoji
 
