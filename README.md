@@ -8,9 +8,9 @@ Experimental and career-learning infrastructure belongs in the separate [`gusuku
 
 ## Core hosts
 
-- **kawaguchi** — Unraid media server, manga, bulk media storage, and independent uptime monitoring
+- **kawaguchi** — Unraid media server, manga, bulk media storage, and host-specific monitoring agent
 - **motosu** — TrueNAS SCALE photo/Immich host and backup target
-- **yamanaka** — Debian general-application server; deployment and migration in progress
+- **yamanaka** — Debian general-application server hosting retained non-media services, monitoring/logging, Uptime Kuma, and one AdGuard Home instance
 - **shoji** — reserved; no assigned role
 
 The physical system formerly documented as **saiko** is no longer part of Fujigoko. It moved to gusuku and is now **shuri**.
@@ -43,15 +43,15 @@ See [`SECURITY.md`](SECURITY.md) for the full policy.
 - [service classification](services/classification.md) — placement and lifecycle decisions
 - [storage](storage/README.md) — storage ownership and data criticality
 - [backups](backups/README.md) — backup policy, verified state, and gaps
-- [Yamanaka migration](migration/yamanaka.md) — non-media workload migration plan
+- [Yamanaka migration](migration/yamanaka.md) — completed service cutover and remaining cleanup/backup work
 - [runbooks](runbooks/README.md) — recovery procedures
 
 ## Current priorities
 
 1. Finish restoring and validating Immich on the rebuilt TrueNAS Motosu.
-2. Finish Yamanaka hardware/application deployment and migrate retained non-media workloads from Kawaguchi.
-3. Establish Yamanaka-to-Motosu backups before deleting migrated Kawaguchi state.
-4. Move DNS from the temporary Kawaguchi instance to redundant AdGuard Home on Yamanaka and Motosu.
+2. Establish and verify Yamanaka-to-Motosu backups before deleting migrated Kawaguchi state.
+3. Deploy the second AdGuard Home instance on Motosu to complete redundant DNS.
+4. Observe the completed Yamanaka migration, then remove old stopped Kawaguchi containers/appdata and retired RomM/MariaDB/Redis state when rollback value is gone.
 5. Rebuild the post-move network around OPNsense; keep the SX3016F as the main core-switch candidate until purchased and verified.
 6. Finalize the UPS/power plan after verifying real outlet/receptacle compatibility.
 7. Preserve independent recovery for irreplaceable data before optimizing convenience services.
