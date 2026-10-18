@@ -10,7 +10,7 @@ Exact private IPs, MAC addresses, serial numbers, WAN details, and other sensiti
 - cpu: Intel Core Ultra 5 125H
 - memory: 64 GB
 - network: 10 GbE uplink
-- target responsibilities: Plex/media automation, manga, bulk media storage, Uptime Kuma, host-specific monitoring
+- current responsibilities: Plex/media automation, manga, bulk media storage, and host-specific monitoring via cAdvisor
 
 Storage summary:
 
@@ -18,7 +18,7 @@ Storage summary:
 - two Samsung 970 EVO Plus 1 TB NVMe devices in the cache pool
 - main shares include appdata, downloads, media, domains, isos, system, and legacy/cleanup candidates
 
-Kawaguchi remains on Unraid for the current generation.
+Kawaguchi remains on Unraid for the current generation. Retired application containers and appdata may remain temporarily as rollback material after migration, but are not part of its intended long-term service role.
 
 ## motosu
 
@@ -43,19 +43,19 @@ Do not describe Motosu as still awaiting the TrueNAS migration.
 ## yamanaka
 
 - role: always-on general application server
-- status: base Debian deployment complete; hardware/application deployment in progress
+- status: deployed and carrying production non-media workloads
 - hardware: Dell OptiPlex 3070 Small Form Factor
-- cpu: Intel Core i5-9500
+- cpu: Intel Core i5-9500, 6 cores / 6 threads
 - platform: Debian GNU/Linux 13 (trixie)
 - memory: 16 GB DDR4-2666 installed
 - documented memory maximum: 32 GB across 2 DIMM slots
 - memory policy: upgrade only if measured usage justifies it
-- current/boot NVMe: Patriot P300 128 GB
-- application NVMe: 500 GB device planned/ordered for production application storage
-- network upgrade: low-profile Intel X520-DA2 dual-port 10 GbE SFP+ adapter planned/ordered
-- target responsibilities: retained non-media applications, centralized monitoring, redundant AdGuard Home
+- storage: Patriot P300 512 GB NVMe
+- network: onboard 1 GbE; low-profile Intel X520-DA2 dual-port 10 GbE SFP+ adapter planned/ordered
+- container platform: Docker Engine + Docker Compose
+- current responsibilities: retained non-media applications, centralized monitoring/logging, Uptime Kuma, Signal notification bridge, and one AdGuard Home instance
 
-Important Yamanaka files, exports, database dumps, and configuration backups should be copied independently to Motosu.
+The deployed workload fits comfortably within the current 16 GB memory configuration. Important Yamanaka files, exports, database dumps, and configuration backups should be copied independently to Motosu before retired Kawaguchi state is permanently deleted.
 
 ## shoji
 
