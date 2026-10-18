@@ -3,9 +3,9 @@
 Services are classified by function, intended production placement, and persistence value.
 
 ```text
-kawaguchi = media + manga + independent uptime watchdog
-motosu    = photos + Immich + backup storage + redundant DNS
-yamanaka  = non-media applications + centralized monitoring + redundant DNS
+kawaguchi = media + manga + host-specific monitoring agent
+motosu    = photos + Immich + backup storage + redundant DNS target
+yamanaka  = non-media applications + centralized monitoring/logging + DNS
 shoji     = reserved / unassigned
 ```
 
@@ -27,7 +27,7 @@ Permanent:
 - Komga
 - Komf
 - Tachidesk
-- Uptime Kuma
+- cAdvisor
 
 Manga remains on Kawaguchi. Movie/TV payloads are largely reacquirable; configuration and metadata have higher backup value than the bulk media.
 
@@ -43,39 +43,44 @@ Permanent/target:
 - Yamanaka backup datasets
 - ZFS snapshots
 - selected Backblaze B2 protection
-- one AdGuard Home instance
+- one AdGuard Home instance as the second DNS node
 
 Motosu is now on TrueNAS SCALE. The Immich library has been copied to the rebuilt system; final application/database restoration is still being validated.
 
-## personal applications — kawaguchi to yamanaka
+## personal applications — yamanaka
 
-Retained applications migrate to Yamanaka:
+The retained application migration from Kawaguchi is complete at the service level:
 
 | service | status | backup priority |
 | --- | --- | --- |
-| Paperless-ngx | transitional | high |
-| Mealie | transitional | high |
-| Actual Budget | transitional | high |
-| HomeBox | transitional | high |
-| Linkwarden | transitional | high |
-| Endurain | transitional | high |
-| Stirling PDF | transitional | low |
-| Homepage | transitional | medium |
+| Paperless-ngx | deployed | high |
+| Mealie | deployed | high |
+| Actual Budget | deployed | high |
+| HomeBox | deployed | high |
+| Linkwarden | deployed | high |
+| Endurain | deployed | high |
+| Stirling PDF | deployed | low |
+| Homepage | deployed | medium |
 
-Supporting PostgreSQL/Redis services move with their parent application and remain private to the relevant Compose network unless external access is actually required.
+Supporting PostgreSQL/Redis services stay with their parent application and remain private to the relevant Compose network unless external access is actually required.
+
+Old Kawaguchi copies remain stopped only as temporary rollback material until independent backups are verified.
 
 ## monitoring / infrastructure
 
-| service | target | status | backup priority |
+| service | placement | status | backup priority |
 | --- | --- | --- | --- |
-| Prometheus | yamanaka | transitional | medium |
-| Grafana | yamanaka | transitional | medium-high |
-| Loki | yamanaka | planned | low-medium |
-| Uptime Kuma | kawaguchi | permanent watchdog | low-medium |
-| cAdvisor/exporters | monitored host | permanent agents | low |
-| AdGuard Home | yamanaka + motosu | planned redundant pair | medium |
+| Prometheus | yamanaka | deployed | medium |
+| Grafana | yamanaka | deployed | medium-high |
+| Loki | yamanaka | deployed | low-medium |
+| Grafana Alloy | yamanaka | deployed | low |
+| Uptime Kuma | yamanaka | deployed | low-medium |
+| signal-cli-rest-api | yamanaka | deployed | low |
+| cAdvisor/exporters | monitored host | deployed where needed | low |
+| AdGuard Home | yamanaka | deployed | medium |
+| AdGuard Home | motosu | target | medium |
 
-Uptime Kuma remains outside Yamanaka so a Yamanaka failure does not remove every monitoring path.
+Prometheus on Yamanaka continues to scrape Kawaguchi cAdvisor. Alloy collects Yamanaka Docker logs into Loki. Uptime Kuma currently runs on Yamanaka rather than on an independent host, so a total Yamanaka outage also removes that monitoring path.
 
 ## planned additions
 
@@ -84,22 +89,24 @@ Uptime Kuma remains outside Yamanaka so a Yamanaka failure does not remove every
 
 Planned does not mean required. Remove ideas that are no longer useful rather than carrying them indefinitely.
 
-## planned removal / review
+## retirement / cleanup
 
 ```text
-romm    -> delete
-mariadb -> delete if romm is its only consumer
+romm    -> stopped; delete after confirming no data needs retention
+mariadb -> stopped with romm; delete if no retained dependency exists
 ```
 
-Review before cleanup:
+Also review before cleanup:
 
+- old shared Redis appdata
+- stopped Kawaguchi copies of migrated services
 - TitleCardMaker
 - Lidarr
 - Kometa
 
 ## migration rule
 
-For each retained service moving from Kawaguchi to Yamanaka:
+For each retained service moved from Kawaguchi to Yamanaka:
 
 ```text
 1. identify persistence and dependencies
@@ -112,3 +119,5 @@ For each retained service moving from Kawaguchi to Yamanaka:
 8. observe with the kawaguchi copy stopped but intact
 9. remove the old copy only after successful cutover
 ```
+
+The service cutover and reboot verification are complete. Independent Yamanaka backup coverage remains the gating item before permanent deletion of old Kawaguchi state.
