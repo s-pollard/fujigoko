@@ -1,29 +1,49 @@
-# yamanaka migration plan
+# yamanaka migration record
 
 ## goal
 
 Move retained non-media self-hosted applications off `kawaguchi` and onto `yamanaka` without disrupting the media stack.
 
-Final production role split:
+Current production role split:
 
 ```text
-kawaguchi = media + manga + independent uptime watchdog
-motosu    = photos + Immich + backup storage + redundant DNS
-yamanaka  = non-media applications + centralized monitoring + redundant DNS
+kawaguchi = media + manga + host-specific monitoring agent
+motosu    = photos + Immich + backup storage + redundant DNS target
+yamanaka  = non-media applications + centralized monitoring/logging + DNS
 shoji     = reserved / unassigned
 ```
 
 Experimental/lab workloads belong in gusuku, not Yamanaka.
 
-Migration order:
+## status
 
-```text
-inventory -> back up -> deploy -> restore -> verify -> cut over -> observe -> clean up
-```
+Service cutover is complete as of 2026-10-18.
 
-Do not remove a working Kawaguchi deployment until the Yamanaka replacement and its independent backup are verified.
+Completed:
 
-## current yamanaka state
+- Debian 13 deployed on Yamanaka
+- Docker Engine and Docker Compose installed
+- retained non-media services migrated from Kawaguchi
+- application-local PostgreSQL/Redis dependencies moved with their parent applications
+- Prometheus and Grafana migrated
+- Loki and Grafana Alloy deployed
+- Uptime Kuma and Signal notification bridge deployed
+- AdGuard Home moved from Kawaguchi to Yamanaka
+- RomM and its MariaDB dependency stopped on Kawaguchi
+- old shared Kawaguchi Redis stopped after dependency review
+- Kawaguchi reduced to media/manga services plus cAdvisor
+- Prometheus verified scraping Kawaguchi cAdvisor
+- Yamanaka reboot-tested with all expected containers returning automatically
+
+Remaining post-migration work:
+
+- establish/verify independent Yamanaka backups on Motosu
+- deploy the second AdGuard Home instance on Motosu
+- finish Motosu Immich application/database restoration
+- observe the new Yamanaka deployment before deleting old Kawaguchi appdata
+- remove retired Kawaguchi containers/appdata only after backup and rollback confidence is sufficient
+
+## deployed yamanaka platform
 
 ```text
 hardware        Dell OptiPlex 3070 SFF
@@ -31,15 +51,13 @@ cpu             Intel Core i5-9500, 6C/6T
 os              Debian GNU/Linux 13 (trixie)
 memory          16 GB DDR4-2666
 memory maximum  32 GB
-boot nvme       Patriot P300 128 GB
-app nvme        500 GB device planned/ordered
+storage         Patriot P300 512 GB NVMe
 network         onboard 1 GbE; Intel X520-DA2 upgrade planned/ordered
-remote access   SSH working
+container       Docker Engine + Docker Compose
+remote access   SSH + Tailscale
 ```
 
-The prior assumption that Yamanaka required 32 GB before deployment is retired. Upgrade memory only if measured workload justifies it.
-
-Motosu is already rebuilt on TrueNAS SCALE and is the intended independent backup target. Its Immich restore is still being validated, so Yamanaka backup jobs should be finalized against the stable TrueNAS dataset layout rather than old UGOS paths.
+The prior assumption that Yamanaka required 32 GB before deployment is retired. Measured post-migration usage shows substantial memory headroom, so 16 GB remains appropriate unless future workload measurements justify an upgrade.
 
 ## stays on kawaguchi
 
@@ -55,10 +73,9 @@ Motosu is already rebuilt on TrueNAS SCALE and is the intended independent backu
 - Komga
 - Komf
 - Tachidesk
-- Uptime Kuma
-- Kawaguchi-specific monitoring agents
+- cAdvisor / host-specific monitoring agent
 
-Manga remains part of the Kawaguchi media role. AdGuard Home is temporary there.
+Kawaguchi remains the media/manga host. Old copies of migrated services are stopped and may remain temporarily as rollback material.
 
 ## stays on motosu
 
@@ -67,196 +84,117 @@ Manga remains part of the Kawaguchi media role. AdGuard Home is temporary there.
 - Yamanaka backup datasets
 - TrueNAS/ZFS snapshot functionality
 - selected B2 backup jobs
-- one AdGuard Home instance in the target state
+- second AdGuard Home instance in the target state
 
-## moves to yamanaka
+## deployed on yamanaka
 
-- Paperless-ngx
+### applications
+
+- Paperless-ngx + Redis
 - Mealie
 - Actual Budget
 - HomeBox
-- Linkwarden
+- Linkwarden + PostgreSQL
 - Stirling PDF
-- Endurain
-- Homepage
-- Prometheus
-- Grafana
-- Loki
-- application-local PostgreSQL/Redis dependencies
-- one AdGuard Home instance
-
-## delete instead of migrate
-
-- RomM
-- MariaDB if RomM is its only remaining consumer
-
-Review before cleanup:
-
-- TitleCardMaker
-- Lidarr
-- Kometa
-
-## phase 1 — finish yamanaka platform
-
-Completed:
-
-- Debian 13 installed
-- hostname/UEFI/basic administration verified
-- SSH working
-- hardware inventory completed
-
-Remaining:
-
-1. install/verify final application NVMe
-2. install/verify Intel X520-DA2
-3. configure stable production networking
-4. install Docker Engine and Docker Compose
-5. establish predictable Compose/data paths
-6. configure normal update/time/administration policy
-7. establish Yamanaka-to-Motosu backup flow before high-value cutovers
-
-Recommended logical pattern:
-
-```text
-/srv/
-├── compose/
-└── data/
-```
-
-The exact directory tree may evolve, but Compose definitions and persistent data should remain predictable and documented.
-
-## phase 2 — capture kawaguchi source state
-
-For every service being moved, record privately as appropriate:
-
-- image/tag
-- container name
-- environment variables
-- exposed ports
-- bind mounts/volumes
-- Docker networks
-- restart policy
-- dependencies
-- application version
-- persistent-data size
-
-Do not put secrets in this public repo.
-
-Create an independent backup/export before changing each service. A backup stored only inside Kawaguchi appdata is not independent.
-
-## phase 3 — deploy compose stacks
-
-Use Docker Compose as the normal deployment method. Prefer one project per application or tightly coupled stack.
-
-Examples:
-
-```text
-linkwarden -> app + postgres
-paperless  -> app + redis
-endurain   -> app + postgres + redis
-monitoring -> prometheus + grafana + loki
-```
-
-Keep databases/caches on private Compose networks unless an external client actually requires access.
-
-## phase 4 — migration waves
-
-### wave 1 — low-risk utilities
-
-- Stirling PDF
+- Endurain + PostgreSQL + Redis
 - Homepage
 
-Use these to validate Docker, networking, storage, reboot behavior, and Compose conventions.
-
-### wave 2 — simpler stateful apps
-
-- Mealie
-- Actual Budget
-- HomeBox
-
-For each: stop writes, export/back up, copy persistence, start on Yamanaka, verify representative data, and keep the Kawaguchi copy stopped but intact during observation.
-
-### wave 3 — database-backed apps
-
-- Linkwarden
-- Paperless-ngx
-- Endurain
-
-Use native database dumps/application-aware exports. Verify users, representative historical data, file storage, search/indexing where relevant, and all dependent services before cutover.
-
-### wave 4 — monitoring and DNS
-
-Deploy/move:
+### monitoring / logging
 
 - Prometheus
 - Grafana
 - Loki
+- Grafana Alloy
+- Uptime Kuma
+
+### infrastructure
+
 - AdGuard Home
+- signal-cli-rest-api
 
-Keep Uptime Kuma on Kawaguchi so Yamanaka failure does not remove every monitoring path.
+Supporting databases/caches stay with the application they serve rather than becoming shared LAN infrastructure.
 
-Target monitoring relationship:
+## monitoring relationship
 
 ```text
                 yamanaka
-        prometheus / grafana / loki
+   prometheus / grafana / loki / alloy
              /               \
      kawaguchi               motosu
-      metrics                 metrics
+      cAdvisor              storage/services
 
-                kawaguchi
+                yamanaka
               uptime kuma
              /          \
-        yamanaka       motosu
-         uptime         uptime
+        kawaguchi       motosu
+         uptime          uptime
 ```
 
-## phase 5 — romm retirement
+Uptime Kuma currently runs on Yamanaka. This simplifies the production application host but means a total Yamanaka outage also removes that monitoring path.
 
-Before deletion:
+## DNS state
 
-1. confirm no ROM/emulator data needs retention
-2. confirm no other service uses MariaDB
-3. confirm no other active service uses the ROM share
-4. stop RomM and observe briefly
-5. remove RomM/appdata
-6. remove MariaDB only if unused
-7. remove the ROM share later if nothing depends on it
-
-## cutover convention
-
-For every migrated application:
+Current:
 
 ```text
-1. stop writes on kawaguchi
-2. take final backup/export
-3. sync persistent data
-4. start on yamanaka
-5. verify locally
-6. update normal client access/DNS/bookmarks as needed
-7. verify from normal clients
-8. keep kawaguchi copy stopped but intact
-9. observe
-10. remove old copy only when confident
+yamanaka -> adguard-home
 ```
 
-Never run two writable copies of the same database-backed service against duplicated state.
+Target redundant state:
 
-## backup requirement
+```text
+yamanaka -> adguard-home
+motosu   -> adguard-home
+```
+
+The Yamanaka instance retained the existing resolver identity during cutover so clients did not require a DNS-address change. Exact addressing remains intentionally undocumented in this public repository.
+
+## retired from kawaguchi
+
+RomM and MariaDB are stopped. Dependency checks found no retained running service requiring that MariaDB instance.
+
+The old shared Redis instance is also stopped after confirming no remaining running service depended on it.
+
+Do not delete their data immediately. Retain rollback material until the observation/backup window is complete.
+
+## persistence and backup rule
 
 Important Yamanaka state must have an independent backup on Motosu before old Kawaguchi state is permanently deleted.
 
-Use database-native dumps or application-aware exports. Do not treat direct copies of live PostgreSQL/Redis directories as the primary backup method.
+Use database-native dumps or application-aware exports where appropriate. Do not treat direct copies of live PostgreSQL/Redis directories as the primary backup method.
 
-## completion criteria
+Highest-value Yamanaka state includes:
 
-The migration is complete when:
+- Paperless documents/database
+- Actual Budget data
+- Mealie data
+- HomeBox data
+- Linkwarden PostgreSQL + stored archive data
+- Endurain PostgreSQL + application data
+- Grafana configuration/dashboards where worth retaining
+- AdGuard Home configuration
+- Uptime Kuma configuration
 
-- every retained non-media application runs from Yamanaka
-- important Yamanaka data has an independent Motosu backup
-- no retained Yamanaka app depends on old Kawaguchi state
-- Kawaguchi is reduced to media/manga, Uptime Kuma, and host-specific agents
-- redundant AdGuard Home runs on Yamanaka and Motosu
-- RomM is retired
-- obsolete Kawaguchi containers, networks, mounts, and appdata are cleaned up
-- the repository describes deployed state rather than obsolete transition assumptions
+Metrics/log history is lower priority than application state and configuration.
+
+## cutover verification
+
+The post-migration reboot test verified that the expected Yamanaka Compose stacks restart automatically.
+
+Application checks confirmed normal HTTP responses for the migrated services. Loki returned ready after its normal startup delay. Endurain reached a healthy state after its backend startup completed.
+
+Measured immediately after migration, the system used roughly 4.3 GiB of 15 GiB RAM with no swap usage and low CPU/load, leaving substantial capacity for the current workload.
+
+## cleanup gate
+
+Permanent cleanup of old Kawaguchi application state should happen only after:
+
+```text
+1. Yamanaka remains stable through an observation period
+2. important application data has independent Motosu backup coverage
+3. representative restores/exports are understood
+4. no clients still point at retired Kawaguchi application endpoints
+5. the second DNS instance on Motosu is deployed if redundant DNS is required
+```
+
+Until then, stopped old containers/appdata are rollback material, not active production services.
