@@ -5,9 +5,9 @@
 Fujigoko is the production homelab. Host roles should remain obvious, production services should not depend on the experimental gusuku lab, and storage/recovery design should follow the value of the data rather than the size of the system.
 
 ```text
-kawaguchi = media + manga + independent uptime monitoring
+kawaguchi = media + manga + host-specific monitoring agent
 motosu    = photos + Immich + backup storage
-yamanaka  = general applications + centralized monitoring
+yamanaka  = general applications + centralized monitoring/logging + DNS
 shoji     = reserved / unassigned
 ```
 
@@ -28,8 +28,7 @@ Permanent workload classes:
 - Plex and media automation
 - manga services
 - bulk media/download storage
-- Uptime Kuma
-- host-specific monitoring agents
+- cAdvisor / host-specific monitoring agent
 
 Kawaguchi is intentionally relatively rebuildable. Configuration and metadata are more important to protect than reacquirable movie/TV payloads.
 
@@ -59,7 +58,7 @@ Target permanent workloads:
 - Yamanaka backup datasets
 - ZFS snapshots
 - Backblaze B2 off-site protection for selected high-value data
-- one AdGuard Home instance
+- one AdGuard Home instance as the second DNS node
 
 Motosu remains storage/photo focused rather than becoming a general application host.
 
@@ -71,17 +70,18 @@ Primary role: simple, always-on production application server.
 - Intel Core i5-9500
 - Debian GNU/Linux 13
 - 16 GB DDR4 installed; upgrade only if measured usage justifies it
-- local NVMe application storage
+- Patriot P300 512 GB NVMe
 - Intel X520-DA2 10 GbE upgrade planned/ordered
 
-Target workload classes:
+Current workload classes:
 
 - retained non-media personal applications
-- Prometheus / Grafana / Loki
+- Prometheus / Grafana / Loki / Alloy
+- Uptime Kuma and Signal notification bridge
 - one AdGuard Home instance
 - application-local PostgreSQL/Redis dependencies
 
-Yamanaka does not host game servers or disposable lab workloads.
+The migrated workload has substantial CPU and memory headroom on the current hardware. Yamanaka does not host game servers or disposable lab workloads.
 
 ## shoji — reserved
 
@@ -110,15 +110,17 @@ Decisions:
 
 ```text
 media / manga                    -> kawaguchi
-independent uptime watchdog      -> kawaguchi
+host-specific monitoring agent   -> monitored host
 Immich / photos / backup storage -> motosu
 general personal applications   -> yamanaka
-central monitoring              -> yamanaka
-host-specific agents            -> monitored host
-DNS                             -> yamanaka + motosu
-routing / firewall              -> OPNsense appliance
-experimentation                 -> gusuku, not fujigoko
+central monitoring/logging       -> yamanaka
+uptime monitoring                -> yamanaka
+DNS                              -> yamanaka + motosu target pair
+routing / firewall               -> OPNsense appliance
+experimentation                  -> gusuku, not fujigoko
 ```
+
+Uptime Kuma currently runs on Yamanaka, so a total Yamanaka host failure also removes that monitoring path. This is accepted current state rather than an independent-watchdog design.
 
 ## backup priorities
 
