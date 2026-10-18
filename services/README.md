@@ -6,11 +6,7 @@ This file records production service placement and dependencies without publishi
 
 ### monitoring / infrastructure
 
-- Prometheus — transitional
-- Grafana — transitional
-- cAdvisor / host monitoring
-- Uptime Kuma — permanent independent watchdog
-- AdGuard Home — temporary placement only
+- cAdvisor / host monitoring agent
 
 ### media
 
@@ -30,21 +26,11 @@ This file records production service placement and dependencies without publishi
 - Komf
 - Tachidesk
 
-### non-media applications awaiting migration/review
+### retired / stopped rollback copies
 
-- Paperless-ngx
-- Stirling PDF
-- Linkwarden
-- Mealie
-- HomeBox
-- Actual Budget
-- Homepage
-- Endurain
+The former Kawaguchi copies of migrated non-media services are stopped. Their appdata may remain temporarily for rollback until independent Yamanaka backups are verified.
 
-### retirement
-
-- RomM — planned removal
-- MariaDB — remove if RomM is its only consumer
+RomM and its MariaDB dependency are also stopped pending final data/appdata cleanup.
 
 Known dependency examples:
 
@@ -55,9 +41,6 @@ radarr  -> downloads + movie library
 bazarr  -> tv + movie libraries
 plex    -> media library
 komga / komf / tachidesk -> manga library
-paperless -> document storage + redis
-linkwarden -> postgres
-endurain -> postgres + redis
 ```
 
 ## motosu
@@ -71,7 +54,7 @@ Target/permanent service classes:
 - Immich Valkey/Redis
 - Immich machine learning
 - storage/snapshot services provided by TrueNAS
-- one AdGuard Home instance
+- one AdGuard Home instance as the second DNS node
 
 The Immich library has been copied onto the rebuilt TrueNAS system. Final database/application restoration is still being completed and validated, so do not yet describe the Immich migration as finished.
 
@@ -79,22 +62,37 @@ Critical persistence is the Immich library, database recovery data, photo/archiv
 
 ## yamanaka
 
-Retained non-media applications migrate from Kawaguchi to Yamanaka. Supporting databases/caches stay with the application they serve rather than becoming shared LAN infrastructure.
+Yamanaka now hosts the retained non-media production services migrated from Kawaguchi. Supporting databases/caches stay with the application they serve rather than becoming shared LAN infrastructure.
 
-Target services:
+Current services:
 
-- Paperless-ngx
+### applications
+
+- Paperless-ngx + private Redis
 - Mealie
 - Actual Budget
 - HomeBox
-- Linkwarden
+- Linkwarden + PostgreSQL
 - Stirling PDF
-- Endurain
+- Endurain + PostgreSQL + Redis
 - Homepage
+
+### monitoring / logging
+
 - Prometheus
 - Grafana
 - Loki
-- one AdGuard Home instance
+- Grafana Alloy
+- Uptime Kuma
+
+Prometheus continues to scrape cAdvisor on Kawaguchi for host/container metrics. Alloy collects Yamanaka Docker logs into Loki for Grafana exploration.
+
+### infrastructure
+
+- AdGuard Home
+- signal-cli-rest-api for Uptime Kuma notifications
+
+The Yamanaka stack has been reboot-tested successfully and all expected containers return automatically.
 
 Potential additions under evaluation:
 
@@ -105,13 +103,13 @@ These remain optional until actually deployed and found useful.
 
 ## DNS target
 
-Current:
+Current deployed state:
 
 ```text
-kawaguchi -> temporary single AdGuard Home
+yamanaka -> adguard-home
 ```
 
-Target:
+Target redundant state:
 
 ```text
 yamanaka -> adguard-home
@@ -124,10 +122,13 @@ Both instances should provide equivalent filtering policy on separate physical h
 
 Review before removal:
 
+- old stopped Kawaguchi copies of migrated services after Yamanaka backups are verified
+- RomM and MariaDB appdata
+- old shared Redis appdata
 - TitleCardMaker
 - Lidarr
 - Kometa
-- obsolete appdata, Docker networks, mounts, and legacy shares
+- obsolete Docker networks, mounts, and legacy shares
 
 Presence on disk does not prove a service is active.
 
