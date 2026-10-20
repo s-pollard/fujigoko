@@ -17,7 +17,7 @@ Experimental/lab workloads belong in gusuku, not Yamanaka.
 
 ## status
 
-Service cutover is complete as of 2026-10-18.
+Service cutover was completed on 2026-10-18. Kawaguchi cleanup was completed on 2026-10-20.
 
 Completed:
 
@@ -29,19 +29,23 @@ Completed:
 - Loki and Grafana Alloy deployed
 - Uptime Kuma and Signal notification bridge deployed
 - AdGuard Home moved from Kawaguchi to Yamanaka
-- RomM and its MariaDB dependency stopped on Kawaguchi
-- old shared Kawaguchi Redis stopped after dependency review
+- SearXNG deployed on Yamanaka
+- Dockhand deployed on Yamanaka
+- RomM and its MariaDB dependency retired and removed from Kawaguchi
+- old shared Kawaguchi Redis retired and removed after dependency review
+- migrated non-media containers removed from Kawaguchi
+- unused Kawaguchi Docker images and dangling volumes pruned
+- retired Kawaguchi appdata removed
+- TitleCardMaker, Kometa, Lidarr, and Listenarr appdata removed
 - Kawaguchi reduced to media/manga services plus cAdvisor
 - Prometheus verified scraping Kawaguchi cAdvisor
-- Yamanaka reboot-tested with all expected containers returning automatically
+- Yamanaka reboot-tested with expected production containers returning automatically
 
 Remaining post-migration work:
 
 - establish/verify independent Yamanaka backups on Motosu
 - deploy the second AdGuard Home instance on Motosu
-- finish Motosu Immich application/database restoration
-- observe the new Yamanaka deployment before deleting old Kawaguchi appdata
-- remove retired Kawaguchi containers/appdata only after backup and rollback confidence is sufficient
+- continue routine Motosu backup/restore validation and storage maintenance
 
 ## deployed yamanaka platform
 
@@ -75,7 +79,7 @@ The prior assumption that Yamanaka required 32 GB before deployment is retired. 
 - Tachidesk
 - cAdvisor / host-specific monitoring agent
 
-Kawaguchi remains the media/manga host. Old copies of migrated services are stopped and may remain temporarily as rollback material.
+Kawaguchi remains the media/manga host. Retired non-media rollback containers and appdata have been removed.
 
 ## stays on motosu
 
@@ -98,6 +102,7 @@ Kawaguchi remains the media/manga host. Old copies of migrated services are stop
 - Stirling PDF
 - Endurain + PostgreSQL + Redis
 - Homepage
+- SearXNG
 
 ### monitoring / logging
 
@@ -107,10 +112,11 @@ Kawaguchi remains the media/manga host. Old copies of migrated services are stop
 - Grafana Alloy
 - Uptime Kuma
 
-### infrastructure
+### infrastructure / operations
 
 - AdGuard Home
 - signal-cli-rest-api
+- Dockhand
 
 Supporting databases/caches stay with the application they serve rather than becoming shared LAN infrastructure.
 
@@ -151,15 +157,24 @@ The Yamanaka instance retained the existing resolver identity during cutover so 
 
 ## retired from kawaguchi
 
-RomM and MariaDB are stopped. Dependency checks found no retained running service requiring that MariaDB instance.
+The migration rollback state has been retired and removed.
 
-The old shared Redis instance is also stopped after confirming no remaining running service depended on it.
+Removed items include:
 
-Do not delete their data immediately. Retain rollback material until the observation/backup window is complete.
+- RomM
+- MariaDB used by RomM
+- old shared Redis state
+- migrated non-media containers and their retired appdata
+- TitleCardMaker
+- Kometa
+- Lidarr
+- Listenarr
+
+Docker cleanup also removed dangling anonymous volumes and unused images. The post-cleanup state was 14 active containers, 14 active images, no local Docker volumes, and no reclaimable Docker image/container space.
 
 ## persistence and backup rule
 
-Important Yamanaka state must have an independent backup on Motosu before old Kawaguchi state is permanently deleted.
+Important Yamanaka state should have an independent backup on Motosu.
 
 Use database-native dumps or application-aware exports where appropriate. Do not treat direct copies of live PostgreSQL/Redis directories as the primary backup method.
 
@@ -185,16 +200,8 @@ Application checks confirmed normal HTTP responses for the migrated services. Lo
 
 Measured immediately after migration, the system used roughly 4.3 GiB of 15 GiB RAM with no swap usage and low CPU/load, leaving substantial capacity for the current workload.
 
-## cleanup gate
+## cleanup result
 
-Permanent cleanup of old Kawaguchi application state should happen only after:
+Kawaguchi cleanup is complete. It now carries only the intended media/manga production stack plus cAdvisor.
 
-```text
-1. Yamanaka remains stable through an observation period
-2. important application data has independent Motosu backup coverage
-3. representative restores/exports are understood
-4. no clients still point at retired Kawaguchi application endpoints
-5. the second DNS instance on Motosu is deployed if redundant DNS is required
-```
-
-Until then, stopped old containers/appdata are rollback material, not active production services.
+The remaining migration-related operational priority is independent Yamanaka backup coverage on Motosu rather than preservation of rollback copies on Kawaguchi.
