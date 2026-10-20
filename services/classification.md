@@ -31,6 +31,8 @@ Permanent:
 
 Manga remains on Kawaguchi. Movie/TV payloads are largely reacquirable; configuration and metadata have higher backup value than the bulk media.
 
+Kawaguchi migration cleanup is complete. Retired non-media containers, unused Docker images/volumes, and obsolete appdata have been removed.
+
 ## photos / storage — motosu
 
 Permanent/target:
@@ -45,11 +47,11 @@ Permanent/target:
 - selected Backblaze B2 protection
 - one AdGuard Home instance as the second DNS node
 
-Motosu is now on TrueNAS SCALE. The Immich library has been copied to the rebuilt system; final application/database restoration is still being validated.
+Motosu is now on TrueNAS SCALE. Immich application/database restoration is complete and validated.
 
 ## personal applications — yamanaka
 
-The retained application migration from Kawaguchi is complete at the service level:
+The retained application migration from Kawaguchi is complete:
 
 | service | status | backup priority |
 | --- | --- | --- |
@@ -61,10 +63,9 @@ The retained application migration from Kawaguchi is complete at the service lev
 | Endurain | deployed | high |
 | Stirling PDF | deployed | low |
 | Homepage | deployed | medium |
+| SearXNG | deployed | low |
 
 Supporting PostgreSQL/Redis services stay with their parent application and remain private to the relevant Compose network unless external access is actually required.
-
-Old Kawaguchi copies remain stopped only as temporary rollback material until independent backups are verified.
 
 ## monitoring / infrastructure
 
@@ -76,6 +77,7 @@ Old Kawaguchi copies remain stopped only as temporary rollback material until in
 | Grafana Alloy | yamanaka | deployed | low |
 | Uptime Kuma | yamanaka | deployed | low-medium |
 | signal-cli-rest-api | yamanaka | deployed | low |
+| Dockhand | yamanaka | deployed | low-medium |
 | cAdvisor/exporters | monitored host | deployed where needed | low |
 | AdGuard Home | yamanaka | deployed | medium |
 | AdGuard Home | motosu | target | medium |
@@ -89,20 +91,20 @@ Prometheus on Yamanaka continues to scrape Kawaguchi cAdvisor. Alloy collects Ya
 
 Planned does not mean required. Remove ideas that are no longer useful rather than carrying them indefinitely.
 
-## retirement / cleanup
+## retired / removed
 
-```text
-romm    -> stopped; delete after confirming no data needs retention
-mariadb -> stopped with romm; delete if no retained dependency exists
-```
+The following Kawaguchi services or appdata have been retired and removed:
 
-Also review before cleanup:
-
-- old shared Redis appdata
-- stopped Kawaguchi copies of migrated services
+- RomM
+- MariaDB used by RomM
+- old shared Redis state
+- stopped copies of migrated non-media services
 - TitleCardMaker
 - Lidarr
 - Kometa
+- Listenarr
+
+Presence in old notes or backups should not be interpreted as active production placement.
 
 ## migration rule
 
@@ -117,7 +119,7 @@ For each retained service moved from Kawaguchi to Yamanaka:
 6. verify dependencies
 7. establish backup to motosu
 8. observe with the kawaguchi copy stopped but intact
-9. remove the old copy only after successful cutover
+9. remove the old copy after successful cutover
 ```
 
-The service cutover and reboot verification are complete. Independent Yamanaka backup coverage remains the gating item before permanent deletion of old Kawaguchi state.
+The service cutover, reboot verification, and Kawaguchi cleanup are complete. Independent Yamanaka backup coverage remains an operational follow-up item.
