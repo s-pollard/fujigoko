@@ -28,17 +28,12 @@ Motosu is the dedicated photo/backup-storage host.
 
 - platform: TrueNAS SCALE
 - hardware: UGREEN NASync DXP2800
-- data drives: 2 × 6 TB Seagate ST6000NM0024
-- primary storage: mirrored ZFS pool
+- data drives: 2 × 6 TB Seagate ST6000NM0024-class HDDs in mirrored ZFS storage
+- Immich/photo data: `/mnt/motosu/photos/immich`
 
-The TrueNAS rebuild has occurred. Current migration state:
+The TrueNAS and Immich migration is complete and validated. The photo library is operational on the rebuilt system, and subsequent Google Photos import work has been completed successfully.
 
-- the pool is created
-- the photo/Immich dataset exists under `/mnt/motosu/photos/immich`
-- the Immich library was copied onto the rebuilt system
-- the final Immich database/application restore is still being completed and validated
-
-The library migration copy transferred roughly 315 GB of data. The prior external migration copy and logical PostgreSQL dump remain recovery assets until the rebuilt Immich stack is proven.
+One mirror member failed after the rebuild and was replaced temporarily with the best available older spare. The resilver completed successfully and redundancy was restored. Replacing that temporary member with a better drive remains planned maintenance.
 
 ### storage roles
 
@@ -54,7 +49,7 @@ motosu
 
 Exact dataset names beyond those already deployed should be documented only after they exist.
 
-ZFS mirror redundancy protects against a single-drive failure; it is not an independent backup. Snapshots provide local rollback, while Backblaze B2 provides the intended off-site layer for selected high-value data.
+ZFS mirror redundancy protects against a single-drive failure; it is not an independent backup. Current local snapshot policy is daily with 30-day retention for photos and 14-day retention for backups. Selected photo data is also protected off-site in Backblaze B2 through TrueNAS Cloud Sync with client-side remote encryption.
 
 ### photo policy
 
@@ -71,6 +66,8 @@ Motosu is the independent local backup target for important Yamanaka data, inclu
 - service configuration
 
 Database-backed services should use native dumps or application-aware exports rather than copies of live database directories.
+
+The Yamanaka-to-Motosu jobs and retention policy remain to be implemented.
 
 ## yamanaka
 
@@ -94,7 +91,7 @@ kawaguchi
 motosu
 ├── Immich/photo library
 ├── photo archive
-├── Immich recovery data
+├── encrypted off-site photo backup
 └── Yamanaka backup copies
 
 yamanaka
