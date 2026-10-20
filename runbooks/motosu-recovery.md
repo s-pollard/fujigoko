@@ -6,7 +6,7 @@ Restore Motosu and the Immich/photo storage after host, application, or storage 
 
 Motosu contains irreplaceable photo data and serves as a backup target, so preservation takes precedence over fast service restoration.
 
-Secrets, cloud bucket names, credential-file locations, exact network addresses, and other sensitive operational details are intentionally excluded from this public runbook.
+Secrets, cloud bucket names, encryption material, exact network addresses, and other sensitive operational details are intentionally excluded from this public runbook.
 
 ## platform
 
@@ -16,8 +16,9 @@ Current platform:
 - mirrored ZFS storage on 2 × 6 TB HDDs
 - Immich/photo data under the Motosu pool
 - current Immich dataset path: `/mnt/motosu/photos/immich`
+- encrypted Backblaze B2 off-site copy through TrueNAS Cloud Sync
 
-The Immich library has been copied to the rebuilt TrueNAS system, but final database/application restoration is still being validated. Until that validation is complete, preserve the migration SSD and logical PostgreSQL dump as recovery assets.
+The TrueNAS/Immich migration is complete and validated. One mirror member subsequently failed; it was replaced with an older spare and the pool resilvered successfully. Replacing that temporary member with a better HDD remains planned maintenance.
 
 ## first checks
 
@@ -53,10 +54,10 @@ Do not initialize, format, destroy, or recreate the pool until existing data has
 High-value:
 
 - Immich library
-- validated PostgreSQL logical backups
+- validated PostgreSQL logical/application backups
 - photo/archive datasets
 - Yamanaka backup datasets
-- backup configuration needed to reach the independent off-site copy
+- backup configuration and private encryption material needed to reach the independent off-site copy
 
 Rebuildable:
 
@@ -111,44 +112,30 @@ If the affected data is covered by a usable ZFS snapshot:
 4. use a full dataset rollback only when the blast radius is understood
 5. verify Immich/database consistency afterward
 
+Current snapshot policy:
+
+- photos: daily, 30-day retention
+- backups: daily, 14-day retention
+
 ## restore from Backblaze B2
 
 Use the off-site path when local data is unavailable or cannot be trusted.
 
+Current B2 protection is a TrueNAS Cloud Sync copy with client-side remote encryption, not the former Restic repository workflow.
+
 Prerequisites:
 
 - B2 application credentials from the private credential store
-- Restic repository password
-- repository identifier from private operational documentation
+- TrueNAS/rclone remote-encryption password and salt from the private credential store
 - sufficient temporary/local storage
 
-Example inspection pattern:
+Restore to a temporary dataset/path first. Configure the B2 credential and the same remote-encryption values in TrueNAS, create a pull/restore task for a representative subset, and verify that restored files open correctly before attempting a full production restore.
 
-```bash
-restic -r <repository> snapshots
-```
-
-Restore to a temporary path first:
-
-```bash
-restic -r <repository> restore <snapshot> --target <temporary-restore-path>
-```
-
-Inspect the restored data before copying it into the production dataset.
+A representative encrypted B2 restore test is still a follow-up item and should be documented here once verified.
 
 ### database recovery
 
 Use a validated logical/application backup and the Immich version-appropriate database restore process. Do not treat a copied live PostgreSQL data directory as the primary recovery method.
-
-## migration recovery assets
-
-Until the rebuilt TrueNAS Immich deployment is fully proven, retain:
-
-- the verified external migration copy
-- the validated PostgreSQL custom-format dump
-- the existing off-site Restic/B2 repository
-
-Do not erase those copies merely because the media files are visible on the new pool.
 
 ## complete host loss
 
@@ -163,7 +150,15 @@ If Motosu must be rebuilt or replaced:
 7. verify permissions/ownership and application access
 8. verify users, albums, representative old/recent assets, metadata, and search
 9. recreate Yamanaka backup targets and remote access as needed
-10. re-establish snapshots and off-site backup
+10. re-establish snapshots and encrypted off-site backup
+
+## planned follow-up
+
+- replace the temporary older mirror member with a better HDD
+- verify periodic SMART tests and alerting
+- perform and document an encrypted B2 restore test
+- implement Yamanaka-to-Motosu backup jobs and retention
+- add monitoring independent of Yamanaka
 
 ## completion criteria
 
