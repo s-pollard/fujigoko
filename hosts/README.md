@@ -28,17 +28,28 @@ Kawaguchi remains on Unraid for the current generation. Retired application cont
 - memory: 8 GB
 - network: 2.5 GbE onboard
 - platform: TrueNAS SCALE
-- storage: 2 × 6 TB Seagate ST6000NM0024 HDDs in mirrored ZFS storage
-- target responsibilities: Immich, photo/archive storage, Yamanaka backups, snapshots, selected B2 backup, redundant AdGuard Home
+- storage: mirrored ZFS storage on 2 × 6 TB Seagate ST6000NM0024 HDDs
+- current responsibilities: Immich, photo/archive storage, snapshots, encrypted Backblaze B2 off-site backup, and future Yamanaka backup storage
 
-Current restore state:
+Current state:
 
-- TrueNAS SCALE is installed
-- the Motosu pool and photo/Immich dataset are created
-- the Immich library has been copied onto the rebuilt system
-- application/database restoration is still being completed and validated
+- TrueNAS SCALE migration is complete
+- the Motosu pool and photo/Immich dataset are deployed
+- Immich application/database restoration is complete and validated
+- the restored photo library and subsequent Google Photos import are working normally
+- the mirror was resilvered successfully after one HDD failed; the temporary replacement is an older spare and should be replaced with a better drive later
+- selected photo data is uploading/backed up to Backblaze B2 using TrueNAS Cloud Sync with client-side remote encryption
+- local snapshot policy is daily with 30-day retention for photos and 14-day retention for backups
 
-Do not describe Motosu as still awaiting the TrueNAS migration.
+Remaining Motosu work is tracked as operational follow-up rather than migration work:
+
+- replace the temporary older mirror member with a better HDD, resilver, then verify SMART/scrub health
+- verify periodic SMART testing and alerting
+- perform and document a representative encrypted B2 restore test
+- implement Yamanaka-to-Motosu backup jobs and retention
+- add monitoring independent of Yamanaka so a Yamanaka outage can still be detected
+
+Do not describe Motosu as still awaiting or validating the TrueNAS/Immich migration.
 
 ## yamanaka
 
