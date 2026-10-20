@@ -14,21 +14,23 @@ A backup is independent only if loss of the source host or its primary storage d
 
 Application-generated backups stored only on the source host are useful restore points but are not sufficient host-failure protection.
 
-Never commit credentials, repository passwords, API keys, cloud bucket names, account identifiers, or other backup secrets to this public repository.
+Never commit credentials, repository passwords, API keys, cloud bucket names, account identifiers, encryption passwords/salts, or other backup secrets to this public repository.
 
 ## motosu
 
-Motosu is now on TrueNAS SCALE and remains the highest-priority backup/storage host.
+Motosu is on TrueNAS SCALE and remains the highest-priority backup/storage host.
 
-Current verified migration protection includes:
+Current verified protection includes:
 
-- an external migration copy of the Immich data
-- SHA-256 verification of the copied Immich library before the rebuild
-- a PostgreSQL custom-format logical dump created before the source stack was retired
-- an existing encrypted Backblaze B2 / Restic off-site repository
-- the Immich library copied onto the rebuilt TrueNAS system
+- mirrored ZFS storage for single-drive fault tolerance
+- daily ZFS snapshots for photos with 30-day retention
+- daily ZFS snapshots for backups with 14-day retention
+- restored and validated Immich application/database/library
+- Backblaze B2 off-site backup configured through TrueNAS Cloud Sync
+- B2 transfer uses client-side remote encryption; recovery secrets are kept outside this public repository
+- the current B2 photo upload has completed
 
-The rebuilt Immich database/application restore is still being completed and validated. Keep migration recovery copies until the restored stack has been proven.
+Historical migration recovery material can be retained or retired according to recovery value now that the TrueNAS/Immich migration has been validated; it is no longer the primary protection model.
 
 ### protection model
 
@@ -40,12 +42,20 @@ accidental deletion / unwanted changes
 -> ZFS snapshots
 
 host loss / theft / disaster
--> Backblaze B2
+-> encrypted Backblaze B2 copy
 ```
 
 The ZFS mirror is fault tolerance, not an independent backup.
 
-Selected high-value Motosu data should include the Immich library/database recovery data, photo archives, and Yamanaka backup datasets.
+Selected high-value Motosu data should include the Immich/photo library, photo archives, and Yamanaka backup datasets.
+
+### motosu follow-up
+
+- perform and document a representative restore from the encrypted B2 copy
+- replace the temporary older mirror member with a better HDD and verify the resulting resilver/SMART/scrub state
+- verify periodic SMART tests and failure alerting
+- implement Yamanaka-to-Motosu backup jobs and retention
+- add monitoring independent of Yamanaka so a Yamanaka outage can still be detected
 
 ## kawaguchi
 
@@ -99,16 +109,14 @@ Periodically:
 
 1. confirm recent successful backup jobs
 2. confirm new snapshots/archives were actually created
-3. confirm credentials needed for recovery remain available in the private credential store
+3. confirm credentials and encryption material needed for recovery remain available in the private credential store
 4. perform representative restores
 5. update host-specific recovery runbooks with verified procedures
 
 ## known gaps
 
-- Immich restore on rebuilt Motosu is not yet fully validated
-- final Motosu snapshot retention is not yet documented
+- encrypted B2 upload is complete, but a representative Motosu restore test is still required
 - Yamanaka-to-Motosu backup jobs/retention are not yet finalized
 - no verified independent Kawaguchi configuration/appdata backup
-- no documented full Motosu restore test from B2 yet
 - GFX archive backup policy is not yet finalized
 - common backup-failure alerting is not yet established
