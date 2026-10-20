@@ -16,9 +16,9 @@ Storage summary:
 
 - six HDDs in the Unraid array
 - two Samsung 970 EVO Plus 1 TB NVMe devices in the cache pool
-- main shares include appdata, downloads, media, domains, isos, system, and legacy/cleanup candidates
+- main shares include appdata, downloads, media, domains, isos, and system
 
-Kawaguchi remains on Unraid for the current generation. Retired application containers and appdata may remain temporarily as rollback material after migration, but are not part of its intended long-term service role.
+Kawaguchi remains on Unraid for the current generation. The non-media migration cleanup is complete: retired containers were removed, unused images and volumes were pruned, and obsolete appdata for migrated/retired services was deleted. Kawaguchi now retains only the active media/manga stack plus cAdvisor.
 
 ## motosu
 
@@ -64,9 +64,9 @@ Do not describe Motosu as still awaiting or validating the TrueNAS/Immich migrat
 - storage: Patriot P300 512 GB NVMe
 - network: onboard 1 GbE; low-profile Intel X520-DA2 dual-port 10 GbE SFP+ adapter planned/ordered
 - container platform: Docker Engine + Docker Compose
-- current responsibilities: retained non-media applications, centralized monitoring/logging, Uptime Kuma, Signal notification bridge, and one AdGuard Home instance
+- current responsibilities: retained non-media applications, centralized monitoring/logging, Uptime Kuma, Signal notification bridge, AdGuard Home, SearXNG, and Dockhand
 
-The deployed workload fits comfortably within the current 16 GB memory configuration. Important Yamanaka files, exports, database dumps, and configuration backups should be copied independently to Motosu before retired Kawaguchi state is permanently deleted.
+The deployed workload fits comfortably within the current 16 GB memory configuration. Important Yamanaka files, exports, database dumps, and configuration backups should be copied independently to Motosu.
 
 ## shoji
 
