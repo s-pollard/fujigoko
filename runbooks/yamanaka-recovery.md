@@ -17,8 +17,7 @@ memory          16 GB DDR4-2666
 memory maximum  32 GB
 os              Debian GNU/Linux 13 (trixie)
 boot            UEFI
-boot nvme       Patriot P300 128 GB
-app nvme        500 GB device planned/ordered
+storage nvme    single NVMe, Patriot P300 512 GB
 network         onboard 1 GbE; Intel X520-DA2 upgrade planned/ordered
 ```
 
@@ -158,7 +157,7 @@ Priority:
 
 Verify production targets such as Kawaguchi, Motosu, and Yamanaka. Gusuku is not part of the required Fujigoko monitoring dependency chain.
 
-Uptime Kuma remains on Kawaguchi so Yamanaka downtime can be detected independently.
+Uptime Kuma is deployed on Yamanaka. It shares its monitored host, so it cannot independently detect a complete outage of Yamanaka; a full host failure also takes Kuma down with it.
 
 ## DNS
 
