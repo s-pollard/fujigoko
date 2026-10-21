@@ -25,7 +25,7 @@ Current notes:
 
 - U7 Pro is attached to the aggregation switch and has a 2.5 GbE-capable uplink.
 - Kawaguchi uses 10 GbE to the aggregation layer.
-- Motosu currently reaches the network through the access-switch path while its storage/Immich rebuild is being completed.
+- Motosu reaches the network through the access-switch path (USW-Lite-8-PoE). Its storage/Immich rebuild is complete and validated.
 - Exact switch-port assignments are intentionally omitted from the public repo.
 
 ## target topology

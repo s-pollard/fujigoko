@@ -52,10 +52,11 @@ See [`SECURITY.md`](SECURITY.md) for the full policy.
 
 ## Current priorities
 
-1. Finish restoring and validating Immich on the rebuilt TrueNAS Motosu.
-2. Establish and verify Yamanaka-to-Motosu backups before deleting migrated Kawaguchi state.
-3. Deploy the second AdGuard Home instance on Motosu to complete redundant DNS.
-4. Observe the completed Yamanaka migration, then remove old stopped Kawaguchi containers/appdata and retired RomM/MariaDB/Redis state when rollback value is gone.
-5. Rebuild the post-move network around OPNsense; keep the SX3016F as the main core-switch candidate until purchased and verified.
-6. Finalize the UPS/power plan after verifying real outlet/receptacle compatibility.
-7. Preserve independent recovery for irreplaceable data before optimizing convenience services.
+1. Establish and verify Yamanaka-to-Motosu backups.
+2. Deploy the second AdGuard Home instance on Motosu to complete redundant DNS.
+3. Rebuild the post-move network around OPNsense; keep the SX3016F as the main core-switch candidate until purchased and verified.
+4. Finalize the UPS/power plan after verifying real outlet/receptacle compatibility.
+5. Preserve independent recovery for irreplaceable data before optimizing convenience services.
+6. Remove the legacy Kawaguchi shares (uppercase `Media` and `roms`) after dependency checks confirm nothing still uses them.
+
+Immich restoration and Kawaguchi container/appdata cleanup are complete. See [migration](migration/yamanaka.md) and [services](services/README.md) for details.
