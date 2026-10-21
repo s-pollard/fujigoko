@@ -96,3 +96,7 @@ Verified/recorded hardware:
 - target platform: OPNsense
 
 No reliable chassis/OEM model has been established, so document the appliance by verified components rather than inventing a model.
+
+## personal administration workstations
+
+[Aso, Ontake, Norikura, and Azuma](workstations.md) are personal PCs used to administer both environments. Aso is the primary workstation and most powerful non-server PC; the laptops provide alternative access.

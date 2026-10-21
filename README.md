@@ -15,6 +15,10 @@ Experimental and career-learning infrastructure belongs in the separate [`gusuku
 
 The physical system formerly documented as **saiko** is no longer part of Fujigoko. It moved to gusuku and is now **shuri**.
 
+## Administration workstations
+
+**Aso** is the primary personal desktop and administration workstation. **Ontake**, **Norikura**, and **Azuma** provide alternative laptop access. See [workstation inventory](hosts/workstations.md) for hardware, roles, and backup scope.
+
 ## Network direction
 
 - current gateway: UDM-Pro

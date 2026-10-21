@@ -22,6 +22,10 @@ The physical machine that was briefly documented as `saiko` moved out of Fujigok
 
 A lake name represents a major Fujigoko host, not a container, VM, or temporary service.
 
+## personal computers — Japanese mountains
+
+Personal desktops and laptops use Japanese mountain, peak, or volcano names: `aso`, `ontake`, `norikura`, and `azuma`. Aso remains a personal workstation even though it is the main administration device. These names are separate from Fujigoko server lake names and Gusuku castle names.
+
 ## physical networking — rivers
 
 Japanese river names are reserved for physical network infrastructure where useful, such as core, aggregation, or access switching.
@@ -56,6 +60,7 @@ Ordinary application containers should generally keep their normal upstream name
 ```text
 homelab                 -> Fujigoko
 major hosts             -> Fuji Five Lakes
+personal computers      -> Japanese mountains / volcanoes
 physical networking     -> Japanese rivers
 logical/transit network -> Shinkansen
 central hubs            -> stations / major hubs
