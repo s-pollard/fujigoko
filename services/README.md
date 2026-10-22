@@ -54,7 +54,7 @@ runtime    --user=0:0
 
 The run configuration requires `--user=0:0`. The image's default user is `nobody`, which cannot open the block device nodes that smartctl reads. Setting `USER=root` as a container environment variable did not change the runtime user: an environment variable does not override the image's default user or the user selected at run time, so the runtime user had to be set to root in the template/run configuration.
 
-Verified from Yamanaka on 2026-10-21: the Prometheus smartctl scrape target is UP and the exporter reports metrics for 9 devices. `docker inspect` on Kawaguchi confirms the restored container runs with `Privileged=true` and runtime uid 0. The exported `smartctl_device_smart_status` values are not evidence that all disks are problem-free; a PASSED SMART status does not rule out incipient failure, so this verification covers scrape health and device coverage only.
+Verified from Yamanaka on 2026-10-21: the Prometheus smartctl scrape target is UP and the exporter reports metrics for 9 devices. User-provided `docker inspect` output on Kawaguchi confirmed `Privileged=true`; subsequent `docker exec smartctl-Exporter id` output confirmed runtime uid 0. The exported `smartctl_device_smart_status` values are not evidence that all disks are problem-free; a PASSED SMART status does not rule out incipient failure, so this verification covers scrape health and device coverage only.
 
 ## motosu
 
