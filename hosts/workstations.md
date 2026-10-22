@@ -20,6 +20,7 @@ These personal PCs provide administration access to Fujigoko and Gusuku. Aso is 
 - separate Intel 82599-family 10 GbE interface
 - Intel AX210-family Wi-Fi
 - OpenSSH installed; Git, FreeRDP 3, Firefox, and Tailscale available
+- Local AI administration experiments: [Hermes Agent and Odysseus](../administration/local-ai/README.md); neither is a required production dependency
 - Tailscale membership provides access to the existing tailnet; no gateway/exit-node role is assigned
 
 ## ontake
