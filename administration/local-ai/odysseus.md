@@ -1,6 +1,6 @@
 # Odysseus on Aso
 
-Dated experiment record: 2026-10-21. Tested upstream revision `934d23c` from the curated main branch, with two subsequent uncommitted local routing patches. Findings describe this revision and this session, not every release.
+Initial experiment record: 2026-10-21, with a [2026-10-22 follow-up](#follow-up--2026-10-22) below. Tested upstream revision `934d23c` from the curated main branch. Two local routing patches were applied initially, followed by a third workspace-memory patch. Source changes were not reported committed or accepted upstream. Findings describe the tested setup, not every release.
 
 ## setup and verified capabilities
 
@@ -86,11 +86,90 @@ These are related reports, not proof that a fix is present in the installed revi
 
 No exact upstream report for the `current` false-positive reproduction was found in the searches performed. No new upstream issue was filed during this session.
 
+## follow-up — 2026-10-22
+
+Evidence below is user-supplied tool output, UI inspection, and terminal output from the continued Aso test session. No new live inspection was performed while writing this record.
+
+### repository synchronization
+
+Aso's Fujigoko checkout was switched to `main` and fast-forwarded to `4482cf9`, incorporating the reviewed SMART exporter, AdGuard placement, and local-AI records. Remote branch-label cleanup was deferred and was not subsequently reported completed. This is dated checkout evidence, not a requirement to remain at that commit.
+
+### explicit workspace binding and file-tool verification
+
+Inspection of the installed source established supported workspace selection via `/workspace set <absolute-repo-path>` or the workspace picker. Selection is per chat/request, not global. The user selected the Fujigoko checkout.
+
+- `get_workspace` returned the selected repo, and `read_file` read its `SECURITY.md` directly without Shell.
+- A missing disposable test file was created with `write_file`, read back, changed with `edit_file`, and read back again with the expected replacement.
+- No existing repo documents were changed by that test, and nothing was staged or committed.
+- Cleanup commands were supplied afterward, but removal and a clean status were not explicitly reported. Check for the disposable test file before committing unrelated work.
+- An earlier out-of-workspace file access was refused. The successful read/create/edit test itself did not retest outside-root refusal.
+
+This resolves the demonstrated repo file-tool access problem when the workspace is explicitly bound. Workspace persistence across fresh conversations remains separate. Shell starts in the workspace but is not confined to it.
+
+### local patch 3: preserve memory in workspace tool selection
+
+Memory requests repeatedly reported `manage_memory` unavailable even while other tools worked. Installed source showed:
+
+```python
+_relevant_tools = set(_WORKSPACE_TERMINUS_TOOLS)
+```
+
+That workspace selection replaced the normal tool set; `_WORKSPACE_TERMINUS_TOOLS` included skills but omitted memory, despite `manage_memory` normally being always available.
+
+The local mitigation added `manage_memory` to the `_WORKSPACE_TERMINUS_TOOLS` set in `src/agent_loop.py`. Syntax and whitespace checks were included in the supplied patch procedure. After the restart procedure, an actual `manage_memory` add result was reported with the complete homelab boundary. Later retrieval from a fresh chat returned that stored text.
+
+This changes selection, not authorization: existing disabled-tool and incognito checks still apply. It does not establish that every turn exposes memory. Older conversations continued to report it missing, and one fresh-chat path worked while another failed.
+
+Broad web-intent classification remains another observed hazard. A memory prompt containing “search” can enter the web-only path, including when the word appears in a prohibition. Avoid treating every missing-tool response as a disabled UI toggle. Exact per-request selection and sent schemas are still needed to explain all failures.
+
+### memory storage, retrieval, and pinned recall
+
+The durable fact tested was: Fujigoko is production; Gusuku is disposable learning infrastructure; Fujigoko must never depend on Gusuku for required home services; useful experiments graduate by being rebuilt on Fujigoko.
+
+| Test | Observed result |
+| --- | --- |
+| Explicit save | Actual `manage_memory` add returned the complete fact |
+| Fresh-chat retrieval | Actual memory-tool results included the complete saved fact and entry identifiers |
+| Automatic relevance selection | A response indicator showed four pinned identity entries and one recalled homelab-role entry; the full boundary was not among those automatically supplied |
+| Agent recovery | The agent called memory, received the boundary, and answered the dependency direction correctly |
+| Pinned boundary | After one complete boundary entry was pinned, a fresh-chat answer used it correctly without any tool lookup |
+
+Storage and explicit cross-chat retrieval are verified; automatic relevance selection is not reliably supplying the important rule. Pinning worked for this specific durable boundary, not as a general guarantee for every instruction.
+
+Brain UI inspection showed overlapping identity and homelab entries, including two copies of the complete boundary. Later tool output returned more entries than the earlier inspection, consistent with additional extraction. Duplicate cleanup was discussed but not performed or verified. The Brain management list shows stored memories, not necessarily the subset injected into a particular answer; use the answer's pinned/recalled details to inspect that subset.
+
+One failed recall attempt used web results and reversed the dependency direction in its final answer, despite other parts stating it correctly. It was not a memory-only success. Later memory-based responses sometimes added an unsupported claim that Gusuku should build on production's stability. The accepted rule permits selected interactions but does not require or broadly recommend production dependencies for the lab.
+
+### bounded maintenance task
+
+Odysseus executed a read-only Python-via-Shell scan of local Markdown links in the Fujigoko checkout and reported no missing file targets. External URLs and same-page anchors were excluded. The displayed command was truncated, so full Markdown syntax coverage and fragment-anchor validation were not established. Treat this as a successful small tool-execution task, not a complete documentation validator.
+
+### private remote-access setup
+
+The user configured Tailscale Serve in background mode to proxy to the loopback-bound Odysseus web service. Terminal output confirmed a private tailnet HTTPS route and that Serve was running. Keep the actual hostname, tailnet identifiers, management URL, and addressing in private operational notes.
+
+Aso must remain awake with Odysseus and the local inference backend running. Serve's background mode does not itself start or supervise those applications. Router port forwarding and public Funnel exposure were not used. Login remains required.
+
+This verifies proxy configuration only: no successful off-LAN browser login or remote model response was reported. External access, application behavior behind the proxy, and reboot persistence of the complete stack remain to be tested.
+
+### additional upstream reading
+
+Read during the memory investigation; reports and proposals are context, not proof of installed fixes:
+
+- [Discussion 2406](https://github.com/odysseus-dev/odysseus/discussions/2406): persistent memory versus relevance-selected recall; manual seeding and fresh-chat tests.
+- [Issue 4948](https://github.com/odysseus-dev/odysseus/issues/4948): configurable recall count.
+- [Issue 4949](https://github.com/odysseus-dev/odysseus/issues/4949): duplicate consolidation and proposed manual merging.
+- [Issue 6194](https://github.com/odysseus-dev/odysseus/issues/6194): ordinary “from/on” phrases triggering local-machine routing and replacing personal-assistant tools.
+- [Issue 6034](https://github.com/odysseus-dev/odysseus/issues/6034): proposed richer retrieval and memory revision; not adopted by this test.
+
 ## unresolved findings and next checks
 
-- Configure deliberate repo workspace access. File tools returned `outside the allowed roots` or no workspace even when Shell could read the repo. Successful shell editing did not resolve that boundary mismatch.
-- Restore or deliberately configure ChromaDB/vector retrieval; avoid assuming all memory and skills fail merely because ToolIndex is degraded.
-- Test saved memory and skill retrieval across sessions; these were not demonstrated to the same extent as Hermes's reported persistence.
-- Fix authenticated context discovery and verify the soft budget under a long agent session; do not trust the UI percentage without its denominator.
-- Package the two routing changes with broader regression tests and a public-safe reproduction before proposing an upstream fix. Do not install unrelated draft PRs blindly.
-- Retest background activity visibility and cancellation, model-server ownership, and remote access independently. Yamanaka inspection was proposed in Odysseus but not established as completed by these tests.
+- Harden tool selection, especially memory availability and web intent/negation across conversations. The three local patches cover observed paths, not the entire classifier.
+- Verify the automatic memory relevance path and duplicate handling without adding repeated copies of the same rule. Back up the memory store before cleanup.
+- Restore or deliberately configure ChromaDB/vector retrieval; the follow-up did not report that service repaired.
+- Verify skill persistence in fresh conversations; memory success is not skill verification.
+- Fix authenticated context discovery and verify the 45,000-token soft budget under a long session; do not trust the UI percentage without its denominator.
+- Preserve and review all three local source patches before upstream updates; add broader regression tests before proposing them upstream.
+- Verify unattended startup, background-job visibility, cancellation, and complete-stack behavior after reboot.
+- Test the configured private HTTPS route from an actual off-LAN client.
+- Check disposable test-file cleanup and deferred branch-label cleanup. No new production host configuration or Odysseus-to-Yamanaka execution was established by these follow-up tests.

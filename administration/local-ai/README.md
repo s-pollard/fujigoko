@@ -1,6 +1,6 @@
 # local AI administration experiments
 
-Experiment record: 2026-10-21 (America/Chicago). This records observations from interactive testing on Aso, not a declaration that the agents are production services. UTC logs can show 2026-10-22 for the same evening.
+Experiment records: 2026-10-21 through 2026-10-22 (America/Chicago). This records observations from interactive testing on Aso, not a declaration that the agents are production services. UTC logs can show 2026-10-22 for the same evening.
 
 - [Hermes Agent](hermes.md) — setup, homelab work, memory/skills, inference failures, and lessons
 - [Odysseus](odysseus.md) — setup, tool execution, routing diagnosis, local patches, and remaining work
@@ -46,9 +46,14 @@ Generation logs and UI counters showed roughly 50–70 tokens/second in differen
 
 Changes to an agent's own upstream source belong in that project's checkout; this repository records their purpose, tested behavior, and remaining limitations.
 
+## latest follow-up — 2026-10-22
+
+Aso's Fujigoko checkout was fast-forwarded to the consolidated `main`. Odysseus then demonstrated direct workspace file reads, creation and editing, cross-chat memory retrieval, and answering from a pinned homelab boundary without tools. A further local source patch added memory to the workspace toolset. A read-only Markdown target-file check executed and reported no missing targets. Private Tailscale Serve access was configured; external-client connectivity is not yet verified. See the [dated Odysseus follow-up](odysseus.md#follow-up--2026-10-22) for evidence and remaining limitations.
+
 ## next work
 
 1. Verify the server's serving window and both clients' effective budgets with authenticated discovery or an explicit supported override.
-2. Make Odysseus tool availability and repo workspace access reliable without prompt vocabulary workarounds.
-3. Verify memory/skill persistence in a new session, including behavior when vector retrieval is unavailable.
-4. Retest a small representative administration task end to end before expanding autonomy. Backup implementation remains separate work requiring app-consistent methods and restore verification.
+2. Harden Odysseus tool selection across turns and wording. Explicit workspace read/create/edit access now passes; broad intent filtering remains an issue.
+3. Improve automatic memory relevance and duplicate handling. Cross-chat memory-tool retrieval and pinned-rule recall now pass; skill persistence remains untested.
+4. Verify unattended startup, cancellation, and off-LAN access end to end. Tailscale Serve is configured, but an actual remote-client test has not been reported.
+5. Continue with scoped administration tasks. A local Markdown target-file check ran successfully; backup implementation remains separate work requiring app-consistent methods and restore verification.
