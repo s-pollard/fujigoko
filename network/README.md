@@ -111,7 +111,7 @@ Experimental gusuku networking is separate from this production design and must 
 
 Current:
 
-- AdGuard Home runs temporarily on Kawaguchi
+- AdGuard Home runs on Yamanaka
 - this is a single-resolver dependency
 
 Target:

@@ -62,7 +62,7 @@ Target state:
 Current:
 
 ```text
-lan client -> temporary AdGuard on kawaguchi -> upstream resolver
+lan client -> adguard on yamanaka -> upstream resolver
 ```
 
 Target:

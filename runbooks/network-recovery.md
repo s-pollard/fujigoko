@@ -100,11 +100,11 @@ The Omada EAP775-Wall management approach is selected independently. Do not make
 
 ### current
 
-Kawaguchi hosts the temporary single AdGuard Home resolver.
+Yamanaka hosts the single AdGuard Home resolver.
 
 If it fails:
 
-1. confirm Kawaguchi itself is reachable
+1. confirm Yamanaka itself is reachable
 2. confirm the AdGuard service is running
 3. if necessary, temporarily point DHCP/clients at a trusted external resolver
 4. repair AdGuard
