@@ -77,7 +77,7 @@ The prior assumption that Yamanaka required 32 GB before deployment is retired. 
 - Komga
 - Komf
 - Tachidesk
-- cAdvisor / host-specific monitoring agent
+- cAdvisor and smartctl-exporter / host-specific monitoring agents
 
 Kawaguchi remains the media/manga host. Retired non-media rollback containers and appdata have been removed.
 
@@ -202,6 +202,6 @@ Measured immediately after migration, the system used roughly 4.3 GiB of 15 GiB 
 
 ## cleanup result
 
-Kawaguchi cleanup is complete. It now carries only the intended media/manga production stack plus cAdvisor.
+Kawaguchi cleanup is complete. Following the 2026-10-21 smartctl-exporter restoration, it carries the intended media/manga production stack plus cAdvisor and smartctl-exporter. See the [service record](../services/README.md#smartctl-exporter) for the restoration and verification details.
 
 The remaining migration-related operational priority is independent Yamanaka backup coverage on Motosu rather than preservation of rollback copies on Kawaguchi.

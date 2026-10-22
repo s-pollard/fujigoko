@@ -37,8 +37,14 @@ Generation logs and UI counters showed roughly 50–70 tokens/second in differen
 - GPU activity after a visible answer can be an auxiliary task, background review, compression, or continued generation. Inspect agent and inference logs rather than infer a cause from utilization alone.
 - Use scoped tasks and bounded output. Reading every document repeatedly produced large cumulative input and slow orientation turns.
 - Shell access is not a read-only sandbox. A prompt restriction does not technically remove the account's ability to change hosts or use Docker.
-- Review diffs and changed-file lists, run `git diff --check`, and use dedicated branches. A clean whitespace check does not establish factual correctness.
+- Review diffs and changed-file lists and run `git diff --check`. A clean whitespace check does not establish factual correctness.
 - Follow [SECURITY.md](../../SECURITY.md). Keep credentials, key locations/material, exact addressing, management endpoints, raw private logs, and identifying device metadata outside this public repo.
+
+## repository workflow
+
+`main` is the shared accepted documentation for both agents. Hermes and Odysseus have separate documents, not permanent agent-specific branches. Use a short-lived task branch for work that needs review, merge it after verification, then remove the completed branch. Keep the local checkout synchronized with `main` before another task. Do not let both agents edit the same checkout concurrently; use separate worktrees when parallel work is intentional.
+
+Changes to an agent's own upstream source belong in that project's checkout; this repository records their purpose, tested behavior, and remaining limitations.
 
 ## next work
 

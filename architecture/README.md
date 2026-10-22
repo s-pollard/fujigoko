@@ -28,7 +28,7 @@ Permanent workload classes:
 - Plex and media automation
 - manga services
 - bulk media/download storage
-- cAdvisor / host-specific monitoring agent
+- cAdvisor and smartctl-exporter / host-specific monitoring agents
 
 Kawaguchi is intentionally relatively rebuildable. Configuration and metadata are more important to protect than reacquirable movie/TV payloads.
 
@@ -49,7 +49,7 @@ Current migration state:
 - TrueNAS SCALE is installed
 - the photo/Immich dataset exists under the Motosu pool
 - the Immich library was copied to the rebuilt system and verified during migration
-- Immich application/database restoration is still being completed and validated
+- Immich application/database restoration is complete and validated
 
 Target permanent workloads:
 

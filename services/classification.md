@@ -28,6 +28,7 @@ Permanent:
 - Komf
 - Tachidesk
 - cAdvisor
+- smartctl-exporter
 
 Manga remains on Kawaguchi. Movie/TV payloads are largely reacquirable; configuration and metadata have higher backup value than the bulk media.
 
@@ -79,10 +80,11 @@ Supporting PostgreSQL/Redis services stay with their parent application and rema
 | signal-cli-rest-api | yamanaka | deployed | low |
 | Dockhand | yamanaka | deployed | low-medium |
 | cAdvisor/exporters | monitored host | deployed where needed | low |
+| smartctl-exporter | kawaguchi | deployed | low |
 | AdGuard Home | yamanaka | deployed | medium |
 | AdGuard Home | motosu | target | medium |
 
-Prometheus on Yamanaka continues to scrape Kawaguchi cAdvisor. Alloy collects Yamanaka Docker logs into Loki. Uptime Kuma currently runs on Yamanaka rather than on an independent host, so a total Yamanaka outage also removes that monitoring path.
+Prometheus on Yamanaka continues to scrape Kawaguchi cAdvisor and smartctl-exporter. Alloy collects Yamanaka Docker logs into Loki. Uptime Kuma currently runs on Yamanaka rather than on an independent host, so a total Yamanaka outage also removes that monitoring path.
 
 ## planned additions
 

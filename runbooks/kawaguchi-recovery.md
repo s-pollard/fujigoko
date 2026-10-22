@@ -51,7 +51,8 @@ Unpackerr
 Komga
 Komf
 Tachidesk
-host-specific monitoring agent(s)
+cAdvisor
+smartctl-exporter
 ```
 
 Non-media personal applications belong on Yamanaka once migration is complete.
@@ -127,6 +128,12 @@ Then verify:
 - permissions allow read/write where required
 - application sees existing data
 - no application is pointing at obsolete Yamanaka-era or legacy paths
+
+## monitoring verification
+
+After restoring Docker services, verify cAdvisor and smartctl-exporter from Prometheus on Yamanaka. For smartctl-exporter, check both target reachability and actual device metrics; a reachable exporter alone does not establish device access.
+
+The restored Unraid template uses privileged mode and an explicit root runtime user. Verify the runtime user with `docker exec smartctl-Exporter id`; setting a `USER=root` environment variable does not override the container's runtime user. See the [service record](../services/README.md#smartctl-exporter) for the observed configuration. Verify expected device coverage against the live host inventory, and investigate device errors separately from scrape health. SMART PASSED is not proof that a disk is problem-free.
 
 ## media flow verification
 
