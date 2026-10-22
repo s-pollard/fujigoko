@@ -10,7 +10,7 @@ Exact private IPs, MAC addresses, serial numbers, WAN details, and other sensiti
 - cpu: Intel Core Ultra 5 125H
 - memory: 64 GB
 - network: 10 GbE uplink
-- current responsibilities: Plex/media automation, manga, bulk media storage, and host-specific monitoring via cAdvisor
+- current responsibilities: Plex/media automation, manga, bulk media storage, and host-specific monitoring via cAdvisor and the smartctl-exporter
 
 Storage summary:
 
@@ -18,7 +18,7 @@ Storage summary:
 - two Samsung 970 EVO Plus 1 TB NVMe devices in the cache pool
 - main shares include appdata, downloads, media, domains, isos, and system
 
-Kawaguchi remains on Unraid for the current generation. The non-media migration cleanup is complete: retired containers were removed, unused images and volumes were pruned, and obsolete appdata for migrated/retired services was deleted. Kawaguchi now retains only the active media/manga stack plus cAdvisor.
+Kawaguchi remains on Unraid for the current generation. The non-media migration cleanup is complete: retired containers were removed, unused images and volumes were pruned, and obsolete appdata for migrated/retired services was deleted. Kawaguchi now retains only the active media/manga stack plus cAdvisor and the smartctl-exporter.
 
 ## motosu
 
