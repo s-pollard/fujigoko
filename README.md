@@ -41,6 +41,7 @@ See [`SECURITY.md`](SECURITY.md) for the full policy.
 - [architecture](architecture/README.md) — production roles and placement rules
 - [naming](architecture/naming.md) — naming conventions
 - [hosts](hosts/README.md) — hardware and platform inventory
+- [local AI administration experiments](administration/local-ai/README.md) — dated Hermes and Odysseus testing on Aso, findings, and remaining work
 - [network](network/README.md) — current and target network design
 - [topology](network/topology.md) — physical/logical topology
 - [services](services/README.md) — service inventory and dependencies
