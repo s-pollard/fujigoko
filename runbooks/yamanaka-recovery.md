@@ -129,6 +129,26 @@ Restore document/media files and required application/database state. Verify doc
 
 Redis is rebuildable unless future deployment documentation establishes otherwise.
 
+#### verified export recovery
+
+A 12-document Paperless-ngx 3.3.3 export has been restored successfully in an isolated test environment on Yamanaka, including normal startup, separate Redis, content search, browser rendering, original-file checksum verification, and restart persistence. See [backup validation and limitations](../backups/README.md#paperless-restore-validation).
+
+Recovery procedure established by the test:
+
+1. preserve the source export read-only and use separate test data/media paths
+2. use the pinned application image and an isolated Redis instance; prevent production access and external egress, and verify actual host port bindings
+3. initialize the empty application using the normal container entrypoint so required directories exist before importing; bypassing initialization caused a missing search-index directory in the test harness
+4. run the application document importer against the export and rebuild/verify the search index as needed
+5. verify document counts and IDs, representative content searches, original SHA-256 checksums, previews/thumbnails, authentication, and browser rendering
+6. restart the restored stack and repeat data/search checks
+7. remove temporary credentials, sessions, containers, and networks while preserving private evidence
+
+This is a procedural summary, not a copy-paste deployment recipe. Exact commands and evidence remain in private restore-test documentation on Yamanaka. Keep exports and configuration private: exports contain password hashes, and Compose/environment/application secret-key recovery must be handled separately.
+
+The export has no archive copies; an empty archive directory is expected for this dataset. New-document consumption, OCR/archive creation, classifier training, larger datasets, clean-host recovery, and recovery from a Motosu copy are not yet verified.
+
+**Independent backup remains pending:** Motosu's Yamanaka backup destination/access and backup jobs have not been set up. The tested export currently exists only on Yamanaka. Restore-from-Motosu steps elsewhere in this runbook describe the target procedure, not an available verified backup today.
+
 ### endurain
 
 Restore PostgreSQL and required persistent files. Verify users, activities, settings, and representative history.
