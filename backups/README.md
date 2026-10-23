@@ -94,6 +94,38 @@ Use database-native dumps or application-aware exports for database-backed servi
 
 A migrated application should not be permanently removed from Kawaguchi until the Yamanaka instance is verified and an independent Motosu backup exists.
 
+### Paperless restore validation
+
+An application export was restored and tested on Yamanaka in an isolated environment using the pinned Paperless-ngx 3.3.3 image. This validates recovery of this export, not a complete off-host backup process.
+
+Verified:
+
+- all 12 documents restored; downloaded originals match export and database SHA-256 checksums
+- normal container startup with a separate Redis instance, healthy database/Celery/index, and no unapplied migrations
+- search index contains exactly the restored document IDs; content searches and a negative query work
+- previews, thumbnails, password authentication, and browser document-list/detail/PDF rendering
+- data, search, authentication, and download checks survive a container stop/start and Redis restart
+- test containers had no host port bindings; external network and production Paperless/Redis access were blocked
+- manual sanity check reported no issues
+- temporary containers, networks, credentials, and sessions were removed; production and the source export were unchanged
+
+No archive versions exist in this export; only originals and thumbnails are expected. Classifier/sanity-status warnings reflected missing task history, not damaged data. Classifier training, new-document consumption/OCR, archive generation, larger datasets, clean-host recovery, and recovery from Motosu remain untested. Browser password entry and the Download button were not exercised directly; password login and downloads were verified separately over HTTP.
+
+The export contains user password hashes and must be stored privately. Compose configuration, environment values, and the application secret key require a separate private backup.
+
+### Yamanaka-to-Motosu setup status
+
+The Yamanaka backup destination on Motosu has **not been set up**. The verified Paperless export remains only on Yamanaka; no Motosu transfer, schedule, retention job, or failure monitoring has been implemented for it.
+
+Next work:
+
+1. choose/create the destination dataset and restricted backup access on Motosu
+2. establish the transfer method and private handling of application configuration/secrets
+3. add application-aware backups for Paperless and the other retained Yamanaka services
+4. configure scheduling, retention, and failure monitoring
+5. verify checksums and perform an isolated restore from the Motosu copy
+6. verify the destination is included in the intended off-site protection
+
 ## backup classes
 
 | class | examples | expectation |
@@ -116,7 +148,7 @@ Periodically:
 ## known gaps
 
 - encrypted B2 upload is complete, but a representative Motosu restore test is still required
-- Yamanaka-to-Motosu backup jobs/retention are not yet finalized
+- Yamanaka-to-Motosu backup destination/access, transfer jobs, scheduling, retention, and monitoring are not yet set up
 - no verified independent Kawaguchi configuration/appdata backup
 - GFX archive backup policy is not yet finalized
 - common backup-failure alerting is not yet established
