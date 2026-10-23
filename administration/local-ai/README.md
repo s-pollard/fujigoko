@@ -2,6 +2,7 @@
 
 Experiment records: 2026-10-21 through 2026-10-22 (America/Chicago). This records observations from interactive testing on Aso, not a declaration that the agents are production services. UTC logs can show 2026-10-22 for the same evening.
 
+- [Evaluation roadmap](evaluation-roadmap.md) — 22 ranked tasks, comparison rules, and model/framework scoring
 - [Hermes Agent](hermes.md) — setup, homelab work, memory/skills, inference failures, and lessons
 - [Odysseus](odysseus.md) — setup, tool execution, routing diagnosis, local patches, and remaining work
 - [Workstation inventory](../../hosts/workstations.md) — hardware source of truth
