@@ -85,6 +85,15 @@ No reliable OEM/chassis model is documented, so do not invent one.
   - Wi-Fi 7 wall-plate AP
   - 2.5 GbE-capable uplink/access connectivity
 
+Preferred AP power option:
+
+- **TP-Link Omada POE370S** — preferred injector; purchase/deployment not confirmed
+- 802.3af/at/bt Type 3, up to 60 W, with multi-gigabit/10 GbE data support
+- preferred over the used MokerLink 10GINJ65W considered during equipment review
+- verify the selected SFP+-to-copper module supports the AP's negotiated Ethernet speed; injector data capability does not change the AP uplink speed
+
+The EAP775-Wall remains the target; the seller's EAP773 bundle does not replace it. The SX3016F remains the main core-switch candidate; the eight-port SX3008F was considered but is not a confirmed purchase.
+
 Final AP placement and controller/management method are deployment decisions.
 
 ## management-plane dependency
