@@ -4,6 +4,8 @@ Experiment records: 2026-10-21 through 2026-10-23 (America/Chicago). This record
 
 - [Evaluation roadmap](evaluation-roadmap.md) — 24 tasks, revised variants, comparison rules, and model/framework scoring
 - [First 27B pilot](results/2026-10-23-qwen-27b-pilot.md) — original 22 attempts, fresh-chat reruns of 5–9, review corrections and coverage limits
+- [27B execution follow-up](results/2026-10-23-qwen-27b-follow-up.md) — host/evidence tasks, synthetic exporter, real Loki retrieval and runtime qualifications
+- [Compact comparison set](evaluation-comparison-set.md) — proposed nine-case screen and preparation gates
 - [Evaluation protocol](evaluation-protocol.md) — fixture validation, memory/session controls, analysis versus execution, and scoring
 - [Run record template](evaluation-run-template.md) — repeatable per-attempt evidence and settings record
 - [Hermes Agent](hermes.md) — setup, homelab work, memory/skills, inference failures, and lessons
@@ -67,9 +69,9 @@ Changes to an agent's own upstream source belong in that project's checkout; thi
 
 ## latest follow-up — 2026-10-23
 
-The user ran a Hermes + Qwen 27B pilot on low reasoning covering the original 22 task IDs. Original tasks 5–9 shared a chat and were subsequently rerun with fresh-chat instructions; persistent memory/skills and exact runtime settings were not controlled. Strengths were scope restraint, concrete inventory and the reported isolated edit. Weaknesses included unsupported certainty, invented or stretched evidence, and excessive repository auditing. Most diagnostic tasks used supplied snapshots/fixtures rather than model-executed host/API checks. The reviewer also corrected a Loki timestamp assumption after inspecting source. See the [pilot report](results/2026-10-23-qwen-27b-pilot.md); this is not a completed controlled baseline or a live host audit.
+The user ran a Hermes + Qwen 27B pilot with client reasoning configured low covering the original 22 task IDs. Original tasks 5–9 shared a chat and were subsequently rerun with fresh-chat instructions; persistent memory/skills and exact runtime settings were not controlled. Strengths were scope restraint, concrete inventory and the reported isolated edit. Weaknesses included unsupported certainty, invented or stretched evidence, and excessive repository auditing. Most diagnostic tasks used supplied snapshots/fixtures rather than model-executed host/API checks. The reviewer also corrected a Loki timestamp assumption after inspecting source. See the [pilot report](results/2026-10-23-qwen-27b-pilot.md); this is not a completed controlled baseline or a live host audit.
 
-The roadmap now retains tasks 1–22 and adds execution-host verification (23) and conflicting-evidence/memory handling (24). Complete reviewed fixtures and missing execution coverage before smaller-model comparisons. No new production changes, deployment readiness or GPU fit were established.
+The roadmap now retains tasks 1–22 and adds execution-host verification (23) and conflicting-evidence/memory handling (24). Initial task 23/24 variants and isolated task 14/15 execution exercises are now recorded in the [follow-up](results/2026-10-23-qwen-27b-follow-up.md). Matching upstream server source supports request-level low overriding preset medium, conditional on the traced request; live request capture and full runtime controls remain incomplete. Prepare the [compact comparison set](evaluation-comparison-set.md) before smaller-model screening. No new production changes, deployment readiness or GPU fit were established.
 
 ## earlier follow-up — 2026-10-22
 
@@ -77,11 +79,10 @@ Aso's Fujigoko checkout was fast-forwarded to the consolidated `main`. Odysseus 
 
 ## next work
 
-Evaluation priority: prepare frozen prompts/reference answers and controlled profiles using the [evaluation protocol](evaluation-protocol.md), then complete missing/invalid 27B coverage and new tasks 23–24. Keep pilot attempts and reviewer corrections separate from subsequent comparisons.
+Evaluation priority: prepare the proposed [nine-case comparison set](evaluation-comparison-set.md), with frozen reference answers and controlled profiles under the [evaluation protocol](evaluation-protocol.md). Complete missing/invalid 27B coverage, including the remaining task 23/24 variants. Keep pilot attempts and reviewer corrections separate from subsequent comparisons.
 
 1. Verify the server's serving window and both clients' effective budgets with authenticated discovery or an explicit supported override.
 2. Harden Odysseus tool selection across turns and wording. Explicit workspace read/create/edit access now passes; broad intent filtering remains an issue.
 3. Improve automatic memory relevance and duplicate handling. Cross-chat memory-tool retrieval and pinned-rule recall now pass; skill persistence remains untested.
 4. Verify unattended startup, cancellation, and off-LAN access end to end. Tailscale Serve is configured, but an actual remote-client test has not been reported.
 5. Continue with scoped administration tasks. A local Markdown target-file check ran successfully; backup implementation remains separate work requiring app-consistent methods and restore verification.
-

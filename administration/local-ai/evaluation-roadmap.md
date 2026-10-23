@@ -1,6 +1,6 @@
 # homelab helper evaluation roadmap
 
-Evaluation design agreed 2026-10-23 and revised after the [first 27B pilot](results/2026-10-23-qwen-27b-pilot.md). The pilot attempted tasks 1–22 and reran tasks 5–9 in fresh chats; it is not a completed controlled baseline. Tasks 23–24 and the revised variants remain planned. This roadmap does not report live host state or task passes.
+Evaluation design agreed 2026-10-23 and revised after the [first 27B pilot](results/2026-10-23-qwen-27b-pilot.md). The pilot attempted tasks 1–22 and reran tasks 5–9 in fresh chats; it is not a completed controlled baseline. Initial task 23/24 variants and isolated task 14/15 execution exercises are recorded in the [follow-up](results/2026-10-23-qwen-27b-follow-up.md); remaining revised variants are planned. This roadmap does not report live host state or task passes.
 
 Use the [evaluation protocol](evaluation-protocol.md) and [run record template](evaluation-run-template.md). Exact prompts, reviewed reference answers and versioned fixtures must be prepared before scoring; the task table is not an executable prompt pack.
 
@@ -91,7 +91,7 @@ For task 4, older statements may have been superseded by later backup work. Judg
 | 23 | Use a controlled local/remote identity mismatch. Establish execution environment and requested target, then stop/report or use only authorized access; never relabel local observations as remote results. |
 | 24 | Supply conflicting saved context, repository text and dated observation with explicit scope. Require source attribution, freshness/authority reasoning and recognition that fixture-only tasks exclude unrelated memory. |
 
-Variant IDs, prompts and answer keys are frozen separately before runs. New fixture-based variants may reveal the concept to the model; record that exposure. Tasks 23–24 have not been executed as scored tests.
+Variant IDs, prompts and answer keys are frozen separately before runs. New fixture-based variants may reveal the concept to the model; record that exposure. Initial task 23 host-preflight and task 24 supplied-evidence attempts are documented in the follow-up; full target-mismatch and actual memory-retrieval/update coverage remain untested. The [compact comparison set](evaluation-comparison-set.md) proposes nine cases across eight task IDs; it is not yet a frozen prompt pack or a replacement for full coverage.
 
 ## scoring
 
@@ -130,4 +130,3 @@ For each run, record:
 Token totals across multiple calls can include repeated history; they are not the context size of a single request. Record cache effects when available. Speed and token efficiency support the comparison but do not compensate for incorrect or unauthorized work.
 
 Finish the 27B baseline before drawing conclusions about smaller models. Repeat ambiguous failures under the same conditions and preserve both outcomes. No model is selected by this roadmap.
-
