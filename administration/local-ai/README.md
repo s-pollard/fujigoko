@@ -1,15 +1,18 @@
 # local AI administration experiments
 
-Experiment records: 2026-10-21 through 2026-10-22 (America/Chicago). This records observations from interactive testing on Aso, not a declaration that the agents are production services. UTC logs can show 2026-10-22 for the same evening.
+Experiment records: 2026-10-21 through 2026-10-23 (America/Chicago). This records observations from interactive testing on Aso, not a declaration that the agents are production services. UTC logs can show the following date for the same evening.
 
-- [Evaluation roadmap](evaluation-roadmap.md) — 22 ranked tasks, comparison rules, and model/framework scoring
+- [Evaluation roadmap](evaluation-roadmap.md) — 24 tasks, revised variants, comparison rules, and model/framework scoring
+- [First 27B pilot](results/2026-10-23-qwen-27b-pilot.md) — original 22 attempts, fresh-chat reruns of 5–9, review corrections and coverage limits
+- [Evaluation protocol](evaluation-protocol.md) — fixture validation, memory/session controls, analysis versus execution, and scoring
+- [Run record template](evaluation-run-template.md) — repeatable per-attempt evidence and settings record
 - [Hermes Agent](hermes.md) — setup, homelab work, memory/skills, inference failures, and lessons
 - [Odysseus](odysseus.md) — setup, tool execution, routing diagnosis, local patches, and remaining work
 - [Workstation inventory](../../hosts/workstations.md) — hardware source of truth
 
 ## scope and boundary
 
-Aso remains a personal administration workstation. Fujigoko services must continue without it or either agent. Gusuku remains disposable; useful experiments are rebuilt on Fujigoko rather than making production depend on the lab.
+Aso remains a personal administration workstation and the temporary evaluation test bed until the move. Fujigoko services must continue without it or either agent. Gusuku remains disposable; useful experiments are rebuilt on Fujigoko rather than making production depend on the lab.
 
 The agents can help inspect documentation, propose plans, execute authorized diagnostics, and prepare reviewed changes. A local model is not an authority on host state. Distinguish repository claims, direct tool results, user-supplied evidence, and assumptions. Container readiness does not prove application correctness, backup recoverability, or disk health.
 
@@ -62,14 +65,23 @@ Generation logs and UI counters showed roughly 50–70 tokens/second in differen
 
 Changes to an agent's own upstream source belong in that project's checkout; this repository records their purpose, tested behavior, and remaining limitations.
 
-## latest follow-up — 2026-10-22
+## latest follow-up — 2026-10-23
+
+The user ran a Hermes + Qwen 27B pilot on low reasoning covering the original 22 task IDs. Original tasks 5–9 shared a chat and were subsequently rerun with fresh-chat instructions; persistent memory/skills and exact runtime settings were not controlled. Strengths were scope restraint, concrete inventory and the reported isolated edit. Weaknesses included unsupported certainty, invented or stretched evidence, and excessive repository auditing. Most diagnostic tasks used supplied snapshots/fixtures rather than model-executed host/API checks. The reviewer also corrected a Loki timestamp assumption after inspecting source. See the [pilot report](results/2026-10-23-qwen-27b-pilot.md); this is not a completed controlled baseline or a live host audit.
+
+The roadmap now retains tasks 1–22 and adds execution-host verification (23) and conflicting-evidence/memory handling (24). Complete reviewed fixtures and missing execution coverage before smaller-model comparisons. No new production changes, deployment readiness or GPU fit were established.
+
+## earlier follow-up — 2026-10-22
 
 Aso's Fujigoko checkout was fast-forwarded to the consolidated `main`. Odysseus then demonstrated direct workspace file reads, creation and editing, cross-chat memory retrieval, and answering from a pinned homelab boundary without tools. A further local source patch added memory to the workspace toolset. A read-only Markdown target-file check executed and reported no missing targets. Private Tailscale Serve access was configured; external-client connectivity is not yet verified. See the [dated Odysseus follow-up](odysseus.md#follow-up--2026-10-22) for evidence and remaining limitations.
 
 ## next work
+
+Evaluation priority: prepare frozen prompts/reference answers and controlled profiles using the [evaluation protocol](evaluation-protocol.md), then complete missing/invalid 27B coverage and new tasks 23–24. Keep pilot attempts and reviewer corrections separate from subsequent comparisons.
 
 1. Verify the server's serving window and both clients' effective budgets with authenticated discovery or an explicit supported override.
 2. Harden Odysseus tool selection across turns and wording. Explicit workspace read/create/edit access now passes; broad intent filtering remains an issue.
 3. Improve automatic memory relevance and duplicate handling. Cross-chat memory-tool retrieval and pinned-rule recall now pass; skill persistence remains untested.
 4. Verify unattended startup, cancellation, and off-LAN access end to end. Tailscale Serve is configured, but an actual remote-client test has not been reported.
 5. Continue with scoped administration tasks. A local Markdown target-file check ran successfully; backup implementation remains separate work requiring app-consistent methods and restore verification.
+
