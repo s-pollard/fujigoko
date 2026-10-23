@@ -14,6 +14,21 @@ The agents can help inspect documentation, propose plans, execute authorized dia
 
 These dated records preserve failures and corrections. They do not replace the live inventories, service records, or recovery runbooks. Re-read those files and verify live state when needed. Do not copy changing findings into permanent memory as timeless facts.
 
+## inference direction — 2026-10-23
+
+Local inference is the intended deployment model for the ongoing homelab helper. Paid model API inference is not an acceptable ongoing option for this use case; do not treat it as the default backend or a required fallback. API-assisted testing has incurred at least $4.71 so far; this is a reported lower bound, not a final usage total or monthly estimate.
+
+Current evaluation constraints:
+
+- test now on Aso's existing RX 7900 XTX (24 GB); the RTX 3060 Ti is not currently accessible
+- evaluate models and context budgets that could fit a prospective RX 9060 XT **16 GB**
+- the RX 9060 XT is a candidate, not a confirmed purchase, and its performance has not been measured
+- select for reliable tool calls, Linux/Docker/network/backup troubleshooting, production/test separation, verification, and clear reporting of incomplete checks
+- fitting weights in VRAM does not establish usable context capacity or reliable administration behavior
+- the current 27B setup is not evidence that the same configuration fits a 16 GB GPU
+
+No replacement model has been selected. Use the completed Paperless restore work as a representative evaluation task, with isolated tests and objective checks. Local inference does not imply that every optional search or other external tool is offline; assess those tool dependencies separately.
+
 ## shared inference setup observed during testing
 
 | Component | Observed setup |
