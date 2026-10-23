@@ -78,6 +78,14 @@ A fresh clone lacked Git identity. An attempted correction accidentally wrote co
 
 Ctrl+C after completed edits did not remove on-disk changes. Git status/diff were used to recover the exact state. `hermes -c` resumed saved history, including problematic history; resumption is not a clean context reset. A tmux session was suggested for SSH continuity, but installation/use should be verified rather than assumed.
 
+## inference follow-up — 2026-10-23
+
+Paid model API inference was used during later testing, with reported spend of at least $4.71. The exact provider/model and final total are not established by this record. These later results must not be presented as proof that the initial local model completed the same tasks.
+
+The intended ongoing homelab helper must use local inference; paid API inference is not the deployment option or a required fallback. Evaluation will use the available RX 7900 XTX now, targeting configurations that could later fit an RX 9060 XT 16 GB. The RTX 3060 Ti is currently inaccessible. No new model or GPU purchase is confirmed. See the [shared inference direction](README.md#inference-direction--2026-10-23).
+
+The Paperless restore test provides a useful task benchmark: verified recovery, content search, original checksums, isolation, normal startup, restart persistence, and browser rendering. Its backup coverage remains incomplete because Yamanaka-to-Motosu backup setup has not been implemented; see [backup status](../../backups/README.md).
+
 ## remaining work
 
 - Resolve effective context metadata on resumed sessions and auxiliary routes.
