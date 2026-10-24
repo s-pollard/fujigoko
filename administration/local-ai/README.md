@@ -2,6 +2,7 @@
 
 Experiment records: 2026-10-21 through 2026-10-24 (America/Chicago). This records observations from interactive testing on Aso, not a declaration that the agents are production services. UTC logs can show the following date for the same evening.
 
+- [Eight-model inventory and Ministral screen](results/2026-10-24-model-inventory-and-ministral-screen.md) — confirmed picker inventory, installation caveats, first-attempt failures and fair-comparison controls
 - [9B exploratory screen](results/2026-10-24-qwen-9b-screen.md) — installation lessons, first-attempt findings, 27B comparison limits and Granite/Ministral candidates
 - [Evaluation roadmap](evaluation-roadmap.md) — 24 tasks, revised variants, comparison rules, and model/framework scoring
 - [First 27B pilot](results/2026-10-23-qwen-27b-pilot.md) — original 22 attempts, fresh-chat reruns of 5–9, review corrections and coverage limits
@@ -73,7 +74,7 @@ Changes to an agent's own upstream source belong in that project's checkout; thi
 
 Qwen3.5-9B-Q4_K_M is reported working in Hermes after importing the existing GGUF through the supported desktop model-registration flow. Manual router-preset edits were regenerated and did not register the model durably. The [9B screen](results/2026-10-24-qwen-9b-screen.md) records two local-host attempts and short fictional analysis/planning cases. Most short answers took roughly 2–5 seconds, but there were material counting, exit-code/OOM, dated-evidence, rollback and backup-procedure errors, alongside frequent output-length misses.
 
-This is an exploratory baseline, not the frozen comparison pack or a quantified comparison with Qwen3.8 27B. Runtime, context, sampling and persistent-context controls remain incomplete; no new VRAM measurement was supplied. The user selected Granite 4.1 8B and Ministral 3 14B Instruct 2512 at Q4_K_M as next candidates. Download/import instructions were supplied, but neither candidate's installation or test completion is confirmed. Keep existing Qwen models and first-attempt results; no deployment model has been selected.
+This is an exploratory baseline, not the frozen comparison pack or a quantified comparison with Qwen3.8 27B. Runtime, context, sampling and persistent-context controls remain incomplete; no new VRAM measurement was supplied. The later [model inventory and Ministral screen](results/2026-10-24-model-inventory-and-ministral-screen.md) confirms eight downloaded models visible in the local picker: Qwen 9B/27B/35B, Granite 8B, Ministral 14B, GPT-OSS 20B, Gemma 26B-A4B and GLM-4.7-Flash. Ministral loaded and produced exploratory answers, with material date arithmetic, evidence, OOM, Git and unsupported-verification errors. Granite and the four newly added alternatives have not supplied load/test results. Terminal model selection is available over SSH. Manual preset durability, effective serving budgets and new-model GPU fit remain unverified. No deployment model has been selected.
 
 ## prior follow-up — 2026-10-23
 
