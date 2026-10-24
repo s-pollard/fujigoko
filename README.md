@@ -54,7 +54,7 @@ See [`SECURITY.md`](SECURITY.md) for the full policy.
 - [service classification](services/classification.md) — placement and lifecycle decisions
 - [storage](storage/README.md) — storage ownership and data criticality
 - [backups](backups/README.md) — backup policy, verified state, and gaps
-- [Yamanaka migration](migration/yamanaka.md) — completed service cutover and remaining cleanup/backup work
+- [Yamanaka migration history](history/yamanaka-migration-2026.md) — archived record of the completed service migration and cleanup
 - [runbooks](runbooks/README.md) — recovery procedures
 
 ## Current priorities
@@ -66,4 +66,4 @@ See [`SECURITY.md`](SECURITY.md) for the full policy.
 5. Preserve independent recovery for irreplaceable data before optimizing convenience services.
 6. Remove the legacy Kawaguchi shares (uppercase `Media` and `roms`) after dependency checks confirm nothing still uses them.
 
-Immich restoration and Kawaguchi container/appdata cleanup are complete. See [migration](migration/yamanaka.md) and [services](services/README.md) for details.
+Immich restoration and Kawaguchi container/appdata cleanup are complete. See [services](services/README.md) for current placement and [Yamanaka migration history](history/yamanaka-migration-2026.md) for the completed migration record.
