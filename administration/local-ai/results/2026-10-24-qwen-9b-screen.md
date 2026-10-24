@@ -9,7 +9,7 @@ User-run testing on Aso within /pleblab/, following the [27B pilot](2026-10-23-q
 - Aso's existing RX 7900 XTX is the test platform. No new VRAM, power or usable-context measurement was supplied.
 - CLI context displays reached roughly 14.7–15.4K input against a displayed 262.1K budget. That display does not verify the server's effective context. Most short-answer UI generation rates were around 84–96 tokens/s, with some around 15–24 tokens/s; these are informal UI readings, not comparable throughput benchmarks.
 - Fresh chats were requested between cases, and multiple `/new` messages were visible. Persistent memory/skills were not reset or snapshotted. Fixture prompts prohibited their use, but automatic injection was not ruled out; the local-host answers referenced profile/repository context.
-- Earlier launch attempts requested low reasoning. The successful managed-desktop selection did not independently establish the effective reasoning or sampling settings for subsequent CLI cases.
+- **Reasoning: medium, confirmed by the user after the screen.** Earlier unsuccessful launch attempts requested low; they do not describe the successful test sessions. Request-level transmission, effective server behavior and sampling settings were not independently captured.
 
 ### installation lessons
 
