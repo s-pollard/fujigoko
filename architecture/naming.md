@@ -83,4 +83,4 @@ logical/transit network -> Shinkansen
 central hubs            -> stations / major hubs
 ```
 
-This file defines naming policy. Host and network documents remain the source of truth for what is actually deployed.
+This file defines naming policy. Host and network documents take precedence when documenting what is actually deployed.
