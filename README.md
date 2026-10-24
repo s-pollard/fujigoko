@@ -1,10 +1,16 @@
 # fujigoko
 
-Fujigoko is my production homelab.
+Fujigoko is the production environment within **/pleblab/**, the overall homelab.
+
+```text
+/pleblab/
+├── fujigoko  -> production
+└── gusuku    -> experimentation / learning
+```
 
 The design is intentionally simple: keep host roles clear, document deployed state, preserve recoverability, and add complexity only when it solves a real production problem.
 
-Experimental and career-learning infrastructure belongs in the separate [`gusuku`](https://github.com/s-pollard/gusuku) lab. Fujigoko must not depend on gusuku for required home services.
+Experimental and career-learning infrastructure belongs in the separate [`gusuku`](https://github.com/s-pollard/gusuku) environment under /pleblab/. Fujigoko must not depend on gusuku for required home services.
 
 ## Core hosts
 
@@ -39,7 +45,7 @@ See [`SECURITY.md`](SECURITY.md) for the full policy.
 ## Documentation
 
 - [architecture](architecture/README.md) — production roles and placement rules
-- [naming](architecture/naming.md) — naming conventions
+- [naming](architecture/naming.md) — /pleblab/ and Fujigoko naming conventions
 - [hosts](hosts/README.md) — hardware and platform inventory
 - [local AI administration experiments](administration/local-ai/README.md) — dated Hermes and Odysseus testing on Aso, findings, and remaining work
 - [network](network/README.md) — current and target network design
