@@ -84,7 +84,7 @@ Supporting PostgreSQL/Redis services stay with their parent application and rema
 | AdGuard Home | yamanaka | deployed | medium |
 | AdGuard Home | motosu | target | medium |
 
-Prometheus on Yamanaka continues to scrape Kawaguchi cAdvisor and smartctl-exporter. Alloy collects Yamanaka Docker logs into Loki. Uptime Kuma currently runs on Yamanaka rather than on an independent host, so a total Yamanaka outage also removes that monitoring path.
+Prometheus on Yamanaka continues to scrape Kawaguchi cAdvisor and smartctl-exporter. Alloy collects Yamanaka Docker logs into Loki. Uptime Kuma remains on Yamanaka rather than on an independent host, so a total Yamanaka outage also removes that monitoring path.
 
 ## planned additions
 
@@ -110,18 +110,18 @@ Presence in old notes or backups should not be interpreted as active production 
 
 ## migration rule
 
-For each retained service moved from Kawaguchi to Yamanaka:
+Preferred procedure for future migrations:
 
 ```text
 1. identify persistence and dependencies
 2. create an independent backup/export
-3. deploy on yamanaka
+3. deploy on the destination host
 4. restore/copy persistence
 5. verify application behavior
 6. verify dependencies
-7. establish backup to motosu
-8. observe with the kawaguchi copy stopped but intact
+7. establish independent backup coverage
+8. observe with the previous copy stopped but intact when practical
 9. remove the old copy after successful cutover
 ```
 
-The service cutover, reboot verification, and Kawaguchi cleanup are complete. Independent Yamanaka backup coverage remains an operational follow-up item.
+The Yamanaka service cutover, reboot verification, and Kawaguchi cleanup are complete. Independent Yamanaka-to-Motosu backup coverage was deferred because no new valuable production data had yet been added after migration; establishing that backup is now a high-priority operational follow-up.
