@@ -79,6 +79,8 @@ This is an **exploratory baseline**, not a completed controlled baseline. It sup
 
 ## next candidates and status
 
+Historical status below reflects the initial screen. A [later inventory and Ministral follow-up](2026-10-24-model-inventory-and-ministral-screen.md) confirms both files registered, Ministral tested, and eight models visible in the picker. Granite tests remain unreported.
+
 The user chose to test **Granite 4.1 8B** and **Ministral 3 14B Instruct 2512**, both initially at Q4_K_M. Qwen 9B stays unchanged as the small-model reference; the existing 27B is retained.
 
 | Candidate | Selected download | Status at this update |
