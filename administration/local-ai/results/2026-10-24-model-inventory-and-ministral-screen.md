@@ -4,6 +4,10 @@
 
 User-supplied Aso terminal output and Hermes answers, following the [Qwen 9B screen](2026-10-24-qwen-9b-screen.md). This is an exploratory record, not a controlled benchmark or deployment approval. No new production-host checks were performed for this documentation update.
 
+## later Granite update — 2026-10-24
+
+The inventory/status below is the earlier snapshot. Granite 4.1 8B was subsequently tested: see the [35-task full transcript](2026-10-24-granite-41-8b-transcript.md) and [review](2026-10-24-granite-41-8b-screen.md). Three additional attempts preserve restore/deployment reruns. Granite 4.2 8B was selected as a ninth candidate; instructions were supplied, but download/load/test completion is not confirmed.
+
 ## downloaded and registered models
 
 The final local-model picker showed all eight files. Sizes below are rounded terminal/picker readings in binary-sized units, despite the UI's GB label; they are not GPU-memory requirements.
