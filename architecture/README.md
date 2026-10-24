@@ -152,4 +152,4 @@ Low priority / replaceable:
 5. Document storage, dependencies, and recovery before adding automation.
 6. Remove retired experiments instead of preserving them by inertia.
 7. Keep secrets, exact addressing, personal information, and unique external identifiers out of the public repository.
-8. Treat deployed state—not old migration assumptions—as the source of truth.
+8. Treat deployed state—not old migration assumptions—as current state.
