@@ -2,6 +2,9 @@
 
 Experiment records: 2026-10-21 through 2026-10-24 (America/Chicago). This records observations from interactive testing on Aso, not a declaration that the agents are production services. UTC logs can show the following date for the same evening.
 
+- [Qwen 9B answer transcript](results/2026-10-24-qwen-9b-answer-transcript.md) — 35 recovered answers; missing full prompts explicitly marked
+- [Ministral 14B answer transcript](results/2026-10-24-ministral-14b-answer-transcript.md) — 34 recovered answers, plus a separately identified duplicate paste
+- [Earlier Hermes skill-work transcript](results/hermes-skill-work-answer-transcript.md) — six pasted responses, separate from the model screens
 - [Eight-model inventory and Ministral screen](results/2026-10-24-model-inventory-and-ministral-screen.md) — confirmed picker inventory, installation caveats, first-attempt failures and fair-comparison controls
 - [9B exploratory screen](results/2026-10-24-qwen-9b-screen.md) — installation lessons, first-attempt findings, 27B comparison limits and Granite/Ministral candidates
 - [Evaluation roadmap](evaluation-roadmap.md) — 24 tasks, revised variants, comparison rules, and model/framework scoring
@@ -14,6 +17,8 @@ Experiment records: 2026-10-21 through 2026-10-24 (America/Chicago). This record
 - [Hermes Agent](hermes.md) — setup, homelab work, memory/skills, inference failures, and lessons
 - [Odysseus](odysseus.md) — setup, tool execution, routing diagnosis, local patches, and remaining work
 - [Workstation inventory](../../hosts/workstations.md) — hardware source of truth
+
+The recovered transcripts preserve visible final-answer wording, including errors, separately from reviewer findings. Most original questions were collapsed or absent in the chat; these are partial evidence records, not complete reproducible question-and-answer datasets. No missing fixture text has been reconstructed.
 
 ## scope and boundary
 
