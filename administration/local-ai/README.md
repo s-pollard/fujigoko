@@ -2,6 +2,8 @@
 
 Experiment records: 2026-10-21 through 2026-10-24 (America/Chicago). This records observations from interactive testing on Aso, not a declaration that the agents are production services. UTC logs can show the following date for the same evening.
 
+- [Granite 4.1 8B full transcript](results/2026-10-24-granite-41-8b-transcript.md) — complete stored prompts/answers, tasks 0–34, 38 attempts and session boundaries
+- [Granite 4.1 8B reviewed screen](results/2026-10-24-granite-41-8b-screen.md) — first attempts, reruns, evidence failures and comparison limits
 - [Chat export and reviewed GitHub sync](chat-export.md) — read-only session exporter; full stored prompts/answers staged privately before publication
 - [Qwen 9B answer transcript](results/2026-10-24-qwen-9b-answer-transcript.md) — 35 recovered answers; missing full prompts explicitly marked
 - [Ministral 14B answer transcript](results/2026-10-24-ministral-14b-answer-transcript.md) — 34 recovered answers, plus a separately identified duplicate paste
@@ -19,7 +21,7 @@ Experiment records: 2026-10-21 through 2026-10-24 (America/Chicago). This record
 - [Odysseus](odysseus.md) — setup, tool execution, routing diagnosis, local patches, and remaining work
 - [Workstation inventory](../../hosts/workstations.md) — hardware source of truth
 
-The recovered transcripts preserve visible final-answer wording, including errors, separately from reviewer findings. Most original questions were collapsed or absent in the chat; these are partial evidence records, not complete reproducible question-and-answer datasets. No missing fixture text has been reconstructed.
+The recovered transcripts preserve visible final-answer wording, including errors, separately from reviewer findings. Most original Qwen/Ministral questions were collapsed or absent in the chat, so those recovered records remain partial. The later Granite 4.1 database export supplies complete stored prompts/answers for that screen, with session and retry boundaries. No missing fixture text has been reconstructed; none of these records alone establishes a controlled benchmark.
 
 ## scope and boundary
 
@@ -80,7 +82,7 @@ Changes to an agent's own upstream source belong in that project's checkout; thi
 
 Qwen3.5-9B-Q4_K_M is reported working in Hermes after importing the existing GGUF through the supported desktop model-registration flow. Manual router-preset edits were regenerated and did not register the model durably. The [9B screen](results/2026-10-24-qwen-9b-screen.md) records two local-host attempts and short fictional analysis/planning cases. Most short answers took roughly 2–5 seconds, but there were material counting, exit-code/OOM, dated-evidence, rollback and backup-procedure errors, alongside frequent output-length misses.
 
-This is an exploratory baseline, not the frozen comparison pack or a quantified comparison with Qwen3.8 27B. Runtime, context, sampling and persistent-context controls remain incomplete; no new VRAM measurement was supplied. The later [model inventory and Ministral screen](results/2026-10-24-model-inventory-and-ministral-screen.md) confirms eight downloaded models visible in the local picker: Qwen 9B/27B/35B, Granite 8B, Ministral 14B, GPT-OSS 20B, Gemma 26B-A4B and GLM-4.7-Flash. Ministral loaded and produced exploratory answers, with material date arithmetic, evidence, OOM, Git and unsupported-verification errors. Granite and the four newly added alternatives have not supplied load/test results. Terminal model selection is available over SSH. Manual preset durability, effective serving budgets and new-model GPU fit remain unverified. No deployment model has been selected.
+This is an exploratory baseline, not the frozen comparison pack or a quantified comparison with Qwen3.8 27B. Runtime, context, sampling and persistent-context controls remain incomplete; no new VRAM measurement was supplied. The later [model inventory and Ministral screen](results/2026-10-24-model-inventory-and-ministral-screen.md) confirms eight downloaded models visible in the local picker: Qwen 9B/27B/35B, Granite 8B, Ministral 14B, GPT-OSS 20B, Gemma 26B-A4B and GLM-4.7-Flash. Ministral loaded and produced exploratory answers, with material date arithmetic, evidence, OOM, Git and unsupported-verification errors. Granite 4.1 8B has since completed an exploratory screen, with [full stored prompts/answers](results/2026-10-24-granite-41-8b-transcript.md) and a [review](results/2026-10-24-granite-41-8b-screen.md). Its 36 exported sessions contain 35 distinct tasks and 38 test attempts, plus non-test terminal input. Several material evidence errors remain. Granite 4.2 8B is the next selected candidate; its download/load/test completion is unconfirmed. The four other newly added alternatives still have no supplied load/test results. Terminal model selection is available over SSH. Manual preset durability, effective serving budgets and new-model GPU fit remain unverified. No deployment model has been selected.
 
 ## prior follow-up — 2026-10-23
 
