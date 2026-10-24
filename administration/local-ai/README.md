@@ -1,7 +1,8 @@
 # local AI administration experiments
 
-Experiment records: 2026-10-21 through 2026-10-23 (America/Chicago). This records observations from interactive testing on Aso, not a declaration that the agents are production services. UTC logs can show the following date for the same evening.
+Experiment records: 2026-10-21 through 2026-10-24 (America/Chicago). This records observations from interactive testing on Aso, not a declaration that the agents are production services. UTC logs can show the following date for the same evening.
 
+- [9B exploratory screen](results/2026-10-24-qwen-9b-screen.md) — installation lessons, first-attempt findings, 27B comparison limits and Granite/Ministral candidates
 - [Evaluation roadmap](evaluation-roadmap.md) — 24 tasks, revised variants, comparison rules, and model/framework scoring
 - [First 27B pilot](results/2026-10-23-qwen-27b-pilot.md) — original 22 attempts, fresh-chat reruns of 5–9, review corrections and coverage limits
 - [27B execution follow-up](results/2026-10-23-qwen-27b-follow-up.md) — host/evidence tasks, synthetic exporter, real Loki retrieval and runtime qualifications
@@ -68,7 +69,13 @@ Generation logs and UI counters showed roughly 50–70 tokens/second in differen
 
 Changes to an agent's own upstream source belong in that project's checkout; this repository records their purpose, tested behavior, and remaining limitations.
 
-## latest follow-up — 2026-10-23
+## latest follow-up — 2026-10-24
+
+Qwen3.5-9B-Q4_K_M is reported working in Hermes after importing the existing GGUF through the supported desktop model-registration flow. Manual router-preset edits were regenerated and did not register the model durably. The [9B screen](results/2026-10-24-qwen-9b-screen.md) records two local-host attempts and short fictional analysis/planning cases. Most short answers took roughly 2–5 seconds, but there were material counting, exit-code/OOM, dated-evidence, rollback and backup-procedure errors, alongside frequent output-length misses.
+
+This is an exploratory baseline, not the frozen comparison pack or a quantified comparison with Qwen3.8 27B. Runtime, context, sampling and persistent-context controls remain incomplete; no new VRAM measurement was supplied. The user selected Granite 4.1 8B and Ministral 3 14B Instruct 2512 at Q4_K_M as next candidates. Download/import instructions were supplied, but neither candidate's installation or test completion is confirmed. Keep existing Qwen models and first-attempt results; no deployment model has been selected.
+
+## prior follow-up — 2026-10-23
 
 The user ran a Hermes + Qwen 27B pilot with client reasoning configured low covering the original 22 task IDs. Original tasks 5–9 shared a chat and were subsequently rerun with fresh-chat instructions; persistent memory/skills and exact runtime settings were not controlled. Strengths were scope restraint, concrete inventory and the reported isolated edit. Weaknesses included unsupported certainty, invented or stretched evidence, and excessive repository auditing. Most diagnostic tasks used supplied snapshots/fixtures rather than model-executed host/API checks. The reviewer also corrected a Loki timestamp assumption after inspecting source. See the [pilot report](results/2026-10-23-qwen-27b-pilot.md); this is not a completed controlled baseline or a live host audit.
 
