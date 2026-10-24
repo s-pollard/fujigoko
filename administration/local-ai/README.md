@@ -5,6 +5,7 @@ Experiment records: 2026-10-21 through 2026-10-23 (America/Chicago). This record
 - [Evaluation roadmap](evaluation-roadmap.md) — 24 tasks, revised variants, comparison rules, and model/framework scoring
 - [First 27B pilot](results/2026-10-23-qwen-27b-pilot.md) — original 22 attempts, fresh-chat reruns of 5–9, review corrections and coverage limits
 - [27B execution follow-up](results/2026-10-23-qwen-27b-follow-up.md) — host/evidence tasks, synthetic exporter, real Loki retrieval and runtime qualifications
+- [Hermes skill reuse review](results/2026-10-23-hermes-skill-reuse.md) — conflicting instructions, saved corrections, repeated compaction and smaller-model handoff
 - [Compact comparison set](evaluation-comparison-set.md) — proposed nine-case screen and preparation gates
 - [Evaluation protocol](evaluation-protocol.md) — fixture validation, memory/session controls, analysis versus execution, and scoring
 - [Run record template](evaluation-run-template.md) — repeatable per-attempt evidence and settings record
@@ -72,6 +73,8 @@ Changes to an agent's own upstream source belong in that project's checkout; thi
 The user ran a Hermes + Qwen 27B pilot with client reasoning configured low covering the original 22 task IDs. Original tasks 5–9 shared a chat and were subsequently rerun with fresh-chat instructions; persistent memory/skills and exact runtime settings were not controlled. Strengths were scope restraint, concrete inventory and the reported isolated edit. Weaknesses included unsupported certainty, invented or stretched evidence, and excessive repository auditing. Most diagnostic tasks used supplied snapshots/fixtures rather than model-executed host/API checks. The reviewer also corrected a Loki timestamp assumption after inspecting source. See the [pilot report](results/2026-10-23-qwen-27b-pilot.md); this is not a completed controlled baseline or a live host audit.
 
 The roadmap now retains tasks 1–22 and adds execution-host verification (23) and conflicting-evidence/memory handling (24). Initial task 23/24 variants and isolated task 14/15 execution exercises are now recorded in the [follow-up](results/2026-10-23-qwen-27b-follow-up.md). Matching upstream server source supports request-level low overriding preset medium, conditional on the traced request; live request capture and full runtime controls remain incomplete. Prepare the [compact comparison set](evaluation-comparison-set.md) before smaller-model screening. No new production changes, deployment readiness or GPU fit were established.
+
+The later [skill reuse review](results/2026-10-23-hermes-skill-reuse.md) records reported corrections to both Hermes skills, partial fresh-chat reuse, conflicting leftover instructions and an over-hour investigation with repeated compaction. Final reuse after all corrections remains untested. Smaller-model exploratory screening can begin next session; controlled comparison still requires equivalent skill/memory profiles and fresh 27B reference runs. No replacement has been selected.
 
 ## earlier follow-up — 2026-10-22
 
