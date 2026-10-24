@@ -67,7 +67,6 @@ Higher-value items include:
 - retained media-service appdata
 - Plex metadata/configuration
 - Sonarr/Radarr and related automation configuration
-- Uptime Kuma configuration
 - useful manga application metadata
 
 Movies, TV, downloads, caches, and other reacquirable payloads are normally low priority.
@@ -78,6 +77,8 @@ A verified independent Kawaguchi configuration/appdata backup remains a gap.
 
 Yamanaka is the production application host. Important live application data remains local for normal operation, with independent recovery copies going to Motosu.
 
+Establishing Yamanaka-to-Motosu backup coverage is now a high-priority operational task. The retained services were migrated to Yamanaka before that off-host backup path was established because no new valuable production data had yet been added after migration. That deferred backup setup should not be treated as the normal procedure for future migrations.
+
 High-priority examples include:
 
 - Paperless documents and metadata
@@ -86,13 +87,14 @@ High-priority examples include:
 - Mealie data
 - Linkwarden data
 - Endurain data
+- Uptime Kuma configuration
 - security-sensitive application state if deployed
 - important file-sync data if deployed
 - Compose definitions and service configuration
 
 Use database-native dumps or application-aware exports for database-backed services rather than copying live database directories.
 
-A migrated application should not be permanently removed from Kawaguchi until the Yamanaka instance is verified and an independent Motosu backup exists.
+For future migrations involving valuable production data, verify the destination service and establish an independent backup before retiring the previous production copy when practical.
 
 ### Paperless restore validation
 
@@ -148,7 +150,7 @@ Periodically:
 ## known gaps
 
 - encrypted B2 upload is complete, but a representative Motosu restore test is still required
-- Yamanaka-to-Motosu backup destination/access, transfer jobs, scheduling, retention, and monitoring are not yet set up
+- Yamanaka-to-Motosu backup destination/access, transfer jobs, scheduling, retention, and monitoring are not yet set up; this is high priority
 - no verified independent Kawaguchi configuration/appdata backup
 - GFX archive backup policy is not yet finalized
 - common backup-failure alerting is not yet established
