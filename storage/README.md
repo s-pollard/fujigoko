@@ -67,7 +67,7 @@ Motosu is the independent local backup target for important Yamanaka data, inclu
 
 Database-backed services should use native dumps or application-aware exports rather than copies of live database directories.
 
-The Yamanaka-to-Motosu jobs and retention policy remain to be implemented.
+The Yamanaka-to-Motosu jobs and retention policy remain to be implemented and are now high priority.
 
 ## yamanaka
 
@@ -77,7 +77,7 @@ Expected high-value data includes Paperless documents/metadata, Actual Budget da
 
 Bulk media and photo storage do not belong on Yamanaka.
 
-Before removing a migrated service from Kawaguchi, verify the Yamanaka deployment and an independent Motosu backup.
+The retained services were migrated from Kawaguchi before independent Yamanaka-to-Motosu backup coverage was established because no new valuable production data had yet been added after migration. For future migrations involving valuable data, establish independent backup coverage before retiring the previous production copy when practical.
 
 ## ownership summary
 
