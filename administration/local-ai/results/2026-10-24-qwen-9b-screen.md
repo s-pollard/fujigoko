@@ -1,5 +1,7 @@
 # Qwen 9B exploratory screen — 2026-10-24
 
+[Recovered final-answer transcript](2026-10-24-qwen-9b-answer-transcript.md): visible answer bodies are preserved separately, including errors. Full original questions/fixtures are unavailable in the pasted chat; incomplete fragments are explicitly marked. This review does not substitute for those missing prompts.
+
 User-run testing on Aso within /pleblab/, following the [27B pilot](2026-10-23-qwen-27b-pilot.md) and [skill reuse review](2026-10-23-hermes-skill-reuse.md). This is a retrospective of pasted answers, CLI activity summaries and two desktop screenshots. It is not the frozen comparison pack, a complete tool audit or a controlled 9B-versus-27B benchmark.
 
 ## setup and installation outcome
