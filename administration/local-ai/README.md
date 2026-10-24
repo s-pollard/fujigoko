@@ -2,6 +2,7 @@
 
 Experiment records: 2026-10-21 through 2026-10-24 (America/Chicago). This records observations from interactive testing on Aso, not a declaration that the agents are production services. UTC logs can show the following date for the same evening.
 
+- [Chat export and reviewed GitHub sync](chat-export.md) — read-only session exporter; full stored prompts/answers staged privately before publication
 - [Qwen 9B answer transcript](results/2026-10-24-qwen-9b-answer-transcript.md) — 35 recovered answers; missing full prompts explicitly marked
 - [Ministral 14B answer transcript](results/2026-10-24-ministral-14b-answer-transcript.md) — 34 recovered answers, plus a separately identified duplicate paste
 - [Earlier Hermes skill-work transcript](results/hermes-skill-work-answer-transcript.md) — six pasted responses, separate from the model screens
