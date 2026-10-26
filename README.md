@@ -47,7 +47,7 @@ See [`SECURITY.md`](SECURITY.md) for the full policy.
 - [architecture](architecture/README.md) — production roles and placement rules
 - [naming](architecture/naming.md) — /pleblab/ and Fujigoko naming conventions
 - [hosts](hosts/README.md) — hardware and platform inventory
-- [local AI experiments in Gusuku](https://github.com/s-pollard/gusuku/tree/main/experiments/local-ai) — experimental Hermes/Odysseus setup, model evaluations and transcripts; not a production dependency
+- [local AI archive](archive/local-ai/README.md) — archived local-AI production-boundary note and the final Qwen3.8-27B-UD-Q4-K-M model decision; detailed evaluation history lives in the Gusuku root archive
 - [network](network/README.md) — current and target network design
 - [topology](network/topology.md) — physical/logical topology
 - [services](services/README.md) — service inventory and dependencies
