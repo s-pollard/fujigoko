@@ -1,4 +1,4 @@
-# fujigoko
+# /fujigoko/
 
 Fujigoko is the production environment within **/pleblab/**, the overall homelab.
 
