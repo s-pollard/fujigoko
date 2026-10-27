@@ -7,7 +7,7 @@ This document shows useful production infrastructure relationships without publi
 ```text
                          internet
                             |
-                    current ISP handoff
+                     AT&T 620 ONT
                             |
                          udm-pro
                             |
@@ -31,7 +31,7 @@ Current notes:
 ## target topology
 
 ```text
-                       fiber handoff
+                       AT&T 620 ONT
                             |
                          opnsense
                             |
@@ -91,7 +91,9 @@ download storage
 
 ## application dependencies
 
-Current transitional dependencies on Kawaguchi include application-local databases/caches for retained services that will move to Yamanaka.
+Yamanaka hosts the production non-media applications and their application-local PostgreSQL/Redis dependencies. Those supporting databases and caches remain private to their relevant Compose networks unless external access is explicitly required.
+
+Kawaguchi no longer hosts transitional copies of retained non-media applications; that migration and cleanup are complete.
 
 Motosu Immich stack:
 
@@ -102,8 +104,6 @@ immich
 ├── redis/valkey
 └── machine learning
 ```
-
-The non-media Kawaguchi dependencies disappear as retained applications move to Yamanaka.
 
 ## management note
 
