@@ -30,6 +30,7 @@ Current verified protection includes:
 - B2 transfer uses encrypted backup content and private credentials kept outside this public repository
 - the current B2 photo upload has completed
 - a dedicated Yamanaka Restic repository is stored on Motosu and included in the intended B2 off-site path
+- TrueNAS email alerting is configured and tested so Cloud Sync failures do not depend on Yamanaka being available
 
 Historical migration recovery material can be retained or retired according to recovery value now that the TrueNAS/Immich migration has been validated; it is no longer the primary protection model.
 
@@ -52,26 +53,19 @@ Selected high-value Motosu data should include the Immich/photo library, photo a
 
 ### motosu follow-up
 
-- perform and document a representative restore from the encrypted B2 copy
-- replace the temporary older mirror member with a better HDD and verify the resulting resilver/SMART/scrub state
-- verify periodic SMART tests and failure alerting
-- add monitoring independent of Yamanaka so a Yamanaka outage can still be detected
+- perform and document a representative restore from the encrypted B2 copy during the move
+- replace the current mirror drives when a suitable deal is available; the present mirror is healthy and replacement is not urgent
+- after any drive replacement, verify resilver, SMART, scrub, and alert state
+
+A separate external monitor for Yamanaka is not currently required. Loss of normal access to Yamanaka is sufficient operational indication for the present home-use requirements.
 
 ## kawaguchi
 
-Kawaguchi is comparatively rebuildable. The backup priority is configuration and metadata, not the full media payload.
+Kawaguchi is comparatively rebuildable, and its media automation state is intentionally treated as disposable/reconstructable.
 
-Higher-value items include:
+No full independent backup of the Arr stack or other routine media automation state is required. If Kawaguchi or its Unraid installation fails catastrophically, the intended response is to rebuild or migrate the media services rather than preserve the existing Unraid installation exactly.
 
-- Unraid flash/configuration
-- retained media-service appdata
-- Plex metadata/configuration
-- Sonarr/Radarr and related automation configuration
-- useful manga application metadata
-
-Movies, TV, downloads, caches, and other reacquirable payloads are normally low priority.
-
-A verified independent Kawaguchi configuration/appdata backup remains a gap.
+Movies, TV, downloads, caches, and associated automation state are therefore outside the high-value backup scope unless that policy changes later.
 
 ## yamanaka
 
@@ -119,8 +113,10 @@ Yamanaka runs the production backup through a root-owned backup script and syste
 - Restic retention: 14 daily, 8 weekly, and 6 monthly snapshots
 - each backup run performs a Restic repository check after backup/retention processing
 - Motosu performs the separate B2 cloud-sync step after the nightly local backup window
+- failures of the Yamanaka backup and verification services trigger Signal alerts through the local Signal service
+- TrueNAS system alerting independently sends email for Motosu-side/Cloud Sync failures
 
-Exact addresses, credentials, repository passwords, bucket identifiers, and cloud-account details remain private.
+Exact addresses, phone numbers, credentials, repository passwords, bucket identifiers, and cloud-account details remain private.
 
 ### verified Yamanaka-to-Motosu recovery path
 
@@ -167,8 +163,8 @@ The export contains user password hashes and must be stored privately. Compose c
 | class | examples | expectation |
 | --- | --- | --- |
 | irreplaceable | photos, documents, budgets, personal databases | independent backup; off-site preferred |
-| important configuration | Unraid config, application config, Compose files, DNS config | independent backup |
-| convenient | dashboards, metrics history | back up only if recovery value justifies it |
+| important configuration | application config, Compose files, DNS config | independent backup when recovery value justifies it |
+| convenient | dashboards, metrics history, media automation state | back up only if recovery value justifies it |
 | replaceable | Usenet media, downloads, caches | recreate instead of backing up |
 
 ## verification
@@ -181,10 +177,10 @@ Periodically:
 4. perform representative restores
 5. update host-specific recovery runbooks with verified procedures
 
-## known gaps
+## deferred / remaining work
 
-- a representative restore from the Motosu/B2 off-site copy is still required
-- no verified independent Kawaguchi configuration/appdata backup
-- GFX archive backup policy is not yet finalized
-- common backup-failure alerting is not yet established
-- monitoring independent of Yamanaka is not yet deployed
+- representative recovery from the B2 off-site copy is intentionally deferred until the move
+- GFX archive backup policy is intentionally deferred until the move
+- Motosu drive replacement is waiting for a suitable deal on two HDDs; the current mirror is healthy
+
+Backup-failure alerting is deployed and tested on both Yamanaka and Motosu. A separate independent Yamanaka uptime monitor is not currently required.
