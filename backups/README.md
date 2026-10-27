@@ -98,6 +98,7 @@ High-priority protected state includes:
 - Grocy persistent configuration/data
 - TriliumNext persistent data
 - Vaultwarden persistent data, with the SQLite database captured using SQLite's online backup mechanism and validated before staging
+- Kept PostgreSQL dump plus its persistent data and recovery-critical configuration volumes
 - AdGuard Home configuration
 - Homepage, SearXNG, Stirling PDF, Prometheus, Alloy, Loki, Caddy, and other retained configuration
 - signal-cli state
@@ -123,7 +124,7 @@ Exact addresses, phone numbers, credentials, repository passwords, bucket identi
 
 ### verified Yamanaka-to-Motosu recovery path
 
-The production backup path was exercised end to end on 2026-10-26 and re-verified after adding Grocy, TriliumNext, and Vaultwarden on 2026-10-27.
+The production backup path was exercised end to end on 2026-10-26 and re-verified after adding Grocy, TriliumNext, Vaultwarden, and Kept on 2026-10-27.
 
 Verified:
 
@@ -134,18 +135,19 @@ Verified:
 - Grocy state is captured through a consistent-copy workflow
 - TriliumNext state is captured through a consistent-copy workflow
 - Vaultwarden's SQLite database is backed up with SQLite's online `.backup` mechanism and the resulting database passes `PRAGMA integrity_check`
+- Kept PostgreSQL is captured in native custom dump format and validated with `pg_restore`; Kept's persistent data and configuration volumes are included in the staged tree
 - an isolated Vaultwarden restore test successfully launched the application from the backed-up database and signing key before production backup integration
 - Restic stored the expanded production staged backup on Motosu successfully
-- the post-expansion production snapshot contained 2,301 files and about 873 MiB of logical backup data
+- the latest verified production snapshot contained 5,345 files and about 988 MiB of logical backup data
 - Restic repository checking reported no errors
 - the latest snapshot was restored from Motosu to an isolated temporary path
-- source and restored trees each contained 2,301 files
+- source and restored trees each contained 5,345 files
 - recursive 1:1 comparison reported no differences
 - the restored SHA-256 manifest validated successfully
 - the restored Linkwarden and Endurain dumps passed archive validation
 - automated verification completed successfully
 
-This proves that the current staged production backup, including Grocy, TriliumNext, and Vaultwarden, can be transferred to Motosu by Restic and restored byte-for-byte from the Motosu repository. It does not eliminate the need for periodic application-level restore testing as applications or backup formats change.
+This proves that the current staged production backup, including Grocy, TriliumNext, Vaultwarden, and Kept, can be transferred to Motosu by Restic and restored byte-for-byte from the Motosu repository. It does not eliminate the need for periodic application-level restore testing as applications or backup formats change.
 
 ### Vaultwarden restore validation
 
