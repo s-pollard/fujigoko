@@ -27,8 +27,9 @@ Current verified protection includes:
 - daily ZFS snapshots for backups with 14-day retention
 - restored and validated Immich application/database/library
 - Backblaze B2 off-site backup configured through TrueNAS Cloud Sync
-- B2 transfer uses client-side remote encryption; recovery secrets are kept outside this public repository
+- B2 transfer uses encrypted backup content and private credentials kept outside this public repository
 - the current B2 photo upload has completed
+- a dedicated Yamanaka Restic repository is stored on Motosu and included in the intended B2 off-site path
 
 Historical migration recovery material can be retained or retired according to recovery value now that the TrueNAS/Immich migration has been validated; it is no longer the primary protection model.
 
@@ -39,7 +40,7 @@ single-drive failure
 -> mirrored ZFS storage
 
 accidental deletion / unwanted changes
--> ZFS snapshots
+-> ZFS snapshots / Restic snapshot history
 
 host loss / theft / disaster
 -> encrypted Backblaze B2 copy
@@ -54,7 +55,6 @@ Selected high-value Motosu data should include the Immich/photo library, photo a
 - perform and document a representative restore from the encrypted B2 copy
 - replace the temporary older mirror member with a better HDD and verify the resulting resilver/SMART/scrub state
 - verify periodic SMART tests and failure alerting
-- implement Yamanaka-to-Motosu backup jobs and retention
 - add monitoring independent of Yamanaka so a Yamanaka outage can still be detected
 
 ## kawaguchi
@@ -75,30 +75,77 @@ A verified independent Kawaguchi configuration/appdata backup remains a gap.
 
 ## yamanaka
 
-Yamanaka is the production application host. Important live application data remains local for normal operation, with independent recovery copies going to Motosu.
+Yamanaka is the production application host. Important live application data remains local for normal operation, with independent recovery copies stored on Motosu in a dedicated Restic repository.
 
-Establishing Yamanaka-to-Motosu backup coverage is now a high-priority operational task. The retained services were migrated to Yamanaka before that off-host backup path was established because no new valuable production data had yet been added after migration. That deferred backup setup should not be treated as the normal procedure for future migrations.
+The deployed backup flow is:
 
-High-priority examples include:
+```text
+application-aware exports/dumps on Yamanaka
+-> staged backup tree
+-> Restic repository on Motosu over SSH/SFTP
+-> Motosu local protection
+-> scheduled TrueNAS Cloud Sync to Backblaze B2
+```
 
-- Paperless documents and metadata
+The Restic repository is encrypted with recovery material kept outside this public repository. Yamanaka uses a dedicated restricted account/key for the Motosu repository rather than general administrative access.
+
+High-priority protected state includes:
+
+- Paperless documents and metadata through the Paperless exporter
 - Actual Budget data
 - HomeBox inventory
 - Mealie data
-- Linkwarden data
-- Endurain data
-- Uptime Kuma configuration
-- security-sensitive application state if deployed
-- important file-sync data if deployed
-- Compose definitions and service configuration
+- Linkwarden PostgreSQL dump and application data
+- Endurain PostgreSQL dump and application data
+- Uptime Kuma state
+- FreshRSS state
+- Pocket ID state and private deployment configuration
+- Grafana state
+- AdGuard Home configuration
+- Homepage, SearXNG, Stirling PDF, Prometheus, Alloy, Loki, Caddy, and other retained configuration
+- signal-cli state
+- Compose definitions and private environment/configuration required for recovery
 
-Use database-native dumps or application-aware exports for database-backed services rather than copying live database directories.
+Redis/Valkey cache data, Docker images, Docker sockets, raw live PostgreSQL database directories, disposable restore-test trees, Prometheus historical metrics, and Loki historical logs are intentionally excluded where recovery value does not justify them.
 
-For future migrations involving valuable production data, verify the destination service and establish an independent backup before retiring the previous production copy when practical.
+Database-backed services use database-native dumps or application-aware exports rather than copying live database directories.
+
+### deployed schedule and retention
+
+Yamanaka runs the production backup through a root-owned backup script and systemd timer.
+
+- nightly Restic backup around 03:00 local time, with a small randomized delay
+- weekly restore verification on Sunday around 05:00 local time, with a small randomized delay
+- Restic retention: 14 daily, 8 weekly, and 6 monthly snapshots
+- each backup run performs a Restic repository check after backup/retention processing
+- Motosu performs the separate B2 cloud-sync step after the nightly local backup window
+
+Exact addresses, credentials, repository passwords, bucket identifiers, and cloud-account details remain private.
+
+### verified Yamanaka-to-Motosu recovery path
+
+The production backup path was exercised end to end on 2026-10-26.
+
+Verified:
+
+- application-aware backup generation completed successfully
+- Paperless exported 12 documents; the staged/restored Paperless export contained the expected export artifacts
+- Linkwarden PostgreSQL custom-format dump is readable by `pg_restore`
+- Endurain PostgreSQL custom-format dump is readable by `pg_restore`
+- Restic stored the production staged backup on Motosu successfully
+- the first production snapshot contained 2,157 files and about 867 MiB of logical backup data
+- a later production snapshot was restored from Motosu to an isolated temporary path
+- source and restored trees each contained 2,157 files
+- recursive 1:1 comparison reported no differences
+- the restored SHA-256 manifest validated successfully
+- the restored Linkwarden and Endurain dumps passed archive validation
+- automated verification completed successfully with exit status 0
+
+This proves that the current staged production backup can be transferred to Motosu by Restic and restored byte-for-byte from the Motosu repository. It does not eliminate the need for periodic application-level restore testing as applications or backup formats change.
 
 ### Paperless restore validation
 
-An application export was restored and tested on Yamanaka in an isolated environment using the pinned Paperless-ngx 3.3.3 image. This validates recovery of this export, not a complete off-host backup process.
+An application export was restored and tested on Yamanaka in an isolated environment using the pinned Paperless-ngx 3.3.3 image. This validates recovery of this export as well as the later byte-for-byte Restic recovery of the staged export from Motosu.
 
 Verified:
 
@@ -111,22 +158,9 @@ Verified:
 - manual sanity check reported no issues
 - temporary containers, networks, credentials, and sessions were removed; production and the source export were unchanged
 
-No archive versions exist in this export; only originals and thumbnails are expected. Classifier/sanity-status warnings reflected missing task history, not damaged data. Classifier training, new-document consumption/OCR, archive generation, larger datasets, clean-host recovery, and recovery from Motosu remain untested. Browser password entry and the Download button were not exercised directly; password login and downloads were verified separately over HTTP.
+No archive versions exist in this export; only originals and thumbnails are expected. Classifier/sanity-status warnings reflected missing task history, not damaged data. Classifier training, new-document consumption/OCR, archive generation, larger datasets, and full clean-host recovery remain untested. Browser password entry and the Download button were not exercised directly; password login and downloads were verified separately over HTTP.
 
-The export contains user password hashes and must be stored privately. Compose configuration, environment values, and the application secret key require a separate private backup.
-
-### Yamanaka-to-Motosu setup status
-
-The Yamanaka backup destination on Motosu has **not been set up**. The verified Paperless export remains only on Yamanaka; no Motosu transfer, schedule, retention job, or failure monitoring has been implemented for it.
-
-Next work:
-
-1. choose/create the destination dataset and restricted backup access on Motosu
-2. establish the transfer method and private handling of application configuration/secrets
-3. add application-aware backups for Paperless and the other retained Yamanaka services
-4. configure scheduling, retention, and failure monitoring
-5. verify checksums and perform an isolated restore from the Motosu copy
-6. verify the destination is included in the intended off-site protection
+The export contains user password hashes and must be stored privately. Compose configuration, environment values, and the application secret key are protected separately in the private backup set.
 
 ## backup classes
 
@@ -149,8 +183,8 @@ Periodically:
 
 ## known gaps
 
-- encrypted B2 upload is complete, but a representative Motosu restore test is still required
-- Yamanaka-to-Motosu backup destination/access, transfer jobs, scheduling, retention, and monitoring are not yet set up; this is high priority
+- a representative restore from the Motosu/B2 off-site copy is still required
 - no verified independent Kawaguchi configuration/appdata backup
 - GFX archive backup policy is not yet finalized
 - common backup-failure alerting is not yet established
+- monitoring independent of Yamanaka is not yet deployed
