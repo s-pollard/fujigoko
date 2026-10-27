@@ -25,7 +25,7 @@ The U7 Pro is the currently active AP. Other owned UniFi APs may remain offline 
 
 ### ISP handoff
 
-- AT&T 620 ONT
+- Bluepeak ONT
   - current fiber handoff to the production gateway
   - remains the ISP-side handoff when routing moves from the UDM-Pro to OPNsense
 
