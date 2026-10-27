@@ -90,6 +90,7 @@ Current services:
 - Endurain + PostgreSQL + Redis
 - Homepage
 - SearXNG
+- FreshRSS
 
 ### monitoring / logging
 
@@ -104,15 +105,42 @@ Prometheus continues to scrape cAdvisor on Kawaguchi for host/container metrics 
 ### infrastructure / operations
 
 - AdGuard Home
+- Caddy reverse proxy / private HTTPS entry point
+- Pocket ID identity provider for OIDC-capable applications
 - signal-cli-rest-api for Uptime Kuma notifications
 - Dockhand for Docker operations/management
 
 The Yamanaka stack has been reboot-tested successfully and expected production containers return automatically.
 
-Potential additions under evaluation:
+### private application access and SSO
 
-- Nextcloud
-- Vaultwarden
+Yamanaka now has a private HTTPS application-access layer:
+
+- Caddy terminates HTTPS and reverse-proxies user-facing applications.
+- AdGuard Home provides private/split DNS for the application namespace.
+- The application namespace is intended for trusted LAN and Tailscale clients, not direct public-internet exposure.
+- Caddy uses DNS-01 certificate validation; credentials and provider tokens remain only in private runtime configuration.
+- Pocket ID provides OIDC/passkey-based identity where the application supports it cleanly.
+- Application-local authentication is retained where it is useful for API/mobile compatibility or as a recovery path.
+
+Verified Pocket ID/OIDC integration currently includes:
+
+- FreshRSS
+- Actual Budget
+- Mealie
+- Linkwarden
+- Grafana
+- Stirling PDF
+- Paperless-ngx
+
+Do not add authentication in front of applications that intentionally have no login merely for consistency. The trusted LAN/Tailscale boundary is acceptable for low-risk convenience UIs unless requirements change.
+
+Planned additions:
+
+- Grocy — pantry/fridge/freezer inventory, quantities, expiration tracking, and barcode-oriented household inventory
+- TriliumNext — structured personal notes, backlinks, and synchronized/offline-capable note access
+- Nextcloud — general file sync/collaboration if retained after testing
+- Vaultwarden — security-sensitive service with operational details kept private
 
 These remain optional until actually deployed and found useful.
 
@@ -131,7 +159,7 @@ yamanaka -> adguard-home
 motosu   -> adguard-home
 ```
 
-Both instances should provide equivalent filtering policy on separate physical hosts. Exact resolver addresses and synchronization details stay in private operational configuration.
+Both instances should provide equivalent filtering and private application-DNS policy on separate physical hosts. Exact resolver addresses, application hostnames, and synchronization details stay in private operational configuration.
 
 ## completed cleanup
 
