@@ -29,7 +29,7 @@ This file records production service placement and dependencies without publishi
 
 The former Kawaguchi copies of migrated non-media services have been removed. RomM, its MariaDB dependency, and other retired appdata have also been removed. Kawaguchi now contains only the active media/manga stack plus cAdvisor and the smartctl-exporter.
 
-User-facing Kawaguchi applications are available through the private `plebworks.com` access layer via Caddy on Yamanaka. This has been verified from trusted clients.
+User-facing Kawaguchi applications are available through the private `plebworks.com` access layer via Caddy on Yamanaka. This has been verified from trusted clients. The Unraid management UI is also available through the same layer at `kawaguchi.plebworks.com`.
 
 Known dependency examples:
 
@@ -73,7 +73,7 @@ Target/permanent service classes:
 
 The Immich application/database restoration is complete and validated. The restored photo library is operating normally.
 
-Immich is available through the private `plebworks.com` access layer via Caddy on Yamanaka, and this route has been verified from a trusted client.
+Immich is available through the private `plebworks.com` access layer via Caddy on Yamanaka, and this route has been verified from a trusted client. The TrueNAS management UI is also available through the same layer at `motosu.plebworks.com`.
 
 Critical persistence is the Immich library, database recovery data, photo/archive data, and Yamanaka backup datasets. Redis/Valkey state and machine-learning caches are rebuildable.
 
@@ -136,6 +136,8 @@ Yamanaka Kawaguchi Motosu
 
 - AdGuard Home provides the private wildcard DNS policy.
 - Caddy terminates HTTPS and reverse-proxies services hosted on Yamanaka, Kawaguchi, and Motosu.
+- `kawaguchi.plebworks.com` fronts the Unraid management UI.
+- `motosu.plebworks.com` fronts the TrueNAS management UI.
 - The namespace is intended for trusted LAN and Tailscale clients, not direct public-internet exposure.
 - Caddy uses DNS-01 certificate validation; credentials and provider tokens remain only in private runtime configuration.
 - Pocket ID provides OIDC/passkey-based identity where the application supports it cleanly.
