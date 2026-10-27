@@ -29,7 +29,7 @@ Kawaguchi remains on Unraid for the current generation. The non-media migration 
 - network: 2.5 GbE onboard
 - platform: TrueNAS SCALE
 - storage: mirrored ZFS storage on 2 × 6 TB Seagate ST6000NM0024 HDDs
-- current responsibilities: Immich, photo/archive storage, snapshots, encrypted Backblaze B2 off-site backup, and future Yamanaka backup storage
+- current responsibilities: Immich, photo/archive storage, snapshots, encrypted Backblaze B2 off-site backup, and the independent local Restic repository for Yamanaka
 
 Current state:
 
@@ -38,18 +38,22 @@ Current state:
 - Immich application/database restoration is complete and validated
 - the restored photo library and subsequent Google Photos import are working normally
 - the mirror was resilvered successfully after one HDD failed; the temporary replacement is an older spare and should be replaced with a better drive later
-- selected photo data is uploading/backed up to Backblaze B2 using TrueNAS Cloud Sync with client-side remote encryption
+- selected high-value data is protected off-site through TrueNAS Cloud Sync with client-side remote encryption
 - local snapshot policy is daily with 30-day retention for photos and 14-day retention for backups
+- Yamanaka-to-Motosu Restic backups are deployed with 14 daily, 8 weekly, and 6 monthly retention
+- Yamanaka backup/restore verification is deployed and tested
+- TrueNAS email alerting is configured and tested for Motosu-side and Cloud Sync failures
 
-Remaining Motosu work is tracked as operational follow-up rather than migration work:
+Remaining Motosu work is operational follow-up rather than migration work:
 
-- replace the temporary older mirror member with a better HDD, resilver, then verify SMART/scrub health
-- verify periodic SMART testing and alerting
-- perform and document a representative encrypted B2 restore test
-- implement Yamanaka-to-Motosu backup jobs and retention
-- add monitoring independent of Yamanaka so a Yamanaka outage can still be detected
+- replace the temporary older mirror member with a better HDD when a suitable drive is available, resilver, then verify SMART/scrub health
+- verify periodic SMART testing remains scheduled and healthy
+- perform and document a representative encrypted B2 restore test during the move
+- deploy the second AdGuard Home instance after relocation and verify redundant DNS
 
-Do not describe Motosu as still awaiting or validating the TrueNAS/Immich migration.
+A separate independent Yamanaka uptime monitor is not currently required for the present home-use requirements.
+
+Do not describe Motosu as still awaiting or validating the TrueNAS/Immich migration or as waiting for Yamanaka backup deployment.
 
 ## yamanaka
 
@@ -62,11 +66,11 @@ Do not describe Motosu as still awaiting or validating the TrueNAS/Immich migrat
 - documented memory maximum: 32 GB across 2 DIMM slots
 - memory policy: upgrade only if measured usage justifies it
 - storage: Patriot P300 512 GB NVMe
-- network: onboard 1 GbE; low-profile Intel X520-DA2 dual-port 10 GbE SFP+ adapter planned/ordered
+- network: onboard 1 GbE; low-profile Intel X520-DA2 dual-port 10 GbE SFP+ adapter acquired for upgrade
 - container platform: Docker Engine + Docker Compose
-- current responsibilities: retained non-media applications, FreshRSS, centralized monitoring/logging, Uptime Kuma, Signal notification bridge, AdGuard Home, private HTTPS/reverse proxying with Caddy, Pocket ID OIDC/passkey identity, SearXNG, and Dockhand
+- current responsibilities: production non-media applications including Paperless-ngx, Mealie, Actual Budget, HomeBox, Linkwarden, Endurain, FreshRSS, Grocy, TriliumNext, Vaultwarden, Homepage, SearXNG, and Stirling PDF; centralized monitoring/logging; Uptime Kuma; Signal notification bridge; AdGuard Home; Caddy; Pocket ID; and Dockhand
 
-The deployed workload fits comfortably within the current 16 GB memory configuration. Important Yamanaka files, exports, database dumps, Pocket ID state, and configuration backups should be copied independently to Motosu.
+The deployed workload fits comfortably within the current 16 GB memory configuration. Important Yamanaka state is backed up independently to Motosu through the deployed Restic workflow and is included in the intended Motosu off-site protection path.
 
 ## shoji
 
