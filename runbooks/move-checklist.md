@@ -12,7 +12,7 @@ This checklist tracks production work intentionally deferred until relocation. I
 ## 2. network cutover
 
 - bring up the dedicated OPNsense router
-- verify the ISP handoff before changing the production gateway
+- verify the AT&T 620 ONT handoff before changing the production gateway
 - configure required LAN/VLAN interfaces, DHCP, firewall policy, and routing
 - deploy the target wireless AP
 - deploy the target core/aggregation switching design if the replacement switch has been purchased
@@ -36,7 +36,7 @@ Verify normal client access to the major production roles after the network and 
 - Yamanaka applications and reverse proxy
 - Motosu / Immich
 - Kawaguchi media services
-- Plex and Jellyfin
+- Plex
 - private application names
 - Tailscale access where required
 
@@ -88,7 +88,7 @@ Tailscale
 private application names
 Yamanaka applications
 Immich
-Plex / Jellyfin / media services
+Plex / media services
 Restic backup
 TrueNAS Cloud Sync
 Signal backup-failure alerts
