@@ -52,7 +52,7 @@ Motosu is now on TrueNAS SCALE. Immich application/database restoration is compl
 
 ## personal applications — yamanaka
 
-The retained application migration from Kawaguchi is complete:
+The retained application migration from Kawaguchi is complete, and newer production applications are added here only when they solve a real home-use requirement.
 
 | service | status | backup priority |
 | --- | --- | --- |
@@ -62,10 +62,22 @@ The retained application migration from Kawaguchi is complete:
 | HomeBox | deployed | high |
 | Linkwarden | deployed | high |
 | Endurain | deployed | high |
+| Grocy | deployed | high |
+| TriliumNext | deployed | high |
+| Vaultwarden | deployed | critical |
 | Stirling PDF | deployed | low |
 | Homepage | deployed | medium |
 | SearXNG | deployed | low |
 | FreshRSS | deployed | medium |
+| Nextcloud | deferred | not applicable |
+
+Grocy covers pantry/fridge/freezer inventory, quantities, expiration tracking, and barcode-oriented household inventory.
+
+TriliumNext provides structured personal notes/wiki functionality and has verified Pocket ID OIDC integration.
+
+Vaultwarden is security-sensitive. Normal vault authentication and hardware-backed second-factor authentication are retained. Pocket ID SSO was evaluated but is not enabled because the current identity claim does not satisfy Vaultwarden's email-verification requirement; that requirement is intentionally not bypassed.
+
+Nextcloud is deferred because there is no current production need. Reconsider it only if a concrete file-sync/collaboration requirement appears that the existing stack does not cover well.
 
 Supporting PostgreSQL/Redis services stay with their parent application and remain private to the relevant Compose network unless external access is actually required.
 
@@ -89,16 +101,13 @@ Supporting PostgreSQL/Redis services stay with their parent application and rema
 
 Prometheus on Yamanaka continues to scrape Kawaguchi cAdvisor and smartctl-exporter. Alloy collects Yamanaka Docker logs into Loki. Uptime Kuma remains on Yamanaka rather than on an independent host, so a total Yamanaka outage also removes that monitoring path.
 
-Caddy, AdGuard Home, and Pocket ID now form the private application-access layer on Yamanaka. Private HTTPS is intended for trusted LAN and Tailscale clients. Pocket ID OIDC has been verified with FreshRSS, Actual Budget, Mealie, Linkwarden, Grafana, Stirling PDF, and Paperless-ngx. Exact hostnames, client IDs, secrets, callback URLs, and other operational identity-provider configuration do not belong in this public repository.
+Caddy, AdGuard Home, and Pocket ID form the private application-access layer on Yamanaka. Private HTTPS is intended for trusted LAN and Tailscale clients. Pocket ID OIDC has been verified with FreshRSS, Actual Budget, Mealie, Linkwarden, Grafana, Stirling PDF, Paperless-ngx, and TriliumNext. Exact hostnames beyond the documented namespace, client IDs, secrets, callback URLs, and other operational identity-provider configuration do not belong in this public repository.
 
-## planned additions
+## deferred additions
 
-- Grocy — Yamanaka; household food inventory, expiration, quantity, and barcode tracking alongside Mealie
-- TriliumNext — Yamanaka; structured personal notes, backlinks, and synchronized/offline-capable note access
-- Nextcloud — Yamanaka; general file sync/collaboration if retained after testing
-- Vaultwarden — Yamanaka; security-sensitive service with operational details kept private
+- Nextcloud — Yamanaka; reconsider only when a concrete file sync/collaboration requirement exists
 
-Planned does not mean required. Remove ideas that are no longer useful rather than carrying them indefinitely.
+Deferred does not mean required. Remove ideas that are no longer useful rather than carrying them indefinitely.
 
 ## retired / removed
 
@@ -117,18 +126,18 @@ Presence in old notes or backups should not be interpreted as active production 
 
 ## migration rule
 
-Preferred procedure for future migrations:
+Preferred procedure for future migrations or new stateful production services:
 
 ```text
 1. identify persistence and dependencies
 2. create an independent backup/export
 3. deploy on the destination host
-4. restore/copy persistence
+4. restore/copy persistence when applicable
 5. verify application behavior
-6. verify dependencies
+6. verify dependencies and authentication
 7. establish independent backup coverage
-8. observe with the previous copy stopped but intact when practical
-9. remove the old copy after successful cutover
+8. perform a representative restore test
+9. observe production behavior before removing fallback paths
 ```
 
-The Yamanaka service cutover, reboot verification, and Kawaguchi cleanup are complete. Independent Yamanaka-to-Motosu backup coverage was deferred because no new valuable production data had yet been added after migration; establishing that backup is now a high-priority operational follow-up.
+The Yamanaka service cutover, reboot verification, Kawaguchi cleanup, and independent Yamanaka-to-Motosu backup coverage are complete. Grocy, TriliumNext, and Vaultwarden were added to that backup path and restore verification after deployment.
