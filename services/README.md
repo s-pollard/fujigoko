@@ -79,7 +79,7 @@ Critical persistence is the Immich library, database recovery data, photo/archiv
 
 ## yamanaka
 
-Yamanaka hosts the retained non-media production services migrated from Kawaguchi. Supporting databases/caches stay with the application they serve rather than becoming shared LAN infrastructure.
+Yamanaka hosts the retained non-media production services migrated from Kawaguchi plus newer production applications. Supporting databases/caches stay with the application they serve rather than becoming shared LAN infrastructure.
 
 Current services:
 
@@ -95,6 +95,17 @@ Current services:
 - Homepage
 - SearXNG
 - FreshRSS
+- Grocy
+- TriliumNext
+- Vaultwarden
+
+Grocy is used for pantry/fridge/freezer inventory, quantity and expiration tracking, and barcode-oriented household inventory. It retains its application-local authentication rather than adding a separate authentication proxy solely for SSO.
+
+TriliumNext is the structured notes/wiki service. Pocket ID OIDC has been tested successfully with the deployed TriliumNext instance.
+
+Vaultwarden is the self-hosted Bitwarden-compatible password vault. Normal vault authentication and hardware-backed second-factor authentication are retained. Pocket ID SSO was evaluated but is not enabled because the current identity claim reports email as unverified; the vault's verification requirement is intentionally not weakened. Operational secrets and recovery material remain outside this public repository.
+
+Nextcloud was evaluated but is deferred because there is no current production need for it.
 
 ### monitoring / logging
 
@@ -141,7 +152,7 @@ Yamanaka Kawaguchi Motosu
 - The namespace is intended for trusted LAN and Tailscale clients, not direct public-internet exposure.
 - Caddy uses DNS-01 certificate validation; credentials and provider tokens remain only in private runtime configuration.
 - Pocket ID provides OIDC/passkey-based identity where the application supports it cleanly.
-- Application-local authentication is retained where it is useful for API/mobile compatibility or as a recovery path.
+- Application-local authentication is retained where it is useful for API/mobile compatibility, recovery, or when an application's identity-verification behavior does not align cleanly with Pocket ID.
 
 Verified Pocket ID/OIDC integration currently includes:
 
@@ -152,17 +163,15 @@ Verified Pocket ID/OIDC integration currently includes:
 - Grafana
 - Stirling PDF
 - Paperless-ngx
+- TriliumNext
 
 Do not add authentication in front of applications that intentionally have no login merely for consistency. The trusted LAN/Tailscale boundary is acceptable for low-risk convenience UIs unless requirements change.
 
-Planned additions:
+## deferred applications
 
-- Grocy — pantry/fridge/freezer inventory, quantities, expiration tracking, and barcode-oriented household inventory
-- TriliumNext — structured personal notes, backlinks, and synchronized/offline-capable note access
-- Nextcloud — general file sync/collaboration if retained after testing
-- Vaultwarden — security-sensitive service with operational details kept private
+- Nextcloud — general file sync/collaboration; no current production need, reconsider only if a concrete requirement appears
 
-These remain optional until actually deployed and found useful.
+Deferred does not mean rejected. Do not deploy an application merely because it is interesting or available.
 
 ## DNS target
 
