@@ -32,6 +32,8 @@ Permanent workload classes:
 
 Kawaguchi is intentionally relatively rebuildable. Configuration and metadata are more important to protect than reacquirable movie/TV payloads.
 
+User-facing Kawaguchi applications can be reached through the central `plebworks.com` private application layer on Yamanaka.
+
 ## motosu — photos and backup storage
 
 Primary role: photo storage, Immich, and local backup target.
@@ -60,11 +62,11 @@ Target permanent workloads:
 - Backblaze B2 off-site protection for selected high-value data
 - one AdGuard Home instance as the second DNS node
 
-Motosu remains storage/photo focused rather than becoming a general application host.
+Motosu remains storage/photo focused rather than becoming a general application host. Immich is also reachable through the central `plebworks.com` private application layer.
 
 ## yamanaka — general applications
 
-Primary role: simple, always-on production application server.
+Primary role: simple, always-on production application server and shared application-access point.
 
 - Dell OptiPlex 3070 SFF
 - Intel Core i5-9500
@@ -88,21 +90,23 @@ The migrated workload has substantial CPU and memory headroom on the current har
 
 ### private application-access layer
 
-Yamanaka now provides a single private application-access pattern for user-facing production services:
+`plebworks.com` is the private application namespace for Fujigoko.
+
+Yamanaka provides a single private application-access pattern for user-facing production services across Yamanaka, Kawaguchi, and Motosu:
 
 ```text
 trusted LAN / Tailscale
         |
+ *.plebworks.com
+        |
     private DNS
         |
       Caddy
-        |
-  application services
-        |
- Pocket ID where useful
+   /     |      \
+Yamanaka Kawaguchi Motosu
 ```
 
-Caddy provides HTTPS and reverse proxying. AdGuard Home provides private DNS for the application namespace. Pocket ID is used only where an application supports native OIDC cleanly; local/API authentication remains where it is useful for compatibility or recovery. The namespace is not intended for direct public-internet exposure.
+Caddy provides HTTPS and reverse proxying. AdGuard Home provides private wildcard DNS for the namespace. Pocket ID is used only where an application supports native OIDC cleanly; local/API authentication remains where it is useful for compatibility or recovery. The namespace is not intended for direct public-internet exposure.
 
 ## shoji — reserved
 
@@ -125,7 +129,7 @@ Decisions:
 - USW-Aggregation can remain during transition
 - TP-Link Omada SX3016F is the main future core/aggregation-switch candidate
 - TP-Link Omada EAP775-Wall is the planned target AP
-- exact addressing, VLAN IDs, reservations, management URLs, private application hostnames, and identity-provider details stay out of this public repository
+- exact addressing, VLAN IDs, reservations, management URLs, and identity-provider secrets stay out of this public repository
 
 ## service placement
 
@@ -135,7 +139,7 @@ host-specific monitoring agent   -> monitored host
 Immich / photos / backup storage -> motosu
 general personal applications   -> yamanaka
 central monitoring/logging       -> yamanaka
-private HTTPS / SSO              -> yamanaka
+private HTTPS / SSO              -> yamanaka, fronting all production hosts
 uptime monitoring                -> yamanaka
 DNS                              -> yamanaka + motosu target pair
 routing / firewall               -> OPNsense appliance
@@ -174,5 +178,5 @@ Low priority / replaceable:
 4. Keep application databases local to the host that runs them; back them up independently.
 5. Document storage, dependencies, and recovery before adding automation.
 6. Remove retired experiments instead of preserving them by inertia.
-7. Keep secrets, exact addressing, personal information, private application hostnames, and unique external identifiers out of the public repository.
+7. Keep secrets, exact addressing, personal information, and unique external identifiers out of the public repository.
 8. Treat deployed state—not old migration assumptions—as current state.
