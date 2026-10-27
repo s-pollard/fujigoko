@@ -7,7 +7,7 @@ Fujigoko is the production homelab. Host roles should remain obvious, production
 ```text
 kawaguchi = media + manga + host-specific monitoring agent
 motosu    = photos + Immich + backup storage
-yamanaka  = general applications + centralized monitoring/logging + DNS
+yamanaka  = general applications + centralized monitoring/logging + DNS + private application access
 shoji     = reserved / unassigned
 ```
 
@@ -76,12 +76,33 @@ Primary role: simple, always-on production application server.
 Current workload classes:
 
 - retained non-media personal applications
+- FreshRSS and other lightweight personal web services
 - Prometheus / Grafana / Loki / Alloy
 - Uptime Kuma and Signal notification bridge
 - one AdGuard Home instance
+- Caddy reverse proxy / private HTTPS entry point
+- Pocket ID OIDC/passkey identity provider
 - application-local PostgreSQL/Redis dependencies
 
 The migrated workload has substantial CPU and memory headroom on the current hardware. Yamanaka does not host game servers or disposable lab workloads.
+
+### private application-access layer
+
+Yamanaka now provides a single private application-access pattern for user-facing production services:
+
+```text
+trusted LAN / Tailscale
+        |
+    private DNS
+        |
+      Caddy
+        |
+  application services
+        |
+ Pocket ID where useful
+```
+
+Caddy provides HTTPS and reverse proxying. AdGuard Home provides private DNS for the application namespace. Pocket ID is used only where an application supports native OIDC cleanly; local/API authentication remains where it is useful for compatibility or recovery. The namespace is not intended for direct public-internet exposure.
 
 ## shoji — reserved
 
@@ -104,7 +125,7 @@ Decisions:
 - USW-Aggregation can remain during transition
 - TP-Link Omada SX3016F is the main future core/aggregation-switch candidate
 - TP-Link Omada EAP775-Wall is the planned target AP
-- exact addressing, VLAN IDs, reservations, and management URLs stay out of this public repository
+- exact addressing, VLAN IDs, reservations, management URLs, private application hostnames, and identity-provider details stay out of this public repository
 
 ## service placement
 
@@ -114,6 +135,7 @@ host-specific monitoring agent   -> monitored host
 Immich / photos / backup storage -> motosu
 general personal applications   -> yamanaka
 central monitoring/logging       -> yamanaka
+private HTTPS / SSO              -> yamanaka
 uptime monitoring                -> yamanaka
 DNS                              -> yamanaka + motosu target pair
 routing / firewall               -> OPNsense appliance
@@ -129,13 +151,14 @@ High priority:
 - Immich library and database recovery data
 - photo archive data
 - Yamanaka application data/databases
+- Pocket ID state and identity configuration
 - irreplaceable documents and records
 
 Medium priority:
 
 - Kawaguchi Unraid configuration
 - retained application configuration and metadata
-- DNS/monitoring configuration
+- DNS/reverse-proxy/monitoring configuration
 
 Low priority / replaceable:
 
@@ -151,5 +174,5 @@ Low priority / replaceable:
 4. Keep application databases local to the host that runs them; back them up independently.
 5. Document storage, dependencies, and recovery before adding automation.
 6. Remove retired experiments instead of preserving them by inertia.
-7. Keep secrets, exact addressing, personal information, and unique external identifiers out of the public repository.
+7. Keep secrets, exact addressing, personal information, private application hostnames, and unique external identifiers out of the public repository.
 8. Treat deployed state—not old migration assumptions—as current state.
