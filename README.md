@@ -34,7 +34,7 @@ The namespace is for private access and is not intended to expose Fujigoko appli
 ## Network direction
 
 - current gateway: UDM-Pro
-- target gateway/firewall: dedicated OPNsense appliance
+- target gateway/firewall: dedicated OPNsense appliance; hardware acquired
 - current aggregation: USW-Aggregation
 - future core-switch main candidate: TP-Link Omada SX3016F
 - target wireless AP: TP-Link Omada EAP775-Wall
@@ -64,11 +64,11 @@ See [`SECURITY.md`](SECURITY.md) for the full policy.
 
 ## Current priorities
 
-1. Establish and verify Yamanaka-to-Motosu backups.
-2. Deploy the second AdGuard Home instance on Motosu to complete redundant DNS.
-3. Rebuild the post-move network around OPNsense; keep the SX3016F as the main core-switch candidate until purchased and verified.
-4. Finalize the UPS/power plan after verifying real outlet/receptacle compatibility.
-5. Preserve independent recovery for irreplaceable data before optimizing convenience services.
-6. Remove the legacy Kawaguchi shares (uppercase `Media` and `roms`) after dependency checks confirm nothing still uses them.
+1. Deploy the second AdGuard Home instance on Motosu to complete redundant DNS.
+2. Deploy and validate the OPNsense-based network; keep the SX3016F as the main core-switch candidate until purchased and verified.
+3. Complete remaining Motosu protection work: representative B2 restore testing, replacement of the temporary older mirror member, and SMART/scrub alert verification.
+4. Establish an independent Kawaguchi configuration/appdata backup.
+5. Remove the legacy Kawaguchi shares (uppercase `Media` and `roms`) after dependency checks confirm nothing still uses them.
+6. Add monitoring independent of Yamanaka and common backup-failure alerting.
 
-Immich restoration and Kawaguchi container/appdata cleanup are complete. See [services](services/README.md) for current placement and [Yamanaka migration history](history/yamanaka-migration-2026.md) for the completed migration record.
+Yamanaka-to-Motosu Restic backups are deployed and restore-verified. Immich restoration and Kawaguchi container/appdata cleanup are complete. See [backups](backups/README.md) for the verified backup design, [services](services/README.md) for current placement, and [Yamanaka migration history](history/yamanaka-migration-2026.md) for the completed migration record.
