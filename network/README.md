@@ -7,7 +7,7 @@ This document intentionally omits exact private addressing, VLAN IDs, MAC addres
 ```text
 internet
   |
-AT&T 620 ONT
+Bluepeak ONT
   |
 udm-pro
   |
