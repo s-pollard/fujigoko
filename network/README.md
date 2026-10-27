@@ -121,7 +121,9 @@ Experimental gusuku networking is separate from this production design and must 
 Current:
 
 - AdGuard Home runs on Yamanaka
-- this is a single-resolver dependency
+- Yamanaka also serves private/split DNS for the internal application namespace
+- a wildcard private rewrite sends application names to the Yamanaka reverse-proxy entry point
+- exact resolver addresses and application hostnames remain private operational configuration
 
 Target:
 
@@ -131,7 +133,34 @@ lan clients
   `-- DNS --> motosu / AdGuard Home
 ```
 
-Both instances should provide equivalent policy while remaining on separate physical hosts. Exact resolver addresses and synchronization details are private operational configuration.
+Both instances should provide equivalent filtering and private application-DNS policy while remaining on separate physical hosts. Exact resolver addresses and synchronization details are private operational configuration.
+
+## private application access
+
+User-facing Yamanaka applications now use a private HTTPS front door:
+
+```text
+trusted LAN / Tailscale client
+          |
+      private DNS
+          |
+        Caddy
+          |
+   Yamanaka applications
+```
+
+Policy:
+
+- private application names are intended to resolve only through trusted network paths
+- direct public-internet exposure is not part of the design
+- trusted LAN and Tailscale access are both acceptable
+- Caddy terminates HTTPS and reverse-proxies user-facing applications
+- certificate issuance uses DNS-01 validation so inbound public HTTP exposure is unnecessary
+- Pocket ID provides OIDC/passkey identity for applications where native SSO is useful
+- services without a meaningful login requirement do not need an added authentication layer solely for uniformity
+- direct container ports should be treated as implementation details and reduced where practical over time, but this is not required for the current trusted-LAN model
+
+Do not publish the private application namespace, callback URLs, identity-provider client identifiers, API tokens, or reverse-proxy credentials in this repository.
 
 ## power
 
@@ -156,4 +185,4 @@ Lab/gusuku UPS decisions are intentionally outside this production-network docum
 
 ## public-repo boundary
 
-Do not add WAN/public IPs, exact private IP assignments, DHCP reservations, MAC addresses, serial numbers, VPN keys/endpoints, management credentials, or personal location details.
+Do not add WAN/public IPs, exact private IP assignments, DHCP reservations, MAC addresses, serial numbers, VPN keys/endpoints, management credentials, application hostnames, SSO client identifiers, callback URLs, or personal location details.
