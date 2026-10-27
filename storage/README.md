@@ -33,7 +33,7 @@ Motosu is the dedicated photo/backup-storage host.
 
 The TrueNAS and Immich migration is complete and validated. The photo library is operational on the rebuilt system, and subsequent Google Photos import work has been completed successfully.
 
-One mirror member failed after the rebuild and was replaced temporarily with the best available older spare. The resilver completed successfully and redundancy was restored. Replacing that temporary member with a better drive remains planned maintenance.
+One mirror member failed after the rebuild and was replaced temporarily with the best available older spare. The resilver completed successfully and redundancy was restored. Replacing that temporary member with a better drive remains planned maintenance rather than an immediate fault response.
 
 ### storage roles
 
@@ -49,7 +49,7 @@ motosu
 
 Exact dataset names beyond those already deployed should be documented only after they exist.
 
-ZFS mirror redundancy protects against a single-drive failure; it is not an independent backup. Current local snapshot policy is daily with 30-day retention for photos and 14-day retention for backups. Selected photo data is also protected off-site in Backblaze B2 through TrueNAS Cloud Sync with client-side remote encryption.
+ZFS mirror redundancy protects against a single-drive failure; it is not an independent backup. Current local snapshot policy is daily with 30-day retention for photos and 14-day retention for backups. Selected high-value data is also protected off-site in Backblaze B2 through TrueNAS Cloud Sync with client-side remote encryption.
 
 ### photo policy
 
@@ -57,27 +57,47 @@ Immich is the convenient photo-library layer. GFX RAW/original files should also
 
 ### yamanaka backup role
 
-Motosu is the independent local backup target for important Yamanaka data, including:
+Motosu is the deployed independent local backup target for important Yamanaka data.
 
-- application exports
-- native database dumps
-- important files
-- Compose definitions
-- service configuration
+The production flow is:
 
-Database-backed services should use native dumps or application-aware exports rather than copies of live database directories.
+```text
+Yamanaka application-aware exports/dumps
+-> staged backup tree
+-> encrypted Restic repository on Motosu
+-> Motosu snapshots/local protection
+-> scheduled TrueNAS Cloud Sync to Backblaze B2
+```
 
-The Yamanaka-to-Motosu jobs and retention policy remain to be implemented and are now high priority.
+The Yamanaka Restic policy keeps 14 daily, 8 weekly, and 6 monthly snapshots. Nightly backup and weekly restore verification are deployed, and the current backup tree has been restored byte-for-byte from Motosu successfully.
+
+Protected state includes application exports, native database dumps, important persistent files, Compose definitions, and service configuration. PostgreSQL-backed services use native dumps; Vaultwarden's SQLite database is captured with SQLite's online backup mechanism rather than by blindly copying a live database.
+
+A representative recovery originating from the B2 off-site copy remains intentionally deferred until the move.
 
 ## yamanaka
 
 Yamanaka stores live non-media application state on local NVMe.
 
-Expected high-value data includes Paperless documents/metadata, Actual Budget data, HomeBox inventory, Linkwarden data, Mealie data, Endurain state, monitoring configuration, and Compose/service configuration.
+High-value state includes:
+
+- Paperless documents and metadata
+- Actual Budget data
+- HomeBox inventory
+- Linkwarden database/application state
+- Mealie data
+- Endurain database/application state
+- Grocy data
+- TriliumNext data
+- Vaultwarden vault state and signing material
+- Pocket ID identity state
+- FreshRSS and Uptime Kuma state
+- Grafana dashboards/configuration
+- AdGuard, Caddy, monitoring, Compose, and other important service configuration
 
 Bulk media and photo storage do not belong on Yamanaka.
 
-The retained services were migrated from Kawaguchi before independent Yamanaka-to-Motosu backup coverage was established because no new valuable production data had yet been added after migration. For future migrations involving valuable data, establish independent backup coverage before retiring the previous production copy when practical.
+Independent Yamanaka-to-Motosu backup coverage is deployed and restore-verified. For future migrations or new stateful applications, establish independent backup coverage and a representative recovery test before treating the new state as safely protected.
 
 ## ownership summary
 
@@ -91,8 +111,8 @@ kawaguchi
 motosu
 ├── Immich/photo library
 ├── photo archive
-├── encrypted off-site photo backup
-└── Yamanaka backup copies
+├── encrypted off-site protection
+└── Yamanaka Restic repository
 
 yamanaka
 └── live non-media application state
