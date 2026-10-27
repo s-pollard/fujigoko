@@ -29,6 +29,8 @@ This file records production service placement and dependencies without publishi
 
 The former Kawaguchi copies of migrated non-media services have been removed. RomM, its MariaDB dependency, and other retired appdata have also been removed. Kawaguchi now contains only the active media/manga stack plus cAdvisor and the smartctl-exporter.
 
+User-facing Kawaguchi applications are available through the private `plebworks.com` access layer via Caddy on Yamanaka. This has been verified from trusted clients.
+
 Known dependency examples:
 
 ```text
@@ -70,6 +72,8 @@ Target/permanent service classes:
 - one AdGuard Home instance as the second DNS node
 
 The Immich application/database restoration is complete and validated. The restored photo library is operating normally.
+
+Immich is available through the private `plebworks.com` access layer via Caddy on Yamanaka, and this route has been verified from a trusted client.
 
 Critical persistence is the Immich library, database recovery data, photo/archive data, and Yamanaka backup datasets. Redis/Valkey state and machine-learning caches are rebuildable.
 
@@ -114,11 +118,25 @@ The Yamanaka stack has been reboot-tested successfully and expected production c
 
 ### private application access and SSO
 
-Yamanaka now has a private HTTPS application-access layer:
+`plebworks.com` is the private application namespace for Fujigoko.
 
-- Caddy terminates HTTPS and reverse-proxies user-facing applications.
-- AdGuard Home provides private/split DNS for the application namespace.
-- The application namespace is intended for trusted LAN and Tailscale clients, not direct public-internet exposure.
+Yamanaka provides the common access layer for user-facing applications across all three active production hosts:
+
+```text
+trusted LAN / Tailscale
+        |
+ *.plebworks.com
+        |
+ private DNS
+        |
+ Yamanaka / Caddy
+   |      |      |
+Yamanaka Kawaguchi Motosu
+```
+
+- AdGuard Home provides the private wildcard DNS policy.
+- Caddy terminates HTTPS and reverse-proxies services hosted on Yamanaka, Kawaguchi, and Motosu.
+- The namespace is intended for trusted LAN and Tailscale clients, not direct public-internet exposure.
 - Caddy uses DNS-01 certificate validation; credentials and provider tokens remain only in private runtime configuration.
 - Pocket ID provides OIDC/passkey-based identity where the application supports it cleanly.
 - Application-local authentication is retained where it is useful for API/mobile compatibility or as a recovery path.
@@ -149,7 +167,7 @@ These remain optional until actually deployed and found useful.
 Current deployed state:
 
 ```text
-yamanaka -> adguard-home
+yamanaka -> adguard-home -> private *.plebworks.com resolution
 ```
 
 Target redundant state:
@@ -159,7 +177,7 @@ yamanaka -> adguard-home
 motosu   -> adguard-home
 ```
 
-Both instances should provide equivalent filtering and private application-DNS policy on separate physical hosts. Exact resolver addresses, application hostnames, and synchronization details stay in private operational configuration.
+Both instances should provide equivalent filtering and private `plebworks.com` policy on separate physical hosts. Exact resolver addresses and synchronization details stay in private operational configuration.
 
 ## completed cleanup
 
