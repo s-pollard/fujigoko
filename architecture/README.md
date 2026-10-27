@@ -73,7 +73,7 @@ Primary role: simple, always-on production application server and shared applica
 - Debian GNU/Linux 13
 - 16 GB DDR4 installed; upgrade only if measured usage justifies it
 - Patriot P300 512 GB NVMe
-- Intel X520-DA2 10 GbE upgrade planned/ordered
+- Intel X520-DA2 10 GbE adapter acquired; installation pending
 
 Current workload classes:
 
@@ -116,10 +116,10 @@ Shoji has no assigned role. Keep the name reserved until another production host
 
 ```text
 current
-internet -> UDM-Pro -> USW-Aggregation -> hosts
+internet -> AT&T 620 ONT -> UDM-Pro -> USW-Aggregation -> hosts
 
 target
-fiber handoff -> OPNsense -> switching -> hosts
+AT&T 620 ONT -> OPNsense -> switching -> hosts
 ```
 
 Decisions:
