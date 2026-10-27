@@ -64,9 +64,9 @@ Do not describe Motosu as still awaiting or validating the TrueNAS/Immich migrat
 - storage: Patriot P300 512 GB NVMe
 - network: onboard 1 GbE; low-profile Intel X520-DA2 dual-port 10 GbE SFP+ adapter planned/ordered
 - container platform: Docker Engine + Docker Compose
-- current responsibilities: retained non-media applications, centralized monitoring/logging, Uptime Kuma, Signal notification bridge, AdGuard Home, SearXNG, and Dockhand
+- current responsibilities: retained non-media applications, FreshRSS, centralized monitoring/logging, Uptime Kuma, Signal notification bridge, AdGuard Home, private HTTPS/reverse proxying with Caddy, Pocket ID OIDC/passkey identity, SearXNG, and Dockhand
 
-The deployed workload fits comfortably within the current 16 GB memory configuration. Important Yamanaka files, exports, database dumps, and configuration backups should be copied independently to Motosu.
+The deployed workload fits comfortably within the current 16 GB memory configuration. Important Yamanaka files, exports, database dumps, Pocket ID state, and configuration backups should be copied independently to Motosu.
 
 ## shoji
 
