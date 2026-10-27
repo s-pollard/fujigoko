@@ -47,7 +47,7 @@ download storage
 | Immich Valkey/Redis | Deployed | Application dependency; state is rebuildable |
 | Immich machine learning | Deployed | Application dependency; model cache is rebuildable |
 | TrueNAS storage/snapshots | Deployed | Photo/archive data and Yamanaka backup datasets |
-| TrueNAS Cloud Sync | Configured; photo upload completed | Encrypted B2 off-site protection; see [verification limits](../backups/README.md#motosu) |
+| TrueNAS Cloud Sync | Immich and Yamanaka sync coverage confirmed; photo upload completed | Separate B2 buckets; see [scope and verification limits](../backups/README.md#off-site-copies) |
 | AdGuard Home | Target, after relocation | Second DNS node; not deployed |
 
 The restored Immich library is operating normally. See [Motosu history](../history/motosu-storage-2026.md) for the migration and mirror incident.
@@ -102,12 +102,12 @@ The accepted Uptime Kuma host dependency is documented in [architecture](../arch
 
 User-facing services across all three active hosts are reached through Caddy on Yamanaka. Kawaguchi application access and the Immich route have been verified from trusted clients.
 
-| Published private name | Destination |
+| Private route destination | Host |
 | --- | --- |
-| `kawaguchi.plebworks.com` | Unraid management UI |
-| `motosu.plebworks.com` | TrueNAS management UI |
+| Unraid management UI | Kawaguchi |
+| TrueNAS management UI | Motosu |
 
-See [network access policy](../network/README.md#private-application-access) for the namespace, DNS, certificates, and trusted LAN/Tailscale boundary. The publication-policy conflict is flagged [there](../network/README.md#public-repo-boundary).
+See [network access policy](../network/README.md#private-application-access) for DNS, certificates, and the trusted LAN/Tailscale boundary. The application namespace and its DNS names remain private under [SECURITY.md](../SECURITY.md).
 
 ## authentication
 

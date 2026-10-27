@@ -67,20 +67,27 @@ The repository already has the required directories and 19 Markdown files. Most 
 | `runbooks/service-deployment.md` (new) | Preserve the existing stateful-service migration/deployment checklist. |
 | This review (new) | Record the audit, plan, unresolved facts, and final cleanup result. |
 
+## confirmed state
+
+Owner clarifications on 2026-10-27 resolved the original review questions:
+
+| Topic | Clarification / action |
+| --- | --- |
+| Private application names | Keep the namespace and its DNS names private. Remove literal names from current documentation, including this review, and update SECURITY to match. |
+| ISP handoff | Current: Bluepeak ONT, model unknown. After relocation: AT&T, with a plan to request the 620 ONT. Requested hardware is not deployed hardware. |
+| Motosu drives | Both current members are the deployed model recorded in [hosts](../hosts/README.md#motosu). Future upgrades depend on a good deal, using drives moved down from Kawaguchi or bought for Motosu. |
+| Yamanaka attachment | Yamanaka connects through USW-Lite-8-PoE, USW-Aggregation, UDM-Pro, ONT, and ISP. See [topology](../network/topology.md#current-topology). |
+| B2 scope | Motosu syncs Immich and Yamanaka backups to separate B2 buckets. Source selection is confirmed; latest Yamanaka upload completion and B2 restore verification remain separate checks. |
+| Kawaguchi backups | Put flash/config and manga protection on the [backup to-do list](../backups/README.md#kawaguchi-backup-to-do-list); do not describe it as deployed. |
+| Motosu follow-up | The old requests to implement Yamanaka backups and add independent monitoring were stale. The current backup path is deployed and verified; the accepted monitoring boundary is unchanged. Earlier instructions are retained here as historical context. |
+
 ## review needed
 
-These are documentation findings, not live-system diagnoses.
+Remaining decisions and verification work:
 
-| Topic | Existing evidence / unresolved question |
-| --- | --- |
-| ISP handoff | Upstream corrected the current handoff to Bluepeak ONT during this review. Older target/topology and move text used AT&T 620 ONT. Current inventory/topology use the author's corrected name; the target diagram uses a generic handoff. Confirm the actual device model and target handoff rather than carrying the old model forward. |
-| Published private names | `SECURITY.md` explicitly permits the intentionally documented `plebworks.com` namespace and non-secret internal hostnames. `network/README.md` forbids publishing the namespace and application hostnames. Existing published names are retained; the policy needs a human decision. |
-| Motosu follow-up | `runbooks/motosu-recovery.md` says to implement Yamanaka backups and add independent monitoring. Backups records deployed, tested coverage on 2026-10-26/27; architecture/backups accept monitoring on Yamanaka without an independent watchdog. Preserve the old conflicting instructions as review notes rather than a live deployment checklist. |
-| Yamanaka off-site coverage | Backup/storage wording calls the B2 path intended, while the move checklist says to confirm Cloud Sync continues copying the repository. Local Restic recovery is verified; the reported completed photo upload does not establish a restored off-site Yamanaka repository. Confirm actual Cloud Sync selection/completion during the B2 restore test. |
-| GFX archive | Storage shows a conceptual photo/archive layout, while the move checklist still leaves primary location and backup classification undecided. Do not present the sketch as a deployed dataset. |
-| Motosu drive models | Hosts lists `2 × 6 TB Seagate ST6000NM0024 HDDs`; storage uses `ST6000NM0024-class`, and incident notes describe a temporary older spare without its model. Confirm the current members before changing the recorded hardware claim. |
-| Kawaguchi backup availability | Architecture/storage value configuration and manga above replaceable media; backups intentionally allow reconstructing media automation without a full independent backup. No independent flash/config or manga backup is established by these docs. Conditional recovery instructions do not prove one exists. |
-| Current physical topology | Yamanaka is deployed, but the current topology does not record its switch attachment. Keep that gap explicit; do not infer a port or link. |
+- [Kawaguchi backups](../backups/README.md#kawaguchi-backup-to-do-list): retained scope, destination, frequency, retention, and representative restore.
+- [B2 copies](../backups/README.md#off-site-copies): verify latest upload completion and perform representative restores during the move.
+- [GFX archive](../storage/README.md#photo-policy): decide final location, recovery classification, and protection during the move.
 
 ## historical wording
 
@@ -98,7 +105,7 @@ These are documentation findings, not live-system diagnoses.
 - Repeated hardware specifications, service lists, DNS/access descriptions, schedules, retention, and cleanup counts were replaced with short contextual summaries and links. The topic-ownership table above is the maintenance map.
 - Migration-era inventories, cleanup counts, memory measurements, and delayed-startup observations remain in history. Vaultwarden and Paperless validation evidence and limitations are preserved verbatim in backups.
 - Current/target Motosu service states are separate. The old Yamanaka deployment qualifier was corrected, and the network access description now covers all three hosts as already documented in services.
-- The newer upstream Bluepeak ONT correction is retained; the older AT&T 620 target/move label is recorded for review rather than assumed to identify the current device.
-- The review-needed questions above remain unresolved; no missing address, port assignment, disk model, dataset, schedule, or deployment was supplied.
+- Owner clarification separates the current Bluepeak ONT from the planned AT&T handoff and request for the 620 model.
+- The confirmed-state table records the resolved questions. Remaining backup/storage decisions are listed above; no missing addresses, port assignments, schedules, or unverified deployments were supplied.
 
-Validation: all relative file links and GitHub heading anchors pass; Markdown fences/tables and `git diff --check` pass. All original inline code values remain somewhere in the revised documentation. Only Markdown files changed; `SECURITY.md` and `.gitignore` are unchanged. No live services, restore tests, or hardware were re-verified during this documentation cleanup.
+Initial cleanup validation passed relative links/heading anchors, fences/tables, and `git diff --check`. The clarification follow-up also updates `SECURITY.md` and intentionally removes private application names from current documentation. `.gitignore` is unchanged. No live services, restore tests, or hardware were re-verified; confirmed state is based on the owner's answers.

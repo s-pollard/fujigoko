@@ -8,10 +8,10 @@ Backup effort follows data value and rebuild cost rather than raw storage size.
 | --- | --- | --- |
 | Motosu photos | Local ZFS snapshots | Deployed; same-host protection, not an independent backup |
 | Motosu backup datasets | Local ZFS snapshots | Deployed; same-host protection |
-| Selected Motosu high-value data | Encrypted TrueNAS Cloud Sync to Backblaze B2 | Configured; photo upload completed; representative B2 restore deferred |
+| Immich/photo data on Motosu | Encrypted TrueNAS Cloud Sync to a dedicated B2 bucket | Sync coverage confirmed; photo upload completed; representative B2 restore deferred |
 | Yamanaka application-aware staged tree | Encrypted Restic repository on Motosu | Deployed and byte-for-byte restore-verified on 2026-10-26/27 |
-| Motosu Yamanaka repository | Intended B2 Cloud Sync path | Confirm selection/completion and off-site recovery during the move; local verification does not prove this copy |
-| Kawaguchi media automation | Rebuild/reconstruct | Full independent Arr-stack backup intentionally not required |
+| Yamanaka Restic repository on Motosu | TrueNAS Cloud Sync to a separate dedicated B2 bucket | Sync coverage confirmed; latest upload completion and off-site recovery still need verification |
+| Kawaguchi media automation | Rebuild/reconstruct | Full independent Arr-stack backup intentionally not required; flash/config and manga backup work is [planned](#kawaguchi-backup-to-do-list) |
 | Personal workstations | See [workstation scope](#workstations) | Aso photography to Motosu; no whole-PC protection established |
 
 Schedules and retention are in the [schedule table](#deployed-schedule-and-retention).
@@ -28,7 +28,7 @@ Never commit credentials, repository passwords, API keys, cloud bucket names, ac
 
 Motosu is on TrueNAS SCALE and remains the highest-priority backup/storage host.
 
-Current verified protection includes:
+Current protection and recorded verification:
 
 - mirrored ZFS storage for single-drive fault tolerance
 - daily ZFS snapshots for photos and backups; retention is in the [schedule table](#deployed-schedule-and-retention)
@@ -36,10 +36,21 @@ Current verified protection includes:
 - Backblaze B2 off-site backup configured through TrueNAS Cloud Sync
 - B2 transfer uses encrypted backup content and private credentials kept outside this public repository
 - the current B2 photo upload has completed
-- a dedicated Yamanaka Restic repository is stored on Motosu and included in the intended B2 off-site path
+- the Yamanaka Restic repository on Motosu syncs to its own B2 bucket, separate from the Immich bucket
 - TrueNAS email alerting is configured and tested so Cloud Sync failures do not depend on Yamanaka being available
 
 Migration recovery material and the temporary mirror replacement are documented in [Motosu history](../history/motosu-storage-2026.md).
+
+### off-site copies
+
+Both copies sync from Motosu through TrueNAS Cloud Sync, using separate B2 buckets:
+
+| Source on Motosu | Destination |
+| --- | --- |
+| Immich/photo data | Dedicated Immich bucket |
+| Yamanaka Restic repository | Dedicated Yamanaka bucket |
+
+The owner confirmed both sync paths. Bucket identifiers and credentials remain private. The latest Yamanaka upload completion is not recorded, and representative recovery from B2 remains a move-time test. The earlier completed photo upload and local Restic restore do not establish either result.
 
 ### protection model
 
@@ -56,12 +67,12 @@ host loss / theft / disaster
 
 The ZFS mirror is fault tolerance, not an independent backup.
 
-Selected high-value Motosu data should include the Immich/photo library, photo archives, and Yamanaka backup datasets.
+Off-site scope includes Immich/photo data and Yamanaka backups. The GFX archive's final location and protection policy remain deferred until the move.
 
 ### motosu follow-up
 
 - perform and document a representative restore from the encrypted B2 copy during the move
-- replace the current mirror drives when a suitable deal is available; the present mirror is healthy and replacement is not urgent
+- consider drive upgrades when a suitable deal appears; the [current mirror is deployed and healthy](../storage/README.md#motosu)
 - after any drive replacement, verify resilver, SMART, scrub, and alert state
 
 The target second AdGuard Home instance has medium-priority configuration; it is not deployed. The accepted monitoring dependency is documented in [architecture](../architecture/README.md#accepted-dependencies).
@@ -75,6 +86,18 @@ No full independent backup of the Arr stack or other routine media automation st
 Movies, TV, downloads, caches, and associated automation state are therefore outside the high-value backup scope unless that policy changes later.
 
 Recorded recovery priorities: Unraid/retained application configuration and metadata are medium priority; cAdvisor/exporters and smartctl-exporter are low priority. These rankings do not establish an independent backup or override the rebuild policy.
+
+### kawaguchi backup to-do list
+
+Planned work; independent flash/config and manga backup coverage is not yet established here. A full backup of rebuildable Arr-stack state is not required by the current policy.
+
+- [ ] Confirm the retained scope: Unraid flash/configuration, useful media-service configuration/metadata, and manga that is difficult to reacquire.
+- [ ] Choose an independent destination; source-host loss must not also remove the backup.
+- [ ] Create the flash/config export and copy the selected persistent data.
+- [ ] Choose and document backup frequency and retention.
+- [ ] Restore representative configuration and data to an isolated location and record the result.
+
+Destination, frequency, and retention are not yet decided; this checklist does not describe deployed backup jobs.
 
 ## yamanaka
 
@@ -124,7 +147,7 @@ Recorded recovery priorities and protected material. Service placement and lifec
 | signal-cli-rest-api | Signal-cli state | Low |
 | Compose / private deployment configuration | Definitions, environment/configuration required for recovery | Not separately ranked |
 
-Nextcloud is deferred; backup priority is not applicable. Kawaguchi's configuration/metadata can have greater recovery value than bulk media, but its [rebuild policy](#kawaguchi) does not require a full independent media-automation backup. Independent flash/config and manga backup availability is [not established by these docs](../history/documentation-review-2026-10-27.md#review-needed).
+Nextcloud is deferred; backup priority is not applicable. Kawaguchi's configuration/metadata can have greater recovery value than bulk media, but its [rebuild policy](#kawaguchi) does not require a full independent media-automation backup. Independent flash/config and manga protection is on the [Kawaguchi backup to-do list](#kawaguchi-backup-to-do-list).
 
 Redis/Valkey cache data, Docker images, Docker sockets, raw live PostgreSQL database directories, disposable restore-test trees, Prometheus historical metrics, and Loki historical logs are intentionally excluded where recovery value does not justify them.
 
@@ -236,6 +259,7 @@ Periodically:
 
 - representative recovery from the B2 off-site copy is intentionally deferred until the move
 - GFX archive backup policy is intentionally deferred until the move
-- Motosu drive replacement is waiting for a suitable deal on two HDDs; the current mirror is healthy
+- Motosu drive upgrades are opportunistic; the current pair is deployed and healthy
+- Kawaguchi flash/config and manga backup work is [planned](#kawaguchi-backup-to-do-list), with no assigned timing
 
-Backup-failure alerting is deployed and tested on both Yamanaka and Motosu. See the [move checklist](../runbooks/move-checklist.md) for execution order and the [documentation review](../history/documentation-review-2026-10-27.md#review-needed) for unresolved off-site scope and follow-up wording.
+Backup-failure alerting is deployed and tested on both Yamanaka and Motosu. See the [move checklist](../runbooks/move-checklist.md) for execution order and the [documentation review](../history/documentation-review-2026-10-27.md#review-needed) for remaining decisions and verification work.

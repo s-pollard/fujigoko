@@ -12,7 +12,8 @@ Production work intentionally deferred until relocation, in execution order. Equ
 ## 2. network cutover
 
 - bring up the dedicated OPNsense router
-- verify the [ISP handoff](../network/README.md#current-hardware) before changing the production gateway; the older AT&T 620 label conflicts with the current Bluepeak record
+- request the 620 ONT from AT&T for the move; verify the actual supplied handoff before changing the production gateway
+- follow the [ISP plan](../network/README.md#isp-handoff); the current Bluepeak ONT model is unknown
 - configure required LAN/VLAN interfaces, DHCP, firewall policy, and routing
 - deploy the target wireless AP
 - deploy the target core/aggregation switching design if the replacement switch has been purchased
@@ -25,7 +26,7 @@ Do not retire or sell the UDM-Pro until the replacement network has remained sta
 
 - deploy the second AdGuard Home instance on Motosu
 - align the intended filtering and private DNS policy with the Yamanaka resolver
-- verify private `plebworks.com` resolution from normal clients
+- verify private application DNS resolution from normal clients
 - verify clients can use both resolvers
 - test resolver behavior with either DNS host unavailable
 
@@ -48,25 +49,26 @@ Resolve network/DNS issues before changing unrelated application configuration.
 - confirm the weekly restore-verification timer remains active
 - confirm Yamanaka failure alerts still arrive through Signal
 - confirm Motosu/TrueNAS email alerts still work
-- confirm Motosu Cloud Sync continues to copy the Yamanaka Restic repository off-site
+- confirm both Motosu Cloud Sync paths still run: Immich and the Yamanaka Restic repository, each to its dedicated B2 bucket
+- verify the latest uploads completed successfully
 - perform a representative restore from the B2 off-site copy and document the result
 
-The B2 test should prove that the off-site copy can be used for recovery rather than merely confirming that objects exist remotely. Confirm the actual Yamanaka repository selection and completed off-site copy: current backup wording describes that path as intended, while the checklist assumes it continues. See the [review note](../history/documentation-review-2026-10-27.md#review-needed).
+The B2 test should prove recovery from the two [documented off-site copies](../backups/README.md#off-site-copies), rather than merely confirming that objects exist remotely. Sync coverage is confirmed; upload completion and usable recovery are separate checks.
 
 ## 6. Motosu storage work
 
 The current mirror is healthy. Drive replacement is opportunistic rather than emergency work.
 
-If two suitable replacement HDDs have been acquired by move time:
+If suitable upgrade drives are available by move time, either moved down from Kawaguchi or bought for Motosu:
 
-- replace drives according to the safe TrueNAS/ZFS replacement process
+- replace drives according to the safe TrueNAS/ZFS replacement process and the selected upgrade plan
 - allow each required resilver to complete before proceeding
 - verify pool health
 - verify SMART status/tests
 - run or confirm a scrub as appropriate
 - confirm alerting after the storage changes
 
-If replacement drives have not been purchased, leave the healthy mirror in service.
+If no upgrade drives are available, leave the healthy deployed mirror in service.
 
 ## 7. GFX archive
 

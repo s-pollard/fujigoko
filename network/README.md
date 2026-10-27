@@ -1,25 +1,27 @@
 # network
 
-Network equipment, DNS, ingress, segmentation, and planned changes. Recorded physical links belong in [topology](topology.md). Exact addressing, VLAN IDs, MAC addresses, WAN details, and sensitive management configuration stay private; see [SECURITY.md](../SECURITY.md) and the [policy conflict](#public-repo-boundary).
+Network equipment, DNS, ingress, segmentation, and planned changes. Recorded physical links belong in [topology](topology.md). Exact addressing, VLAN IDs, MAC addresses, WAN details, and sensitive management configuration stay private; see [SECURITY.md](../SECURITY.md) and the [public-repo boundary](#public-repo-boundary).
 
 ## current hardware
 
 | Component | Hardware | State / capability |
 | --- | --- | --- |
-| ISP handoff | Bluepeak ONT | Current fiber handoff; retained when routing moves to OPNsense |
+| ISP handoff | Bluepeak ONT | Current fiber handoff; model unknown |
 | Gateway/controller | Ubiquiti UniFi Dream Machine Pro | Current gateway and UniFi Network controller; eventual sale after replacement is proven |
 | Aggregation | Ubiquiti UniFi Switch Aggregation (USW-Aggregation) | Current; 8 × 10 GbE SFP+ ports |
 | Access/PoE | Ubiquiti UniFi Switch Lite 8 PoE | Current access/PoE switching |
 | Active AP | Ubiquiti UniFi U7 Pro | Current; 2.5 GbE-capable uplink |
 | Other APs | Ubiquiti UniFi U6 Enterprise, U6 Lite, AC Pro | Owned; may remain offline during move/rebuild |
 
-See the [current topology](topology.md#current-topology) for recorded connections. Yamanaka's current physical attachment is not documented.
-
-**Review needed:** the latest upstream correction identifies the current handoff as Bluepeak ONT. Older target/topology and move records called it AT&T 620 ONT. The exact current device model and target handoff need reconciliation; see the [review record](../history/documentation-review-2026-10-27.md#review-needed).
+See the [current topology](topology.md#current-topology) for recorded connections, including Yamanaka through USW-Lite-8-PoE and USW-Aggregation.
 
 ## target network
 
 The [target topology](topology.md#target-topology) replaces UDM-Pro routing with a dedicated OPNsense appliance. USW-Aggregation can remain during transition. Do not retire/sell the UDM-Pro until replacement routing and required management functions are stable.
+
+### ISP handoff
+
+After relocation, the ISP will be AT&T. The plan is to request the 620 ONT; that model is requested target state, not confirmed supplied hardware.
 
 ### router / firewall
 
@@ -80,7 +82,7 @@ The Motosu resolver is not yet deployed. Exact resolver addresses and synchroniz
 
 ## private application access
 
-`plebworks.com` is the intentionally documented private application namespace. Trusted LAN and Tailscale clients use `*.plebworks.com`; private DNS sends those names to Caddy on Yamanaka, which reverse-proxies user-facing services on Yamanaka, Kawaguchi, and Motosu.
+Trusted LAN and Tailscale clients use private application DNS names. Private DNS sends those names to Caddy on Yamanaka, which reverse-proxies user-facing services on Yamanaka, Kawaguchi, and Motosu. The namespace and DNS names remain in private operational configuration.
 
 - Private application names are intended to resolve only through trusted network paths.
 - Direct public-internet exposure is not part of the design.
@@ -89,7 +91,7 @@ The Motosu resolver is not yet deployed. Exact resolver addresses and synchroniz
 - Pocket ID supplies OIDC/passkey identity where native integration is useful; [authentication policy](../architecture/README.md#private-access) and [verified integrations](../services/README.md#authentication) are maintained separately.
 - Direct container ports are implementation details and should be reduced where practical over time; this is not required for the current trusted-LAN model.
 
-Existing published UI hostnames and access verification are recorded in [services](../services/README.md#private-application-access).
+Management UI destinations and access verification are recorded in [services](../services/README.md#private-application-access).
 
 ## power
 
@@ -114,6 +116,4 @@ Lab/gusuku UPS decisions are outside this production-network document.
 
 ## public-repo boundary
 
-Do not add WAN/public IPs, exact private IP assignments, DHCP reservations, MAC addresses, serial numbers, VPN keys/endpoints, credentials, SSO client identifiers, callback URLs, or personal location details.
-
-**Review needed:** the original network policy also forbids publishing the private application namespace and application hostnames. [SECURITY.md](../SECURITY.md#okay-to-document-publicly) explicitly permits the intentionally documented namespace and non-secret internal hostnames, and existing service docs publish them. These positions conflict. Existing published names are retained; resolve the policy before adding or changing published private names. See the [review record](../history/documentation-review-2026-10-27.md#review-needed).
+Do not publish the private application namespace or application/management DNS names. Keep WAN/public IPs, exact private IP assignments, DHCP reservations, MAC addresses, serial numbers, VPN keys/endpoints, credentials, SSO client identifiers, callback URLs, and personal location details private under [SECURITY.md](../SECURITY.md).
