@@ -90,6 +90,7 @@ High-value state includes:
 - Grocy data
 - TriliumNext data
 - Vaultwarden vault state and signing material
+- Kept PostgreSQL data, persistent application data, and recovery-critical configuration
 - Pocket ID identity state
 - FreshRSS and Uptime Kuma state
 - Grafana dashboards/configuration
