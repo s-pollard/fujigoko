@@ -60,15 +60,34 @@ See [`SECURITY.md`](SECURITY.md) for the full policy.
 - [storage](storage/README.md) — storage ownership and data criticality
 - [backups](backups/README.md) — backup policy, verified state, and gaps
 - [Yamanaka migration history](history/yamanaka-migration-2026.md) — archived record of the completed service migration and cleanup
-- [runbooks](runbooks/README.md) — recovery procedures
+- [runbooks](runbooks/README.md) — recovery and move procedures
+- [move checklist](runbooks/move-checklist.md) — work intentionally deferred until relocation
 
-## Current priorities
+## Current status
 
-1. Deploy the second AdGuard Home instance on Motosu to complete redundant DNS.
-2. Deploy and validate the OPNsense-based network; keep the SX3016F as the main core-switch candidate until purchased and verified.
-3. Complete remaining Motosu protection work: representative B2 restore testing, replacement of the temporary older mirror member, and SMART/scrub alert verification.
-4. Establish an independent Kawaguchi configuration/appdata backup.
-5. Remove the legacy Kawaguchi shares (uppercase `Media` and `roms`) after dependency checks confirm nothing still uses them.
-6. Add monitoring independent of Yamanaka and common backup-failure alerting.
+No required pre-move infrastructure project is currently outstanding.
 
-Yamanaka-to-Motosu Restic backups are deployed and restore-verified. Immich restoration and Kawaguchi container/appdata cleanup are complete. See [backups](backups/README.md) for the verified backup design, [services](services/README.md) for current placement, and [Yamanaka migration history](history/yamanaka-migration-2026.md) for the completed migration record.
+Completed or intentionally settled:
+
+- Yamanaka-to-Motosu Restic backups are deployed and restore-verified
+- Yamanaka backup and verification failures send Signal alerts
+- Motosu/TrueNAS alerts are configured to send email, covering Cloud Sync failures independently of Yamanaka
+- Kawaguchi media automation state is intentionally treated as rebuildable rather than requiring a full independent backup
+- Plex/Jellyfin artwork synchronization is configured
+- the current Motosu mirror is healthy; replacement HDDs are an opportunistic purchase rather than an immediate fault response
+
+Low-priority housekeeping such as removal of obsolete Kawaguchi shares can be done when convenient.
+
+## Deferred until the move
+
+The following work is intentionally deferred rather than considered an active gap:
+
+1. deploy and validate the OPNsense-based network and new wireless/core network hardware
+2. deploy the second AdGuard Home instance on Motosu and verify redundant DNS
+3. perform a representative restore from the B2 off-site copy
+4. decide the final GFX archive storage/backup policy
+5. install replacement Motosu HDDs if suitable drives have been acquired by then
+6. perform full post-move service, network, backup, and alert validation
+7. retire/sell the UDM-Pro only after the replacement network is proven stable
+
+See the [move checklist](runbooks/move-checklist.md) for execution order.
