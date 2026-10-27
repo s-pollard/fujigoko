@@ -95,6 +95,9 @@ High-priority protected state includes:
 - FreshRSS state
 - Pocket ID state and private deployment configuration
 - Grafana state
+- Grocy persistent configuration/data
+- TriliumNext persistent data
+- Vaultwarden persistent data, with the SQLite database captured using SQLite's online backup mechanism and validated before staging
 - AdGuard Home configuration
 - Homepage, SearXNG, Stirling PDF, Prometheus, Alloy, Loki, Caddy, and other retained configuration
 - signal-cli state
@@ -102,7 +105,7 @@ High-priority protected state includes:
 
 Redis/Valkey cache data, Docker images, Docker sockets, raw live PostgreSQL database directories, disposable restore-test trees, Prometheus historical metrics, and Loki historical logs are intentionally excluded where recovery value does not justify them.
 
-Database-backed services use database-native dumps or application-aware exports rather than copying live database directories.
+Database-backed services use database-native dumps, SQLite-aware snapshots, or application-aware exports rather than copying live database directories blindly.
 
 ### deployed schedule and retention
 
@@ -120,7 +123,7 @@ Exact addresses, phone numbers, credentials, repository passwords, bucket identi
 
 ### verified Yamanaka-to-Motosu recovery path
 
-The production backup path was exercised end to end on 2026-10-26.
+The production backup path was exercised end to end on 2026-10-26 and re-verified after adding Grocy, TriliumNext, and Vaultwarden on 2026-10-27.
 
 Verified:
 
@@ -128,16 +131,36 @@ Verified:
 - Paperless exported 12 documents; the staged/restored Paperless export contained the expected export artifacts
 - Linkwarden PostgreSQL custom-format dump is readable by `pg_restore`
 - Endurain PostgreSQL custom-format dump is readable by `pg_restore`
-- Restic stored the production staged backup on Motosu successfully
-- the first production snapshot contained 2,157 files and about 867 MiB of logical backup data
-- a later production snapshot was restored from Motosu to an isolated temporary path
-- source and restored trees each contained 2,157 files
+- Grocy state is captured through a consistent-copy workflow
+- TriliumNext state is captured through a consistent-copy workflow
+- Vaultwarden's SQLite database is backed up with SQLite's online `.backup` mechanism and the resulting database passes `PRAGMA integrity_check`
+- an isolated Vaultwarden restore test successfully launched the application from the backed-up database and signing key before production backup integration
+- Restic stored the expanded production staged backup on Motosu successfully
+- the post-expansion production snapshot contained 2,301 files and about 873 MiB of logical backup data
+- Restic repository checking reported no errors
+- the latest snapshot was restored from Motosu to an isolated temporary path
+- source and restored trees each contained 2,301 files
 - recursive 1:1 comparison reported no differences
 - the restored SHA-256 manifest validated successfully
 - the restored Linkwarden and Endurain dumps passed archive validation
-- automated verification completed successfully with exit status 0
+- automated verification completed successfully
 
-This proves that the current staged production backup can be transferred to Motosu by Restic and restored byte-for-byte from the Motosu repository. It does not eliminate the need for periodic application-level restore testing as applications or backup formats change.
+This proves that the current staged production backup, including Grocy, TriliumNext, and Vaultwarden, can be transferred to Motosu by Restic and restored byte-for-byte from the Motosu repository. It does not eliminate the need for periodic application-level restore testing as applications or backup formats change.
+
+### Vaultwarden restore validation
+
+Vaultwarden received an additional application-level restore test before being treated as a production password store.
+
+Verified:
+
+- a SQLite online backup was created from the live database
+- the backup passed `PRAGMA integrity_check`
+- expected Vaultwarden schema tables were present
+- the backed-up database and signing key were copied into an isolated temporary data directory
+- a separate Vaultwarden container launched successfully from that restored data on a temporary port
+- the disposable restore container and temporary restore tree were removed afterward
+
+Vaultwarden credentials, master-password material, recovery codes, OIDC secrets, and other sensitive authentication material are never committed to this repository.
 
 ### Paperless restore validation
 
@@ -162,7 +185,7 @@ The export contains user password hashes and must be stored privately. Compose c
 
 | class | examples | expectation |
 | --- | --- | --- |
-| irreplaceable | photos, documents, budgets, personal databases | independent backup; off-site preferred |
+| irreplaceable | photos, documents, budgets, personal databases, password-vault state | independent backup; off-site preferred |
 | important configuration | application config, Compose files, DNS config | independent backup when recovery value justifies it |
 | convenient | dashboards, metrics history, media automation state | back up only if recovery value justifies it |
 | replaceable | Usenet media, downloads, caches | recreate instead of backing up |
