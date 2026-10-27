@@ -7,7 +7,7 @@ This document intentionally omits exact private addressing, VLAN IDs, MAC addres
 ```text
 internet
   |
-current ISP handoff
+AT&T 620 ONT
   |
 udm-pro
   |
@@ -22,6 +22,12 @@ usw-aggregation
 The U7 Pro is the currently active AP. Other owned UniFi APs may remain offline during the move/rebuild period.
 
 ## current hardware
+
+### ISP handoff
+
+- AT&T 620 ONT
+  - current fiber handoff to the production gateway
+  - remains the ISP-side handoff when routing moves from the UDM-Pro to OPNsense
 
 ### gateway / controller
 
@@ -49,7 +55,7 @@ The U7 Pro is the currently active AP. Other owned UniFi APs may remain offline 
 ## target network
 
 ```text
-fiber handoff
+AT&T 620 ONT
      |
   OPNsense
      |
