@@ -1,6 +1,6 @@
 # runbooks
 
-Runbooks describe what to do when part of Fujigoko fails or needs to be rebuilt.
+Runbooks describe what to do when part of Fujigoko fails, needs to be rebuilt, or requires a coordinated production change.
 
 They are intentionally short and operational. Architecture and inventory details belong elsewhere in the repository.
 
@@ -10,6 +10,7 @@ They are intentionally short and operational. Architecture and inventory details
 - [motosu recovery](motosu-recovery.md)
 - [yamanaka recovery](yamanaka-recovery.md)
 - [network recovery](network-recovery.md)
+- [move checklist](move-checklist.md) — relocation-time network, DNS, backup, storage, and validation work
 
 ## general incident order
 
@@ -36,10 +37,10 @@ highest
 ├── irreplaceable photos and personal application data
 ├── databases required to make those applications usable
 │
-├── media-service configuration
-├── Plex / Arr / manga metadata
+├── media-service configuration where it has real recovery value
+├── Plex / manga metadata where preservation is desired
 │
-└── replaceable movie/TV/download payloads
+└── replaceable movie/TV/download payloads and rebuildable automation state
 lowest
 ```
 
