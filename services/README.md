@@ -98,12 +98,15 @@ Current services:
 - Grocy
 - TriliumNext
 - Vaultwarden
+- Kept + PostgreSQL
 
 Grocy is used for pantry/fridge/freezer inventory, quantity and expiration tracking, and barcode-oriented household inventory. It retains its application-local authentication rather than adding a separate authentication proxy solely for SSO.
 
 TriliumNext is the structured notes/wiki service. Pocket ID OIDC has been tested successfully with the deployed TriliumNext instance.
 
 Vaultwarden is the self-hosted Bitwarden-compatible password vault. Normal vault authentication and hardware-backed second-factor authentication are retained. Pocket ID SSO was evaluated but is not enabled because the current identity claim reports email as unverified; the vault's verification requirement is intentionally not weakened. Operational secrets and recovery material remain outside this public repository.
+
+Kept is the household inventory service for locations, boxes, items, labels, and moving workflows. Pocket ID OIDC has been tested successfully. HomeBox remains deployed during evaluation/import rather than being removed immediately.
 
 Nextcloud was evaluated but is deferred because there is no current production need for it.
 
@@ -164,6 +167,7 @@ Verified Pocket ID/OIDC integration currently includes:
 - Stirling PDF
 - Paperless-ngx
 - TriliumNext
+- Kept
 
 Do not add authentication in front of applications that intentionally have no login merely for consistency. The trusted LAN/Tailscale boundary is acceptable for low-risk convenience UIs unless requirements change.
 
