@@ -5,7 +5,7 @@ Services are classified by function, intended production placement, and persiste
 ```text
 kawaguchi = media + manga + host-specific monitoring agent
 motosu    = photos + Immich + backup storage + redundant DNS target
-yamanaka  = non-media applications + centralized monitoring/logging + DNS
+yamanaka  = non-media applications + centralized monitoring/logging + DNS + private application access
 shoji     = reserved / unassigned
 ```
 
@@ -65,6 +65,7 @@ The retained application migration from Kawaguchi is complete:
 | Stirling PDF | deployed | low |
 | Homepage | deployed | medium |
 | SearXNG | deployed | low |
+| FreshRSS | deployed | medium |
 
 Supporting PostgreSQL/Redis services stay with their parent application and remain private to the relevant Compose network unless external access is actually required.
 
@@ -79,6 +80,8 @@ Supporting PostgreSQL/Redis services stay with their parent application and rema
 | Uptime Kuma | yamanaka | deployed | low-medium |
 | signal-cli-rest-api | yamanaka | deployed | low |
 | Dockhand | yamanaka | deployed | low-medium |
+| Caddy | yamanaka | deployed | medium |
+| Pocket ID | yamanaka | deployed | high |
 | cAdvisor/exporters | monitored host | deployed where needed | low |
 | smartctl-exporter | kawaguchi | deployed | low |
 | AdGuard Home | yamanaka | deployed | medium |
@@ -86,8 +89,12 @@ Supporting PostgreSQL/Redis services stay with their parent application and rema
 
 Prometheus on Yamanaka continues to scrape Kawaguchi cAdvisor and smartctl-exporter. Alloy collects Yamanaka Docker logs into Loki. Uptime Kuma remains on Yamanaka rather than on an independent host, so a total Yamanaka outage also removes that monitoring path.
 
+Caddy, AdGuard Home, and Pocket ID now form the private application-access layer on Yamanaka. Private HTTPS is intended for trusted LAN and Tailscale clients. Pocket ID OIDC has been verified with FreshRSS, Actual Budget, Mealie, Linkwarden, Grafana, Stirling PDF, and Paperless-ngx. Exact hostnames, client IDs, secrets, callback URLs, and other operational identity-provider configuration do not belong in this public repository.
+
 ## planned additions
 
+- Grocy — Yamanaka; household food inventory, expiration, quantity, and barcode tracking alongside Mealie
+- TriliumNext — Yamanaka; structured personal notes, backlinks, and synchronized/offline-capable note access
 - Nextcloud — Yamanaka; general file sync/collaboration if retained after testing
 - Vaultwarden — Yamanaka; security-sensitive service with operational details kept private
 
