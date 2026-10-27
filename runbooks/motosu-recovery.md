@@ -15,7 +15,7 @@ Secrets, cloud bucket names, encryption material, exact network addresses, and o
 - [Backups](../backups/README.md#motosu) — snapshots, encrypted B2 copy, alerting, verification limits
 - [Migration and mirror history](../history/motosu-storage-2026.md)
 
-The TrueNAS/Immich migration is complete and validated. The temporary older mirror member is planned maintenance; check actual pool health before acting on historical incident notes.
+The TrueNAS/Immich migration is complete and validated. Both mirror members are accepted as deployed; verify current pool health before acting on historical incident notes.
 
 ## first checks
 
@@ -141,9 +141,9 @@ If Motosu must be rebuilt or replaced:
 
 ## follow-up
 
-Use the [move checklist](move-checklist.md) for drive replacement and the representative encrypted B2 restore test. Verify periodic SMART testing and alerting.
+Use the [move checklist](move-checklist.md) for conditional drive upgrades and the representative encrypted B2 restore test. Verify periodic SMART testing and alerting.
 
-**Review needed:** the older follow-up list said to "implement Yamanaka-to-Motosu backup jobs and retention" and "add monitoring independent of Yamanaka." The [backup record](../backups/README.md#verified-yamanaka-to-motosu-recovery-path) reports deployed/tested coverage, while [architecture](../architecture/README.md#accepted-dependencies) accepts monitoring without an independent watchdog. These conflicting instructions are recorded in the [documentation review](../history/documentation-review-2026-10-27.md#review-needed), not treated as new deployment requirements here.
+The previous requests to deploy Yamanaka backups and add independent monitoring were stale. Use the [deployed backup record](../backups/README.md#verified-yamanaka-to-motosu-recovery-path) and [accepted monitoring boundary](../architecture/README.md#accepted-dependencies); the earlier instructions are retained in the [review history](../history/documentation-review-2026-10-27.md#confirmed-state).
 
 ## completion criteria
 

@@ -32,7 +32,9 @@ Legacy shares such as uppercase `Media` and `roms` should be removed only after 
 
 ## motosu
 
-TrueNAS SCALE owns mirrored ZFS storage. The current documented mirror is healthy after a temporary spare replacement; replacement is planned maintenance, not an immediate fault response. Migration, Google Photos import, and mirror incident details are in [history](../history/motosu-storage-2026.md). Current drive models still need [confirmation](../history/documentation-review-2026-10-27.md#review-needed).
+TrueNAS SCALE owns the healthy, deployed mirror; both current members are confirmed in [hosts](../hosts/README.md#motosu). Migration, Google Photos import, and mirror incident details are in [history](../history/motosu-storage-2026.md).
+
+Drive upgrades are waiting for a good deal. Drives may be moved down from Kawaguchi after an upgrade there, or purchased specifically for Motosu. The current pair remains deployed; this is not an immediate fault response.
 
 | Data / role | Recorded location / state |
 | --- | --- |
@@ -53,7 +55,7 @@ The GFX archive's final primary location, recovery classification, and backup po
 
 ### yamanaka backup storage
 
-Motosu is the deployed independent local target for Yamanaka's encrypted Restic repository. Application exports/dumps are staged on Yamanaka before transfer. Protected scope, off-site intent, schedules, retention, and byte-for-byte restore evidence belong in [Yamanaka backups](../backups/README.md#yamanaka).
+Motosu is the deployed independent local target for Yamanaka's encrypted Restic repository. Application exports/dumps are staged on Yamanaka before transfer. Protected scope, off-site copies, schedules, retention, and byte-for-byte restore evidence belong in [Yamanaka backups](../backups/README.md#yamanaka).
 
 ## yamanaka
 

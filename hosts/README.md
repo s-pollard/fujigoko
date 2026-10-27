@@ -27,10 +27,10 @@ Kawaguchi remains on Unraid for the current generation. It retains media/manga s
 - hardware: UGREEN NASync DXP2800
 - cpu: Intel N100
 - memory: 8 GB
-- recorded drives: 2 × 6 TB Seagate ST6000NM0024 HDDs
+- deployed drives: 2 × 6 TB Seagate ST6000NM0024 HDDs
 - storage arrangement: mirrored ZFS
 
-**Review needed:** the drive inventory above needs reconciliation with the [temporary older-spare replacement](../history/motosu-storage-2026.md#mirror-replacement); the spare's model was not recorded.
+Both drives are confirmed deployed. Further upgrades are opportunistic; see [storage](../storage/README.md#motosu). The earlier mirror replacement is recorded in [history](../history/motosu-storage-2026.md#mirror-replacement).
 
 Motosu is deployed on TrueNAS SCALE with validated Immich restoration. Current storage health is summarized in [storage](../storage/README.md#motosu); protection, alerting, and restore evidence are in [backups](../backups/README.md#motosu). Remaining storage and second-DNS work is tracked in the [move checklist](../runbooks/move-checklist.md).
 

@@ -8,7 +8,7 @@ Exact IPs, VLAN IDs, MACs, WAN details, and management URLs are intentionally ke
 
 ## recovery references
 
-- [Current physical topology](../network/topology.md#current-topology) — documented links; Yamanaka's attachment is not recorded
+- [Current physical topology](../network/topology.md#current-topology) — Yamanaka and Motosu through USW-Lite-8-PoE
 - [Target topology](../network/topology.md#target-topology) — future layout, not deployed state
 - [Equipment and purchase/deployment states](../network/README.md)
 - [DNS](../network/README.md#dns) and [private ingress](../network/README.md#private-application-access)
@@ -36,7 +36,7 @@ The UDM-Pro remains the current gateway until replacement routing is proven. Do 
 2. verify the UDM-Pro boots and is reachable locally
 3. restore a known-good UniFi configuration if required and available
 4. verify trusted LAN DHCP/routing
-5. verify Kawaguchi and Motosu are reachable
+5. verify Kawaguchi, Motosu, and Yamanaka are reachable
 6. restore segmentation only after basic LAN function is stable
 
 ### target OPNsense
@@ -64,7 +64,7 @@ The **TP-Link Omada SX3016F** is only a candidate today. Add actual port assignm
 
 ### USW-Lite-8-PoE
 
-If the current access switch fails, prioritize restoring Motosu connectivity before lower-priority accessories.
+If the current access switch fails, prioritize restoring Motosu and Yamanaka connectivity before lower-priority accessories. Yamanaka DNS and private application access share this switch path.
 
 ## management-plane recovery
 

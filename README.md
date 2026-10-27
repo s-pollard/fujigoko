@@ -15,7 +15,7 @@ Keep host roles clear, document deployed state, and preserve recoverability. Add
 
 See [host hardware](hosts/README.md), [administration workstations](hosts/workstations.md), and [naming](architecture/naming.md) for hardware, access, and reserved names.
 
-Private application access uses `plebworks.com` from trusted LAN and Tailscale clients. See [DNS and ingress](network/README.md#private-application-access).
+Private applications are reached from trusted LAN and Tailscale clients; the application namespace and DNS names remain private. See [DNS and ingress](network/README.md#private-application-access).
 
 ## documentation
 
@@ -36,11 +36,11 @@ Private application access uses `plebworks.com` from trusted LAN and Tailscale c
 
 ## current status
 
-No required pre-move infrastructure project is currently outstanding.
+Pending work: [Kawaguchi backup to-do list](backups/README.md#kawaguchi-backup-to-do-list).
 
 - Yamanaka-to-Motosu Restic backups are deployed and restore-verified; Signal and TrueNAS email failure alerts are tested. See [backup evidence and limits](backups/README.md).
 - Kawaguchi media automation is intentionally rebuildable. Plex/Jellyfin artwork synchronization is configured.
-- Motosu's mirror is healthy; replacement HDDs are an opportunistic purchase. Obsolete Kawaguchi shares are low-priority housekeeping.
+- Motosu's mirror is healthy; drive upgrades are opportunistic. Obsolete Kawaguchi shares are low-priority housekeeping.
 - Network replacement, redundant DNS, B2 restore testing, and GFX policy are deferred to the [move checklist](runbooks/move-checklist.md).
 
-The [documentation review](history/documentation-review-2026-10-27.md#review-needed) records conflicting policy wording and facts that still need confirmation.
+The [documentation review](history/documentation-review-2026-10-27.md#review-needed) records the remaining storage decisions and backup verification work.
