@@ -32,51 +32,14 @@ Before changing storage configuration, record the current disk assignments and v
 8. reacquire replaceable content only as needed
 ```
 
-## expected host state
+## recovery references
 
-Kawaguchi's permanent role is media and manga.
+- [Host baseline](../hosts/README.md#kawaguchi)
+- [Retained services and dependencies](../services/README.md#kawaguchi)
+- [Shares and media paths](../storage/README.md#kawaguchi)
+- [Rebuild/backup policy](../backups/README.md#kawaguchi)
 
-Expected retained services include:
-
-```text
-Plex
-Sonarr
-Radarr
-SABnzbd
-Bazarr
-Seerr
-Tautulli
-Recyclarr
-Unpackerr
-Komga
-Komf
-Tachidesk
-cAdvisor
-smartctl-exporter
-```
-
-Non-media personal applications belong on Yamanaka once migration is complete.
-
-## storage expectations
-
-Primary paths:
-
-```text
-/mnt/user/media
-/mnt/user/downloads
-/mnt/user/appdata
-```
-
-Important media subpaths include:
-
-```text
-/mnt/user/media/movies
-/mnt/user/media/tv
-/mnt/user/media/music
-/mnt/user/media/manga
-```
-
-Do not recreate the legacy uppercase `/mnt/user/Media` path unless a still-active dependency is verified.
+Kawaguchi's permanent role is media and manga plus host-specific monitoring agents. Non-media personal applications have migrated to Yamanaka. Do not recreate the legacy uppercase `/mnt/user/Media` path unless a still-active dependency is verified.
 
 ## boot/config failure
 
@@ -133,7 +96,7 @@ Then verify:
 
 After restoring Docker services, verify cAdvisor and smartctl-exporter from Prometheus on Yamanaka. For smartctl-exporter, check both target reachability and actual device metrics; a reachable exporter alone does not establish device access.
 
-The restored Unraid template uses privileged mode and an explicit root runtime user. Verify the runtime user with `docker exec smartctl-Exporter id`; setting a `USER=root` environment variable does not override the container's runtime user. See the [service record](../services/README.md#smartctl-exporter) for the observed configuration. Verify expected device coverage against the live host inventory, and investigate device errors separately from scrape health. SMART PASSED is not proof that a disk is problem-free.
+Use the [smartctl-exporter runbook](smartctl-exporter.md) for the privileged/root runtime configuration, device-access issue, recorded device coverage, and verification limits. SMART PASSED is not proof that a disk is problem-free.
 
 ## media flow verification
 

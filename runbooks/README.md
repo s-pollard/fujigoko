@@ -11,6 +11,8 @@ They are intentionally short and operational. Architecture and inventory details
 - [yamanaka recovery](yamanaka-recovery.md)
 - [network recovery](network-recovery.md)
 - [move checklist](move-checklist.md) — relocation-time network, DNS, backup, storage, and validation work
+- [smartctl-exporter](smartctl-exporter.md) — Kawaguchi runtime permissions, restoration, and metric verification
+- [service deployment](service-deployment.md) — migrations and new stateful applications
 
 ## general incident order
 

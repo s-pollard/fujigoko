@@ -2,11 +2,19 @@
 
 Backup effort follows data value and rebuild cost rather than raw storage size.
 
-```text
-kawaguchi = mostly rebuildable media infrastructure
-motosu    = irreplaceable photo data + backup storage
-yamanaka  = irreplaceable application state
-```
+## protection summary
+
+| Source / data | Destination / protection | Recorded state and limit |
+| --- | --- | --- |
+| Motosu photos | Local ZFS snapshots | Deployed; same-host protection, not an independent backup |
+| Motosu backup datasets | Local ZFS snapshots | Deployed; same-host protection |
+| Selected Motosu high-value data | Encrypted TrueNAS Cloud Sync to Backblaze B2 | Configured; photo upload completed; representative B2 restore deferred |
+| Yamanaka application-aware staged tree | Encrypted Restic repository on Motosu | Deployed and byte-for-byte restore-verified on 2026-10-26/27 |
+| Motosu Yamanaka repository | Intended B2 Cloud Sync path | Confirm selection/completion and off-site recovery during the move; local verification does not prove this copy |
+| Kawaguchi media automation | Rebuild/reconstruct | Full independent Arr-stack backup intentionally not required |
+| Personal workstations | See [workstation scope](#workstations) | Aso photography to Motosu; no whole-PC protection established |
+
+Schedules and retention are in the [schedule table](#deployed-schedule-and-retention).
 
 ## policy
 
@@ -23,8 +31,7 @@ Motosu is on TrueNAS SCALE and remains the highest-priority backup/storage host.
 Current verified protection includes:
 
 - mirrored ZFS storage for single-drive fault tolerance
-- daily ZFS snapshots for photos with 30-day retention
-- daily ZFS snapshots for backups with 14-day retention
+- daily ZFS snapshots for photos and backups; retention is in the [schedule table](#deployed-schedule-and-retention)
 - restored and validated Immich application/database/library
 - Backblaze B2 off-site backup configured through TrueNAS Cloud Sync
 - B2 transfer uses encrypted backup content and private credentials kept outside this public repository
@@ -32,7 +39,7 @@ Current verified protection includes:
 - a dedicated Yamanaka Restic repository is stored on Motosu and included in the intended B2 off-site path
 - TrueNAS email alerting is configured and tested so Cloud Sync failures do not depend on Yamanaka being available
 
-Historical migration recovery material can be retained or retired according to recovery value now that the TrueNAS/Immich migration has been validated; it is no longer the primary protection model.
+Migration recovery material and the temporary mirror replacement are documented in [Motosu history](../history/motosu-storage-2026.md).
 
 ### protection model
 
@@ -57,7 +64,7 @@ Selected high-value Motosu data should include the Immich/photo library, photo a
 - replace the current mirror drives when a suitable deal is available; the present mirror is healthy and replacement is not urgent
 - after any drive replacement, verify resilver, SMART, scrub, and alert state
 
-A separate external monitor for Yamanaka is not currently required. Loss of normal access to Yamanaka is sufficient operational indication for the present home-use requirements.
+The target second AdGuard Home instance has medium-priority configuration; it is not deployed. The accepted monitoring dependency is documented in [architecture](../architecture/README.md#accepted-dependencies).
 
 ## kawaguchi
 
@@ -66,6 +73,8 @@ Kawaguchi is comparatively rebuildable, and its media automation state is intent
 No full independent backup of the Arr stack or other routine media automation state is required. If Kawaguchi or its Unraid installation fails catastrophically, the intended response is to rebuild or migrate the media services rather than preserve the existing Unraid installation exactly.
 
 Movies, TV, downloads, caches, and associated automation state are therefore outside the high-value backup scope unless that policy changes later.
+
+Recorded recovery priorities: Unraid/retained application configuration and metadata are medium priority; cAdvisor/exporters and smartctl-exporter are low priority. These rankings do not establish an independent backup or override the rebuild policy.
 
 ## yamanaka
 
@@ -83,26 +92,39 @@ application-aware exports/dumps on Yamanaka
 
 The Restic repository is encrypted with recovery material kept outside this public repository. Yamanaka uses a dedicated restricted account/key for the Motosu repository rather than general administrative access.
 
-High-priority protected state includes:
+### service priorities
 
-- Paperless documents and metadata through the Paperless exporter
-- Actual Budget data
-- HomeBox inventory
-- Mealie data
-- Linkwarden PostgreSQL dump and application data
-- Endurain PostgreSQL dump and application data
-- Uptime Kuma state
-- FreshRSS state
-- Pocket ID state and private deployment configuration
-- Grafana state
-- Grocy persistent configuration/data
-- TriliumNext persistent data
-- Vaultwarden persistent data, with the SQLite database captured using SQLite's online backup mechanism and validated before staging
-- Kept PostgreSQL dump plus its persistent data and recovery-critical configuration volumes
-- AdGuard Home configuration
-- Homepage, SearXNG, Stirling PDF, Prometheus, Alloy, Loki, Caddy, and other retained configuration
-- signal-cli state
-- Compose definitions and private environment/configuration required for recovery
+Recorded recovery priorities and protected material. Service placement and lifecycle are maintained in [services](../services/README.md).
+
+| Service / state | Protected material | Priority |
+| --- | --- | --- |
+| Paperless-ngx | Documents/metadata via application exporter | High |
+| Actual Budget | Persistent budget data | High |
+| HomeBox | Inventory state | High |
+| Mealie | Persistent data | High |
+| Linkwarden | PostgreSQL custom-format dump + application/archive data | High |
+| Endurain | PostgreSQL custom-format dump + backend/application data | High |
+| Grocy | Persistent configuration/data; consistent-copy workflow | High |
+| TriliumNext | Persistent data; consistent-copy workflow | High |
+| Vaultwarden | SQLite online backup, validated before staging; signing key and other required persistent state | Critical |
+| Kept | PostgreSQL custom-format dump + persistent data and recovery-critical configuration volumes | High |
+| Pocket ID | Identity state and private deployment configuration | High |
+| FreshRSS | Persistent state | Medium |
+| Grafana | State, configuration, dashboards | Medium-high |
+| Uptime Kuma | Persistent state | Low-medium |
+| Dockhand | Persistent state | Low-medium |
+| AdGuard Home | Configuration | Medium |
+| Homepage | Configuration | Medium |
+| SearXNG | Configuration | Low |
+| Stirling PDF | Configuration | Low |
+| Prometheus | Configuration, not historical metrics | Medium |
+| Loki | Configuration, not historical logs | Low-medium |
+| Grafana Alloy | Configuration | Low |
+| Caddy | Configuration | Medium |
+| signal-cli-rest-api | Signal-cli state | Low |
+| Compose / private deployment configuration | Definitions, environment/configuration required for recovery | Not separately ranked |
+
+Nextcloud is deferred; backup priority is not applicable. Kawaguchi's configuration/metadata can have greater recovery value than bulk media, but its [rebuild policy](#kawaguchi) does not require a full independent media-automation backup. Independent flash/config and manga backup availability is [not established by these docs](../history/documentation-review-2026-10-27.md#review-needed).
 
 Redis/Valkey cache data, Docker images, Docker sockets, raw live PostgreSQL database directories, disposable restore-test trees, Prometheus historical metrics, and Loki historical logs are intentionally excluded where recovery value does not justify them.
 
@@ -112,13 +134,15 @@ Database-backed services use database-native dumps, SQLite-aware snapshots, or a
 
 Yamanaka runs the production backup through a root-owned backup script and systemd timer.
 
-- nightly Restic backup around 03:00 local time, with a small randomized delay
-- weekly restore verification on Sunday around 05:00 local time, with a small randomized delay
-- Restic retention: 14 daily, 8 weekly, and 6 monthly snapshots
-- each backup run performs a Restic repository check after backup/retention processing
-- Motosu performs the separate B2 cloud-sync step after the nightly local backup window
-- failures of the Yamanaka backup and verification services trigger Signal alerts through the local Signal service
-- TrueNAS system alerting independently sends email for Motosu-side/Cloud Sync failures
+| Job / dataset | Schedule | Retention / behavior |
+| --- | --- | --- |
+| Yamanaka Restic backup | Nightly around 03:00 local time, small randomized delay | 14 daily, 8 weekly, 6 monthly snapshots; repository check after backup/retention processing |
+| Yamanaka restore verification | Sunday around 05:00 local time, small randomized delay | Latest production snapshot restored to an isolated path; SHA-256 manifest, recursive 1:1 source comparison, restored database archive validation |
+| Motosu photo snapshots | Daily | 30 days |
+| Motosu backup snapshots | Daily | 14 days |
+| Motosu B2 Cloud Sync | After the nightly local backup window | Separate cloud-sync step; exact time and remote retention not recorded here |
+
+Failures of the Yamanaka backup and verification services trigger Signal alerts through the local Signal service. TrueNAS alerting independently sends email for Motosu-side/Cloud Sync failures.
 
 Exact addresses, phone numbers, credentials, repository passwords, bucket identifiers, and cloud-account details remain private.
 
@@ -144,7 +168,7 @@ Verified:
 - source and restored trees each contained 5,345 files
 - recursive 1:1 comparison reported no differences
 - the restored SHA-256 manifest validated successfully
-- the restored Linkwarden and Endurain dumps passed archive validation
+- the restored Linkwarden, Endurain, and Kept dumps passed archive validation
 - automated verification completed successfully
 
 This proves that the current staged production backup, including Grocy, TriliumNext, Vaultwarden, and Kept, can be transferred to Motosu by Restic and restored byte-for-byte from the Motosu repository. It does not eliminate the need for periodic application-level restore testing as applications or backup formats change.
@@ -183,6 +207,12 @@ No archive versions exist in this export; only originals and thumbnails are expe
 
 The export contains user password hashes and must be stored privately. Compose configuration, environment values, and the application secret key are protected separately in the private backup set.
 
+## workstations
+
+Aso's photography images are backed up to Motosu. A whole-workstation backup is not established in this inventory.
+
+Ontake, Norikura, and Azuma are not backed up. An old or accessible Time Machine backup detected on Azuma does not represent an active backup arrangement. Workstation hardware and access limitations are in [workstations](../hosts/workstations.md).
+
 ## backup classes
 
 | class | examples | expectation |
@@ -208,4 +238,4 @@ Periodically:
 - GFX archive backup policy is intentionally deferred until the move
 - Motosu drive replacement is waiting for a suitable deal on two HDDs; the current mirror is healthy
 
-Backup-failure alerting is deployed and tested on both Yamanaka and Motosu. A separate independent Yamanaka uptime monitor is not currently required.
+Backup-failure alerting is deployed and tested on both Yamanaka and Motosu. See the [move checklist](../runbooks/move-checklist.md) for execution order and the [documentation review](../history/documentation-review-2026-10-27.md#review-needed) for unresolved off-site scope and follow-up wording.

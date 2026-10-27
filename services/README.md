@@ -1,163 +1,117 @@
 # services
 
-This file records production service placement and dependencies without publishing private addresses, credentials, admin URLs, or other sensitive operational details.
+Production service placement, purpose, dependencies, and authentication. Hardware is in [hosts](../hosts/README.md), data paths in [storage](../storage/README.md), and protected scope in [backups](../backups/README.md).
 
 ## kawaguchi
 
-### monitoring / infrastructure
+All services below are deployed. The non-media migration and retired services are recorded in [migration history](../history/yamanaka-migration-2026.md#retired-from-kawaguchi).
 
-- cAdvisor / host monitoring agent
-- smartctl-exporter / SMART device metrics for Prometheus
+| Service | Purpose | Major dependency / data |
+| --- | --- | --- |
+| Plex | Media library | Media storage |
+| Sonarr | TV automation | Downloads + TV library |
+| Radarr | Movie automation | Downloads + movie library |
+| SABnzbd | Downloads | Download storage |
+| Bazarr | Media support | TV + movie libraries |
+| Seerr, Tautulli, Recyclarr, Unpackerr | Media stack support | Further dependencies not recorded here |
+| Komga, Komf, Tachidesk | Manga services | Manga library |
+| cAdvisor | Host/container metrics | Scraped by Prometheus on Yamanaka |
+| smartctl-exporter | SMART device metrics | Local block-device access; scraped by Prometheus on Yamanaka |
 
-### media
+The smartctl exporter requires privileged mode and an explicit root runtime user. Its configuration, 2026-10-21 restoration evidence, and device-access troubleshooting are in the [smartctl runbook](../runbooks/smartctl-exporter.md).
 
-- Plex
-- Sonarr
-- Radarr
-- SABnzbd
-- Bazarr
-- Seerr
-- Tautulli
-- Recyclarr
-- Unpackerr
-
-### manga
-
-- Komga
-- Komf
-- Tachidesk
-
-The former Kawaguchi copies of migrated non-media services have been removed. RomM, its MariaDB dependency, and other retired appdata have also been removed. Kawaguchi now contains only the active media/manga stack plus cAdvisor and the smartctl-exporter.
-
-User-facing Kawaguchi applications are available through the private `plebworks.com` access layer via Caddy on Yamanaka. This has been verified from trusted clients. The Unraid management UI is also available through the same layer at `kawaguchi.plebworks.com`.
-
-Known dependency examples:
+### media dependencies
 
 ```text
-sabnzbd -> download storage
-sonarr  -> downloads + tv library
-radarr  -> downloads + movie library
-bazarr  -> tv + movie libraries
-plex    -> media library
-komga / komf / tachidesk -> manga library
+internet
+   |
+sabnzbd
+   |
+download storage
+   |
+   +--> sonarr --> tv ------+
+   |                        |
+   +--> radarr --> movies --+--> plex
+   |
+   `--> unpackerr
 ```
 
-### smartctl-exporter
-
-Restored on 2026-10-21 by recreating the container from the saved Unraid template.
-
-```text
-container  smartctl-Exporter
-image      prometheuscommunity/smartctl-exporter:latest
-port       9633
-mode       privileged
-runtime    --user=0:0
-```
-
-The run configuration requires `--user=0:0`. The image's default user is `nobody`, which cannot open the block device nodes that smartctl reads. Setting `USER=root` as a container environment variable did not change the runtime user: an environment variable does not override the image's default user or the user selected at run time, so the runtime user had to be set to root in the template/run configuration.
-
-Verified from Yamanaka on 2026-10-21: the Prometheus smartctl scrape target is UP and the exporter reports metrics for 9 devices. User-provided `docker inspect` output on Kawaguchi confirmed `Privileged=true`; subsequent `docker exec smartctl-Exporter id` output confirmed runtime uid 0. The exported `smartctl_device_smart_status` values are not evidence that all disks are problem-free; a PASSED SMART status does not rule out incipient failure, so this verification covers scrape health and device coverage only.
+[Storage paths](../storage/README.md#kawaguchi) and [recovery checks](../runbooks/kawaguchi-recovery.md#media-flow-verification) cover acquisition/import verification. Plex/Jellyfin artwork synchronization is configured.
 
 ## motosu
 
-Motosu is now a TrueNAS SCALE host.
+| Service / function | State | Purpose / major dependency |
+| --- | --- | --- |
+| Immich server | Deployed; restoration validated | Photo library, PostgreSQL, Valkey/Redis, machine learning |
+| Immich PostgreSQL | Deployed | Photo-library database; logical/application recovery data is critical |
+| Immich Valkey/Redis | Deployed | Application dependency; state is rebuildable |
+| Immich machine learning | Deployed | Application dependency; model cache is rebuildable |
+| TrueNAS storage/snapshots | Deployed | Photo/archive data and Yamanaka backup datasets |
+| TrueNAS Cloud Sync | Configured; photo upload completed | Encrypted B2 off-site protection; see [verification limits](../backups/README.md#motosu) |
+| AdGuard Home | Target, after relocation | Second DNS node; not deployed |
 
-Target/permanent service classes:
-
-- Immich server
-- Immich PostgreSQL
-- Immich Valkey/Redis
-- Immich machine learning
-- storage/snapshot services provided by TrueNAS
-- one AdGuard Home instance as the second DNS node
-
-The Immich application/database restoration is complete and validated. The restored photo library is operating normally.
-
-Immich is available through the private `plebworks.com` access layer via Caddy on Yamanaka, and this route has been verified from a trusted client. The TrueNAS management UI is also available through the same layer at `motosu.plebworks.com`.
-
-Critical persistence is the Immich library, database recovery data, photo/archive data, and Yamanaka backup datasets. Redis/Valkey state and machine-learning caches are rebuildable.
+The restored Immich library is operating normally. See [Motosu history](../history/motosu-storage-2026.md) for the migration and mirror incident.
 
 ## yamanaka
 
-Yamanaka hosts the retained non-media production services migrated from Kawaguchi plus newer production applications. Supporting databases/caches stay with the application they serve rather than becoming shared LAN infrastructure.
-
-Current services:
+Yamanaka hosts production non-media applications and their application-local database/cache dependencies. The stack has been reboot-tested with expected production containers returning automatically.
 
 ### applications
 
-- Paperless-ngx + private Redis
-- Mealie
-- Actual Budget
-- HomeBox
-- Linkwarden + PostgreSQL
-- Stirling PDF
-- Endurain + PostgreSQL + Redis
-- Homepage
-- SearXNG
-- FreshRSS
-- Grocy
-- TriliumNext
-- Vaultwarden
-- Kept + PostgreSQL
+All listed applications are deployed. — means no supporting dependency is recorded here.
 
-Grocy is used for pantry/fridge/freezer inventory, quantity and expiration tracking, and barcode-oriented household inventory. It retains its application-local authentication rather than adding a separate authentication proxy solely for SSO.
+| Service | Purpose | Recorded supporting dependency |
+| --- | --- | --- |
+| Paperless-ngx | Documents and metadata | Private Redis |
+| Mealie | Personal application | — |
+| Actual Budget | Budget data | — |
+| HomeBox | Inventory | — |
+| Linkwarden | Saved links and archive data | PostgreSQL |
+| Stirling PDF | PDF utilities | — |
+| Endurain | Activities and history | PostgreSQL + Redis |
+| Homepage | Convenience dashboard | — |
+| SearXNG | Search | — |
+| FreshRSS | Personal feed service | — |
+| Grocy | Pantry/fridge/freezer inventory, quantities, expirations, barcodes | — |
+| TriliumNext | Structured personal notes/wiki | — |
+| Vaultwarden | Bitwarden-compatible password vault | SQLite |
+| Kept | Locations, boxes, items, labels, moving workflows | PostgreSQL |
 
-TriliumNext is the structured notes/wiki service. Pocket ID OIDC has been tested successfully with the deployed TriliumNext instance.
+HomeBox remains deployed during Kept evaluation/import; it has not been retired.
 
-Vaultwarden is the self-hosted Bitwarden-compatible password vault. Normal vault authentication and hardware-backed second-factor authentication are retained. Pocket ID SSO was evaluated but is not enabled because the current identity claim reports email as unverified; the vault's verification requirement is intentionally not weakened. Operational secrets and recovery material remain outside this public repository.
+### monitoring and infrastructure
 
-Kept is the household inventory service for locations, boxes, items, labels, and moving workflows. Pocket ID OIDC has been tested successfully. HomeBox remains deployed during evaluation/import rather than being removed immediately.
+All services below are deployed on Yamanaka.
 
-Nextcloud was evaluated but is deferred because there is no current production need for it.
+| Service | Purpose / major dependency |
+| --- | --- |
+| Prometheus | Scrapes Kawaguchi cAdvisor and smartctl-exporter |
+| Grafana | Monitoring/log exploration; Prometheus and Loki |
+| Loki | Yamanaka Docker logs collected by Alloy |
+| Grafana Alloy | Collects Yamanaka Docker logs into Loki |
+| Uptime Kuma | Uptime monitoring; Signal notification bridge |
+| signal-cli-rest-api | Uptime Kuma notifications and local Signal path for backup-failure alerts |
+| AdGuard Home | Current DNS resolver and private application DNS |
+| Caddy | Private HTTPS entry point across Yamanaka, Kawaguchi, and Motosu |
+| Pocket ID | OIDC/passkey identity provider |
+| Dockhand | Docker operations/management |
 
-### monitoring / logging
+The accepted Uptime Kuma host dependency is documented in [architecture](../architecture/README.md#accepted-dependencies). Current/target DNS and ingress behavior are in [network](../network/README.md#dns).
 
-- Prometheus
-- Grafana
-- Loki
-- Grafana Alloy
-- Uptime Kuma
+## private application access
 
-Prometheus continues to scrape cAdvisor on Kawaguchi for host/container metrics and the Kawaguchi smartctl-exporter for SMART device metrics. Alloy collects Yamanaka Docker logs into Loki for Grafana exploration.
+User-facing services across all three active hosts are reached through Caddy on Yamanaka. Kawaguchi application access and the Immich route have been verified from trusted clients.
 
-### infrastructure / operations
+| Published private name | Destination |
+| --- | --- |
+| `kawaguchi.plebworks.com` | Unraid management UI |
+| `motosu.plebworks.com` | TrueNAS management UI |
 
-- AdGuard Home
-- Caddy reverse proxy / private HTTPS entry point
-- Pocket ID identity provider for OIDC-capable applications
-- signal-cli-rest-api for Uptime Kuma notifications
-- Dockhand for Docker operations/management
+See [network access policy](../network/README.md#private-application-access) for the namespace, DNS, certificates, and trusted LAN/Tailscale boundary. The publication-policy conflict is flagged [there](../network/README.md#public-repo-boundary).
 
-The Yamanaka stack has been reboot-tested successfully and expected production containers return automatically.
+## authentication
 
-### private application access and SSO
-
-`plebworks.com` is the private application namespace for Fujigoko.
-
-Yamanaka provides the common access layer for user-facing applications across all three active production hosts:
-
-```text
-trusted LAN / Tailscale
-        |
- *.plebworks.com
-        |
- private DNS
-        |
- Yamanaka / Caddy
-   |      |      |
-Yamanaka Kawaguchi Motosu
-```
-
-- AdGuard Home provides the private wildcard DNS policy.
-- Caddy terminates HTTPS and reverse-proxies services hosted on Yamanaka, Kawaguchi, and Motosu.
-- `kawaguchi.plebworks.com` fronts the Unraid management UI.
-- `motosu.plebworks.com` fronts the TrueNAS management UI.
-- The namespace is intended for trusted LAN and Tailscale clients, not direct public-internet exposure.
-- Caddy uses DNS-01 certificate validation; credentials and provider tokens remain only in private runtime configuration.
-- Pocket ID provides OIDC/passkey-based identity where the application supports it cleanly.
-- Application-local authentication is retained where it is useful for API/mobile compatibility, recovery, or when an application's identity-verification behavior does not align cleanly with Pocket ID.
-
-Verified Pocket ID/OIDC integration currently includes:
+Verified Pocket ID/OIDC integrations:
 
 - FreshRSS
 - Actual Budget
@@ -169,45 +123,16 @@ Verified Pocket ID/OIDC integration currently includes:
 - TriliumNext
 - Kept
 
-Do not add authentication in front of applications that intentionally have no login merely for consistency. The trusted LAN/Tailscale boundary is acceptable for low-risk convenience UIs unless requirements change.
+Grocy retains application-local authentication rather than adding a separate authentication proxy solely for SSO.
+
+Vaultwarden retains normal vault authentication and hardware-backed second-factor authentication. Pocket ID SSO was evaluated but is not enabled because the current identity claim reports email as unverified. The vault's email-verification requirement is intentionally not weakened. Secrets and recovery material remain private.
+
+General authentication invariants are in [architecture](../architecture/README.md#private-access); client IDs, callback secrets, credentials, and recovery configuration follow [SECURITY.md](../SECURITY.md).
 
 ## deferred applications
 
-- Nextcloud — general file sync/collaboration; no current production need, reconsider only if a concrete requirement appears
+| Application | Proposed host | State / reason |
+| --- | --- | --- |
+| Nextcloud | Yamanaka | Evaluated and deferred: no current file-sync/collaboration need |
 
-Deferred does not mean rejected. Do not deploy an application merely because it is interesting or available.
-
-## DNS target
-
-Current deployed state:
-
-```text
-yamanaka -> adguard-home -> private *.plebworks.com resolution
-```
-
-Target redundant state:
-
-```text
-yamanaka -> adguard-home
-motosu   -> adguard-home
-```
-
-Both instances should provide equivalent filtering and private `plebworks.com` policy on separate physical hosts. Exact resolver addresses and synchronization details stay in private operational configuration.
-
-## completed cleanup
-
-Kawaguchi cleanup completed on 2026-10-20:
-
-- migrated non-media containers removed
-- RomM and MariaDB removed
-- obsolete stopped containers removed
-- dangling Docker volumes removed
-- unused Docker images pruned
-- retired appdata removed
-- TitleCardMaker, Kometa, Lidarr, and Listenarr appdata removed
-
-The resulting Docker state was 14 active containers, 14 active images, no local Docker volumes, and no reclaimable Docker image/container space.
-
-## lab boundary
-
-Disposable services, VMs, Kubernetes experiments, game servers, and other learning workloads belong in the separate gusuku lab. Fujigoko production services must not depend on them.
+Deferred does not mean rejected or required. Reconsider only when a concrete requirement appears. See [classification](classification.md) for lifecycle decisions and [service deployment](../runbooks/service-deployment.md) for future changes.

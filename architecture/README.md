@@ -2,181 +2,53 @@
 
 ## design intent
 
-Fujigoko is the production homelab. Host roles should remain obvious, production services should not depend on the experimental gusuku lab, and storage/recovery design should follow the value of the data rather than the size of the system.
+Fujigoko is the production homelab. Host roles should remain obvious, production services must not depend on the experimental [gusuku](https://github.com/s-pollard/gusuku) lab, and recovery design should follow data value rather than system size.
 
-```text
-kawaguchi = media + manga + host-specific monitoring agent
-motosu    = photos + Immich + backup storage
-yamanaka  = general applications + centralized monitoring/logging + DNS + private application access
-shoji     = reserved / unassigned
-```
+## placement
 
-The physical machine formerly documented here as `saiko` moved to the separate gusuku lab and is now `shuri`.
+| Workload | Placement rule |
+| --- | --- |
+| Media, manga, bulk downloads | Kawaguchi |
+| Photos, Immich, backup storage | Motosu |
+| General personal applications | Yamanaka |
+| Central monitoring/logging and uptime monitoring | Yamanaka |
+| Host monitoring agents | Monitored host |
+| Private HTTPS and OIDC identity | Yamanaka, serving applications across all production hosts |
+| DNS | Yamanaka currently; Yamanaka + Motosu target pair |
+| Routing/firewall | UDM-Pro currently; dedicated OPNsense appliance target |
+| Disposable services, game servers, learning workloads | Gusuku |
 
-## kawaguchi — media
+Motosu remains storage/photo focused. Yamanaka is a simple always-on application server, not a general lab host. Shoji remains unassigned until a production requirement justifies another host. See [hosts](../hosts/README.md) for physical inventory and [services](../services/README.md) for deployed workloads.
 
-Primary role: media server and media-adjacent storage/services.
+Application databases/caches stay with their parent application. They remain private to the relevant Compose network unless external access is required; they are not shared LAN infrastructure.
 
-- UGREEN iDX6011 64GB AI NAS
-- Intel Core Ultra 5 125H
-- 64 GB memory
-- Unraid 7.3.2
-- 10 GbE uplink
+## private access
 
-Permanent workload classes:
+User-facing services on Yamanaka, Kawaguchi, and Motosu share the private application-access layer on Yamanaka. Direct public-internet exposure is not part of the design.
 
-- Plex and media automation
-- manga services
-- bulk media/download storage
-- cAdvisor and smartctl-exporter / host-specific monitoring agents
+Pocket ID is used where native OIDC works cleanly. Retain application-local/API authentication where useful for compatibility or recovery. Do not add authentication to intentionally login-free convenience UIs solely for uniformity.
 
-Kawaguchi is intentionally relatively rebuildable. Configuration and metadata are more important to protect than reacquirable movie/TV payloads.
+The deployed DNS, Caddy, certificate, and trusted-client behavior is documented in [network](../network/README.md#private-application-access). Application-specific authentication and verified OIDC integrations are in [services](../services/README.md#authentication).
 
-User-facing Kawaguchi applications can be reached through the central `plebworks.com` private application layer on Yamanaka.
+## accepted dependencies
 
-## motosu — photos and backup storage
+Uptime Kuma runs on Yamanaka. A complete Yamanaka failure also removes that monitoring path. This is accepted current state; a separate watchdog is not required for the present home-use requirements. Loss of normal Yamanaka access is sufficient operational indication.
 
-Primary role: photo storage, Immich, and local backup target.
+The private application front door also depends on Yamanaka. Host recovery must start with basic network access rather than depend on Yamanaka DNS, Caddy, or OIDC already working. See [Yamanaka recovery](../runbooks/yamanaka-recovery.md#dns-and-private-application-access).
 
-- UGREEN NASync DXP2800
-- Intel N100
-- 8 GB memory
-- TrueNAS SCALE
-- 2 × 6 TB Seagate ST6000NM0024 HDDs
-- mirrored ZFS storage
-- 2.5 GbE onboard networking
+## recovery design
 
-Current migration state:
+Protect irreplaceable photos, documents, personal databases, identity, and password-vault state ahead of replaceable media, caches, and metrics/log history. Kawaguchi is intentionally comparatively rebuildable.
 
-- TrueNAS SCALE is installed
-- the photo/Immich dataset exists under the Motosu pool
-- the Immich library was copied to the rebuilt system and verified during migration
-- Immich application/database restoration is complete and validated
-
-Target permanent workloads:
-
-- Immich
-- photo/archive storage
-- Yamanaka backup datasets
-- ZFS snapshots
-- Backblaze B2 off-site protection for selected high-value data
-- one AdGuard Home instance as the second DNS node
-
-Motosu remains storage/photo focused rather than becoming a general application host. Immich is also reachable through the central `plebworks.com` private application layer.
-
-## yamanaka — general applications
-
-Primary role: simple, always-on production application server and shared application-access point.
-
-- Dell OptiPlex 3070 SFF
-- Intel Core i5-9500
-- Debian GNU/Linux 13
-- 16 GB DDR4 installed; upgrade only if measured usage justifies it
-- Patriot P300 512 GB NVMe
-- Intel X520-DA2 10 GbE adapter acquired; installation pending
-
-Current workload classes:
-
-- retained non-media personal applications
-- FreshRSS and other lightweight personal web services
-- Prometheus / Grafana / Loki / Alloy
-- Uptime Kuma and Signal notification bridge
-- one AdGuard Home instance
-- Caddy reverse proxy / private HTTPS entry point
-- Pocket ID OIDC/passkey identity provider
-- application-local PostgreSQL/Redis dependencies
-
-The migrated workload has substantial CPU and memory headroom on the current hardware. Yamanaka does not host game servers or disposable lab workloads.
-
-### private application-access layer
-
-`plebworks.com` is the private application namespace for Fujigoko.
-
-Yamanaka provides a single private application-access pattern for user-facing production services across Yamanaka, Kawaguchi, and Motosu:
-
-```text
-trusted LAN / Tailscale
-        |
- *.plebworks.com
-        |
-    private DNS
-        |
-      Caddy
-   /     |      \
-Yamanaka Kawaguchi Motosu
-```
-
-Caddy provides HTTPS and reverse proxying. AdGuard Home provides private wildcard DNS for the namespace. Pocket ID is used only where an application supports native OIDC cleanly; local/API authentication remains where it is useful for compatibility or recovery. The namespace is not intended for direct public-internet exposure.
-
-## shoji — reserved
-
-Shoji has no assigned role. Keep the name reserved until another production host is justified.
-
-## network architecture
-
-```text
-current
-internet -> AT&T 620 ONT -> UDM-Pro -> USW-Aggregation -> hosts
-
-target
-AT&T 620 ONT -> OPNsense -> switching -> hosts
-```
-
-Decisions:
-
-- OPNsense is the target production router/firewall
-- UDM-Pro leaves the routing role only after replacement routing is proven
-- USW-Aggregation can remain during transition
-- TP-Link Omada SX3016F is the main future core/aggregation-switch candidate
-- TP-Link Omada EAP775-Wall is the planned target AP
-- exact addressing, VLAN IDs, reservations, management URLs, and identity-provider secrets stay out of this public repository
-
-## service placement
-
-```text
-media / manga                    -> kawaguchi
-host-specific monitoring agent   -> monitored host
-Immich / photos / backup storage -> motosu
-general personal applications   -> yamanaka
-central monitoring/logging       -> yamanaka
-private HTTPS / SSO              -> yamanaka, fronting all production hosts
-uptime monitoring                -> yamanaka
-DNS                              -> yamanaka + motosu target pair
-routing / firewall               -> OPNsense appliance
-experimentation                  -> gusuku, not fujigoko
-```
-
-Uptime Kuma currently runs on Yamanaka, so a total Yamanaka host failure also removes that monitoring path. This is accepted current state rather than an independent-watchdog design.
-
-## backup priorities
-
-High priority:
-
-- Immich library and database recovery data
-- photo archive data
-- Yamanaka application data/databases
-- Pocket ID state and identity configuration
-- irreplaceable documents and records
-
-Medium priority:
-
-- Kawaguchi Unraid configuration
-- retained application configuration and metadata
-- DNS/reverse-proxy/monitoring configuration
-
-Low priority / replaceable:
-
-- movie/TV payloads
-- downloads and caches
-- transient metrics/history where rebuilding is acceptable
+Storage ownership and live paths belong in [storage](../storage/README.md); backup scope, priorities, schedules, and evidence belong in [backups](../backups/README.md).
 
 ## principles
 
 1. Keep production and experimentation separate.
 2. Keep host roles obvious.
 3. Prefer understandable systems over unnecessary clustering.
-4. Keep application databases local to the host that runs them; back them up independently.
+4. Keep application databases local to their application host; back them up independently.
 5. Document storage, dependencies, and recovery before adding automation.
 6. Remove retired experiments instead of preserving them by inertia.
-7. Keep secrets, exact addressing, personal information, and unique external identifiers out of the public repository.
+7. Follow [SECURITY.md](../SECURITY.md) for public documentation; keep operational secrets private.
 8. Treat deployed state—not old migration assumptions—as current state.

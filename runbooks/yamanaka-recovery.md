@@ -6,79 +6,19 @@ Restore Yamanaka after host, storage, Docker, or application failure.
 
 Yamanaka holds personal application state, so recovery prioritizes databases, identity, password-vault state, documents, and other persistent application data over convenience services.
 
-## host baseline
+## recovery references
 
-```text
-hardware        Dell OptiPlex 3070 SFF
-cpu             Intel Core i5-9500, 6C/6T
-memory          16 GB DDR4-2666
-memory maximum  32 GB
-os              Debian GNU/Linux 13 (trixie)
-boot            UEFI
-storage nvme    single NVMe, Patriot P300 512 GB
-network         onboard 1 GbE; Intel X520-DA2 acquired for upgrade
-```
+- [Host baseline](../hosts/README.md#yamanaka) — physical hardware, Debian, Docker/Compose, network upgrade state
+- [Service inventory](../services/README.md#yamanaka) — current applications and supporting dependencies
+- [Storage layout](../storage/README.md#yamanaka) — live roots and backup staging location
 
-Do not treat 32 GB RAM as a recovery requirement. Upgrade only if measured workload justifies it.
-
-## expected role
-
-Yamanaka is the production non-media application host and common private application-access point.
-
-Expected workloads include:
-
-### applications
-
-- Paperless-ngx + private Redis
-- Mealie
-- Actual Budget
-- HomeBox
-- Linkwarden + PostgreSQL
-- Stirling PDF
-- Endurain + PostgreSQL + Redis
-- Homepage
-- SearXNG
-- FreshRSS
-- Grocy
-- TriliumNext
-- Vaultwarden
-- Kept + PostgreSQL
-
-### monitoring / infrastructure
-
-- Prometheus
-- Grafana
-- Loki
-- Grafana Alloy
-- Uptime Kuma
-- AdGuard Home
-- Caddy
-- Pocket ID
-- signal-cli-rest-api
-- Dockhand
-
-Game servers and disposable lab workloads belong in gusuku.
+Do not treat 32 GB RAM as a recovery requirement. Upgrade only if measured workload justifies it. Yamanaka is the production non-media application host and private application-access point; game servers and disposable lab workloads belong in gusuku.
 
 ## independent backup source
 
-Yamanaka production state is backed up to a dedicated encrypted Restic repository on Motosu.
+Use the dedicated encrypted Restic repository on Motosu. [Backup policy and scope](../backups/README.md#yamanaka), [schedule/retention](../backups/README.md#deployed-schedule-and-retention), and [verified recovery evidence](../backups/README.md#verified-yamanaka-to-motosu-recovery-path) are maintained in backups.
 
-The deployed path is:
-
-```text
-Yamanaka application-aware exports/dumps
--> staged backup tree
--> Restic over SSH/SFTP
--> dedicated Motosu backup dataset
--> Motosu local protection
--> scheduled Backblaze B2 cloud sync
-```
-
-The repository password, SSH material, cloud credentials, bucket identifiers, and exact addressing are private and are not documented here.
-
-Production backups run nightly through systemd. A weekly verification job restores the latest production snapshot to an isolated temporary location, verifies the SHA-256 manifest, performs a recursive 1:1 comparison against the staged source tree, and validates restored database archives.
-
-The current Restic retention policy keeps 14 daily, 8 weekly, and 6 monthly snapshots.
+The repository password, SSH material, cloud credentials, bucket identifiers, and exact addressing are private. The B2 copy is a separate recovery path whose representative restore remains deferred; local Restic verification does not prove off-site recovery.
 
 ## recovery order
 
@@ -97,16 +37,7 @@ The current Restic retention policy keeps 14 daily, 8 weekly, and 6 monthly snap
 
 ## expected layout
 
-Current production data is primarily under:
-
-```text
-/srv/
-├── compose/
-├── data/
-└── docker/
-```
-
-The independent backup uses a staged tree under `/srv/backup-export` before Restic commits the snapshot to Motosu.
+Use the [recorded production paths](../storage/README.md#yamanaka). Backup generation stages data under `/srv/backup-export` before Restic commits it to Motosu.
 
 Do not create empty application directories over existing/restored data paths.
 
@@ -231,7 +162,7 @@ Restore the Paperless export using the application importer and restore the requ
 
 ### verified export recovery
 
-A 12-document Paperless-ngx 3.3.3 export has been restored successfully in an isolated test environment on Yamanaka, including normal startup, separate Redis, content search, browser rendering, original-file checksum verification, and restart persistence. See [backup validation and limitations](../backups/README.md#paperless-restore-validation).
+The isolated test used the pinned Paperless-ngx 3.3.3 image and a separate Redis instance. The exact dataset, validation results, and limits are in [Paperless restore validation](../backups/README.md#paperless-restore-validation).
 
 Recovery procedure established by the test:
 
@@ -243,9 +174,7 @@ Recovery procedure established by the test:
 6. restart the restored stack and repeat data/search checks
 7. remove temporary credentials, sessions, containers, and networks while preserving private evidence
 
-The production Restic verification also restored the staged Paperless export from Motosu as part of the complete backup-tree restore. The restored backup tree matched the source tree exactly.
-
-No archive versions exist in the tested Paperless export; only originals and thumbnails are expected for that dataset. Classifier training, new-document consumption/OCR, archive generation, larger datasets, and a complete clean-host rebuild remain separate recovery tests.
+No archive versions exist in the tested export; only originals and thumbnails are expected for that dataset. See the [backup evidence](../backups/README.md#paperless-restore-validation) before extending this procedure to untested formats, datasets, or clean-host recovery.
 
 Keep exports and configuration private: exports contain password hashes, and Compose/environment/application secret-key recovery is part of the protected private backup set.
 
@@ -279,19 +208,7 @@ Grocy and TriliumNext were added to the production backup path and included in t
 
 ## configuration-only / lower-value state
 
-The staged backup also protects relevant configuration for services such as:
-
-- AdGuard Home
-- Homepage
-- SearXNG
-- Stirling PDF
-- Prometheus
-- Grafana Alloy
-- Loki
-- Caddy/Compose-managed services
-- signal-cli state
-
-Redis/Valkey caches, Docker images, Docker sockets, raw PostgreSQL data directories, temporary restore-test trees, Prometheus historical metrics, and Loki historical logs are intentionally excluded where they are rebuildable or low-value.
+Restore configuration according to the [protected set and exclusions](../backups/README.md#service-priorities). Rebuild disposable images, caches, historical metrics/logs, and temporary test state rather than assuming they are in the backup. Restore PostgreSQL from its native dumps rather than raw live data directories.
 
 ## monitoring
 
@@ -309,7 +226,7 @@ Priority:
 
 Verify production targets such as Kawaguchi, Motosu, and Yamanaka. Gusuku is not part of the required Fujigoko monitoring dependency chain.
 
-Uptime Kuma is deployed on Yamanaka and therefore cannot independently detect a complete Yamanaka outage. A separate external Yamanaka watchdog is not currently required for the present home-use requirements; loss of normal Yamanaka access is accepted as sufficient operational indication.
+Uptime Kuma shares Yamanaka's failure boundary; see the [accepted monitoring dependency](../architecture/README.md#accepted-dependencies).
 
 ## DNS and private application access
 
@@ -343,27 +260,7 @@ Replacement hardware does not need to duplicate the OptiPlex exactly. The recove
 
 ## verified backup state
 
-The production Yamanaka-to-Motosu path was first verified on 2026-10-26 and re-verified after adding Grocy, TriliumNext, Vaultwarden, and Kept on 2026-10-27.
-
-The current verification demonstrated:
-
-- successful application-aware export/dump generation
-- successful Grocy and TriliumNext consistent-state capture
-- successful Vaultwarden SQLite online backup and integrity validation
-- successful Kept PostgreSQL custom-format backup and `pg_restore` validation
-- successful capture of Kept persistent data and recovery-critical configuration volumes
-- successful Restic backup to Motosu
-- successful repository integrity check
-- successful restore of the latest production snapshot to an isolated temporary path
-- 5,345 source files and 5,345 restored files
-- about 988 MiB of logical staged backup data
-- no differences in recursive source/restored comparison
-- successful restored SHA-256 manifest verification
-- successful restored Linkwarden, Endurain, and Kept PostgreSQL archive validation
-- successful automated verification
-- separate successful isolated Vaultwarden application-level restore test
-
-This establishes the Motosu Restic repository as an available independent recovery source for the current Yamanaka application set. A representative restore originating from the off-site B2 copy remains a separate outstanding move-time test.
+Use the [dated backup evidence](../backups/README.md#verified-yamanaka-to-motosu-recovery-path) for the production Restic restore, file counts/checksums, database archive validation, automated verification, and separate Vaultwarden application-level test. This is the independent local recovery source for the current application set; representative B2 recovery remains a separate move-time test.
 
 ## completion criteria
 

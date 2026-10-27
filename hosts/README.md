@@ -1,76 +1,54 @@
 # hosts
 
-Exact private IPs, MAC addresses, serial numbers, WAN details, and other sensitive operational identifiers are intentionally excluded from this public repository.
+Current physical inventory. Exact addressing and sensitive identifiers stay in private operational notes under [SECURITY.md](../SECURITY.md).
+
+| Host | Role | Platform | Recorded networking |
+| --- | --- | --- | --- |
+| [kawaguchi](#kawaguchi) | Media / bulk storage | Unraid 7.3.2 | 10 GbE uplink |
+| [motosu](#motosu) | Photos / Immich / backup target | TrueNAS SCALE | 2.5 GbE onboard |
+| [yamanaka](#yamanaka) | General applications / shared infrastructure | Debian GNU/Linux 13 | Onboard 1 GbE; 10 GbE upgrade acquired, installation pending |
+| [shoji](#shoji) | Reserved | Unassigned | Not assigned |
+| [OPNsense appliance](#opnsense-router-appliance) | Target router/firewall; hardware acquired | Target: OPNsense | Recorded interfaces below |
+
+Service lists and dependencies are maintained in [services](../services/README.md); pools, shares, and data paths are in [storage](../storage/README.md).
 
 ## kawaguchi
 
-- role: media server / bulk media storage
 - hardware: UGREEN iDX6011 64GB AI NAS
-- platform: Unraid 7.3.2
 - cpu: Intel Core Ultra 5 125H
 - memory: 64 GB
-- network: 10 GbE uplink
-- current responsibilities: Plex/media automation, manga, bulk media storage, and host-specific monitoring via cAdvisor and the smartctl-exporter
+- disks: six HDDs in the Unraid array
+- cache devices: two Samsung 970 EVO Plus 1 TB NVMe devices
 
-Storage summary:
-
-- six HDDs in the Unraid array
-- two Samsung 970 EVO Plus 1 TB NVMe devices in the cache pool
-- main shares include appdata, downloads, media, domains, isos, and system
-
-Kawaguchi remains on Unraid for the current generation. The non-media migration cleanup is complete: retired containers were removed, unused images and volumes were pruned, and obsolete appdata for migrated/retired services was deleted. Kawaguchi now retains only the active media/manga stack plus cAdvisor and the smartctl-exporter.
+Kawaguchi remains on Unraid for the current generation. It retains media/manga services and host-specific monitoring agents; the completed non-media migration and cleanup are recorded in [history](../history/yamanaka-migration-2026.md).
 
 ## motosu
 
-- role: photo NAS / Immich host / local backup target
 - hardware: UGREEN NASync DXP2800
 - cpu: Intel N100
 - memory: 8 GB
-- network: 2.5 GbE onboard
-- platform: TrueNAS SCALE
-- storage: mirrored ZFS storage on 2 × 6 TB Seagate ST6000NM0024 HDDs
-- current responsibilities: Immich, photo/archive storage, snapshots, encrypted Backblaze B2 off-site backup, and the independent local Restic repository for Yamanaka
+- recorded drives: 2 × 6 TB Seagate ST6000NM0024 HDDs
+- storage arrangement: mirrored ZFS
 
-Current state:
+**Review needed:** the drive inventory above needs reconciliation with the [temporary older-spare replacement](../history/motosu-storage-2026.md#mirror-replacement); the spare's model was not recorded.
 
-- TrueNAS SCALE migration is complete
-- the Motosu pool and photo/Immich dataset are deployed
-- Immich application/database restoration is complete and validated
-- the restored photo library and subsequent Google Photos import are working normally
-- the mirror was resilvered successfully after one HDD failed; the temporary replacement is an older spare and should be replaced with a better drive later
-- selected high-value data is protected off-site through TrueNAS Cloud Sync with client-side remote encryption
-- local snapshot policy is daily with 30-day retention for photos and 14-day retention for backups
-- Yamanaka-to-Motosu Restic backups are deployed with 14 daily, 8 weekly, and 6 monthly retention
-- Yamanaka backup/restore verification is deployed and tested
-- TrueNAS email alerting is configured and tested for Motosu-side and Cloud Sync failures
-
-Remaining Motosu work is operational follow-up rather than migration work:
-
-- replace the temporary older mirror member with a better HDD when a suitable drive is available, resilver, then verify SMART/scrub health
-- verify periodic SMART testing remains scheduled and healthy
-- perform and document a representative encrypted B2 restore test during the move
-- deploy the second AdGuard Home instance after relocation and verify redundant DNS
-
-A separate independent Yamanaka uptime monitor is not currently required for the present home-use requirements.
-
-Do not describe Motosu as still awaiting or validating the TrueNAS/Immich migration or as waiting for Yamanaka backup deployment.
+Motosu is deployed on TrueNAS SCALE with validated Immich restoration. Current storage health is summarized in [storage](../storage/README.md#motosu); protection, alerting, and restore evidence are in [backups](../backups/README.md#motosu). Remaining storage and second-DNS work is tracked in the [move checklist](../runbooks/move-checklist.md).
 
 ## yamanaka
 
-- role: always-on general application server
 - status: deployed and carrying production non-media workloads
 - hardware: Dell OptiPlex 3070 Small Form Factor
 - cpu: Intel Core i5-9500, 6 cores / 6 threads
 - platform: Debian GNU/Linux 13 (trixie)
+- boot: UEFI
 - memory: 16 GB DDR4-2666 installed
 - documented memory maximum: 32 GB across 2 DIMM slots
 - memory policy: upgrade only if measured usage justifies it
-- storage: Patriot P300 512 GB NVMe
-- network: onboard 1 GbE; low-profile Intel X520-DA2 dual-port 10 GbE SFP+ adapter acquired for upgrade
+- storage: single Patriot P300 512 GB NVMe
+- network upgrade: low-profile Intel X520-DA2 dual-port 10 GbE SFP+ adapter acquired; installation pending
 - container platform: Docker Engine + Docker Compose
-- current responsibilities: production non-media applications including Paperless-ngx, Mealie, Actual Budget, HomeBox, Linkwarden, Endurain, FreshRSS, Grocy, TriliumNext, Vaultwarden, Homepage, SearXNG, and Stirling PDF; centralized monitoring/logging; Uptime Kuma; Signal notification bridge; AdGuard Home; Caddy; Pocket ID; and Dockhand
 
-The deployed workload fits comfortably within the current 16 GB memory configuration. Important Yamanaka state is backed up independently to Motosu through the deployed Restic workflow and is included in the intended Motosu off-site protection path.
+The documented production workload fits comfortably within 16 GB. See [services](../services/README.md#yamanaka) for the application/infrastructure inventory and [backups](../backups/README.md#yamanaka) for independent protection.
 
 ## shoji
 
@@ -81,13 +59,11 @@ Do not assign Shoji a permanent purpose until a real production requirement just
 
 ## gusuku boundary
 
-The physical system formerly documented in Fujigoko as `saiko` has moved to the separate [`gusuku`](https://github.com/s-pollard/gusuku) learning/experimentation lab and is now `shuri`.
-
-Do not duplicate Shuri hardware or lab-state documentation here. Fujigoko should only document the boundary: production services must not depend on gusuku.
+The physical system formerly documented here as `saiko` moved to the separate [`gusuku`](https://github.com/s-pollard/gusuku) learning/experimentation lab and is now `shuri`. Shuri hardware and lab state belong there. See [naming](../architecture/naming.md#major-hosts--fuji-five-lakes) for the reserved lake names and [architecture](../architecture/README.md) for the production boundary.
 
 ## OPNsense router appliance
 
-Target production router/firewall, replacing the UDM-Pro routing role.
+Hardware acquired for the target production router/firewall. Deployment and UDM-Pro retirement are governed by the [network plan](../network/README.md#target-network).
 
 Verified/recorded hardware:
 
@@ -99,8 +75,8 @@ Verified/recorded hardware:
 - Intel I219-LM 1 GbE onboard interface
 - target platform: OPNsense
 
-No reliable chassis/OEM model has been established, so document the appliance by verified components rather than inventing a model.
+No reliable chassis/OEM model has been established; use the recorded components rather than inventing a model.
 
 ## personal administration workstations
 
-[Aso, Ontake, Norikura, and Azuma](workstations.md) are personal PCs used to administer both environments. Aso is the primary workstation and most powerful non-server PC; the laptops provide alternative access.
+[Aso, Ontake, Norikura, and Azuma](workstations.md) are personal PCs used to administer both environments. Aso is the primary workstation; the laptops provide alternative access.
