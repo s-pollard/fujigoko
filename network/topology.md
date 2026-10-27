@@ -1,13 +1,13 @@
 # topology
 
-This document shows useful production infrastructure relationships without publishing exact addressing or other sensitive operational identifiers.
+Recorded production connections and target physical layout. Equipment state, DNS, ingress, segmentation, and power policy are maintained in [network](README.md).
 
 ## current topology
 
 ```text
                          internet
                             |
-                     AT&T 620 ONT
+                     Bluepeak ONT
                             |
                          udm-pro
                             |
@@ -21,17 +21,16 @@ This document shows useful production infrastructure relationships without publi
                   truenas     lite
 ```
 
-Current notes:
-
 - U7 Pro is attached to the aggregation switch and has a 2.5 GbE-capable uplink.
 - Kawaguchi uses 10 GbE to the aggregation layer.
-- Motosu reaches the network through the access-switch path (USW-Lite-8-PoE). Its storage/Immich rebuild is complete and validated.
-- Exact switch-port assignments are intentionally omitted from the public repo.
+- Motosu reaches the network through USW-Lite-8-PoE.
+- Yamanaka is deployed, but its current physical switch attachment is not recorded here. The diagram shows only documented links.
+- Exact switch-port assignments remain private.
 
 ## target topology
 
 ```text
-                       AT&T 620 ONT
+                       ISP handoff
                             |
                          opnsense
                             |
@@ -42,69 +41,17 @@ Current notes:
             media         photos       apps
                            + backups    + monitoring
                            + dns        + dns
-
-             target wireless: EAP775-Wall
-             future core candidate: SX3016F
 ```
 
-Target state:
+This is target state, not the current wiring or evidence that Motosu DNS is deployed. The older target handoff label is under [review](../history/documentation-review-2026-10-27.md#review-needed); no device model is assumed here. Equipment purchase/deployment states are in the [network plan](README.md#target-network); resolver state is in [DNS](README.md#dns).
 
-- OPNsense is the production router/firewall.
-- UDM-Pro leaves the routing path after the replacement network is stable.
-- TP-Link Omada SX3016F is the main future core-switch candidate, not deployed hardware.
-- TP-Link Omada EAP775-Wall is the planned target AP.
-- Yamanaka and Motosu provide redundant AdGuard Home DNS.
-- experimental/lab infrastructure belongs in gusuku and is not part of the Fujigoko production topology.
-- exact VLANs, IP reservations, physical ports, management URLs, and WAN details stay out of the public repository.
+If UniFi switching remains after UDM-Pro retirement, retain a working [management method](README.md#management-plane-dependency). The Omada AP management method is selected separately.
 
-## DNS flow
+## application flows
 
-Current:
+- [Private application access](README.md#private-application-access) — trusted clients, private DNS, Caddy, production hosts
+- [Media dependencies](../services/README.md#media-dependencies) — acquisition/import flow
+- [Motosu services](../services/README.md#motosu) — Immich and its database/cache/machine-learning dependencies
+- [Yamanaka services](../services/README.md#yamanaka) — application-local database/cache dependencies
 
-```text
-lan client -> adguard on yamanaka -> upstream resolver
-```
-
-Target:
-
-```text
-lan client
-  |---> adguard on yamanaka
-  `---> adguard on motosu
-```
-
-## media flow
-
-```text
-internet
-   |
-sabnzbd
-   |
-download storage
-   |
-   +--> sonarr --> tv ------+
-   |                        |
-   +--> radarr --> movies --+--> plex
-   |
-   `--> unpackerr
-```
-
-## application dependencies
-
-Yamanaka hosts the production non-media applications and their application-local PostgreSQL/Redis dependencies. Those supporting databases and caches remain private to their relevant Compose networks unless external access is explicitly required.
-
-Kawaguchi no longer hosts transitional copies of retained non-media applications; that migration and cleanup are complete.
-
-Motosu Immich stack:
-
-```text
-immich
-├── server
-├── postgres
-├── redis/valkey
-└── machine learning
-```
-
-## management note
-
-If UniFi switching remains after the UDM-Pro is sold, establish a replacement UniFi Network controller/management method first. The Omada AP management method is selected separately.
+Gusuku is outside this production topology. Exact addressing, VLANs, reservations, ports, management URLs, and WAN details remain private under [SECURITY.md](../SECURITY.md).

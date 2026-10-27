@@ -8,17 +8,14 @@ Motosu contains irreplaceable photo data and serves as a backup target, so prese
 
 Secrets, cloud bucket names, encryption material, exact network addresses, and other sensitive operational details are intentionally excluded from this public runbook.
 
-## platform
+## recovery references
 
-Current platform:
+- [Host baseline](../hosts/README.md#motosu) — TrueNAS SCALE and physical inventory
+- [Storage](../storage/README.md#motosu) — mirror state and deployed Immich path
+- [Backups](../backups/README.md#motosu) — snapshots, encrypted B2 copy, alerting, verification limits
+- [Migration and mirror history](../history/motosu-storage-2026.md)
 
-- TrueNAS SCALE
-- mirrored ZFS storage on 2 × 6 TB HDDs
-- Immich/photo data under the Motosu pool
-- current Immich dataset path: `/mnt/motosu/photos/immich`
-- encrypted Backblaze B2 off-site copy through TrueNAS Cloud Sync
-
-The TrueNAS/Immich migration is complete and validated. One mirror member subsequently failed; it was replaced with an older spare and the pool resilvered successfully. Replacing that temporary member with a better HDD remains planned maintenance.
+The TrueNAS/Immich migration is complete and validated. The temporary older mirror member is planned maintenance; check actual pool health before acting on historical incident notes.
 
 ## first checks
 
@@ -91,14 +88,7 @@ If the pool/datasets are healthy but Immich is broken:
 5. preserve existing persistent data before destructive application changes
 6. redeploy/recreate application components only after the data path and database recovery plan are clear
 
-Expected logical stack:
-
-```text
-immich server
-immich postgres
-immich redis/valkey
-immich machine learning
-```
+The [Immich service inventory](../services/README.md#motosu) records the server, PostgreSQL, Valkey/Redis, and machine-learning components.
 
 Do not assume a database dump from an older PostgreSQL/Immich deployment can be restored blindly into a newer schema. Validate the version-appropriate restore path first.
 
@@ -112,10 +102,7 @@ If the affected data is covered by a usable ZFS snapshot:
 4. use a full dataset rollback only when the blast radius is understood
 5. verify Immich/database consistency afterward
 
-Current snapshot policy:
-
-- photos: daily, 30-day retention
-- backups: daily, 14-day retention
+Use the [deployed snapshot schedule and retention](../backups/README.md#deployed-schedule-and-retention) to identify available recovery points; verify the actual snapshots before relying on them.
 
 ## restore from Backblaze B2
 
@@ -152,13 +139,11 @@ If Motosu must be rebuilt or replaced:
 9. recreate Yamanaka backup targets and remote access as needed
 10. re-establish snapshots and encrypted off-site backup
 
-## planned follow-up
+## follow-up
 
-- replace the temporary older mirror member with a better HDD
-- verify periodic SMART tests and alerting
-- perform and document an encrypted B2 restore test
-- implement Yamanaka-to-Motosu backup jobs and retention
-- add monitoring independent of Yamanaka
+Use the [move checklist](move-checklist.md) for drive replacement and the representative encrypted B2 restore test. Verify periodic SMART testing and alerting.
+
+**Review needed:** the older follow-up list said to "implement Yamanaka-to-Motosu backup jobs and retention" and "add monitoring independent of Yamanaka." The [backup record](../backups/README.md#verified-yamanaka-to-motosu-recovery-path) reports deployed/tested coverage, while [architecture](../architecture/README.md#accepted-dependencies) accepts monitoring without an independent watchdog. These conflicting instructions are recorded in the [documentation review](../history/documentation-review-2026-10-27.md#review-needed), not treated as new deployment requirements here.
 
 ## completion criteria
 

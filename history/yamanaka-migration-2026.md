@@ -6,7 +6,7 @@ Archived historical record. This migration is complete; current deployed state i
 
 Move retained non-media self-hosted applications off `kawaguchi` and onto `yamanaka` without disrupting the media stack.
 
-Current production role split:
+Role split recorded for the migration (not a current inventory):
 
 ```text
 kawaguchi = media + manga + host-specific monitoring agent
@@ -43,13 +43,15 @@ Completed:
 - Prometheus verified scraping Kawaguchi cAdvisor
 - Yamanaka reboot-tested with expected production containers returning automatically
 
-Remaining post-migration work:
+Post-cutover follow-up recorded at the time:
 
 - establish/verify independent Yamanaka backups on Motosu
 - deploy the second AdGuard Home instance on Motosu
 - continue routine Motosu backup/restore validation and storage maintenance
 
-## deployed yamanaka platform
+Independent Yamanaka backup coverage was later deployed and verified on 2026-10-26/27; see [current backup evidence](../backups/README.md#verified-yamanaka-to-motosu-recovery-path). Second DNS and other relocation work remain in the [move checklist](../runbooks/move-checklist.md).
+
+## platform at cutover
 
 ```text
 hardware        Dell OptiPlex 3070 SFF
@@ -140,9 +142,9 @@ Supporting databases/caches stay with the application they serve rather than bec
 
 Uptime Kuma currently runs on Yamanaka. This simplifies the production application host but means a total Yamanaka outage also removes that monitoring path.
 
-## DNS state
+## DNS at cutover
 
-Current:
+Deployed at cutover:
 
 ```text
 yamanaka -> adguard-home
@@ -204,6 +206,6 @@ Measured immediately after migration, the system used roughly 4.3 GiB of 15 GiB 
 
 ## cleanup result
 
-Kawaguchi cleanup is complete. Following the 2026-10-21 smartctl-exporter restoration, it carries the intended media/manga production stack plus cAdvisor and smartctl-exporter. See the [service record](../services/README.md#smartctl-exporter) for the restoration and verification details.
+Kawaguchi cleanup is complete. Following the 2026-10-21 smartctl-exporter restoration, it carries the intended media/manga production stack plus cAdvisor and smartctl-exporter. See the [smartctl runbook](../runbooks/smartctl-exporter.md#recorded-verification) for the restoration and verification details.
 
-The remaining migration-related operational priority is independent Yamanaka backup coverage on Motosu rather than preservation of rollback copies on Kawaguchi.
+At cleanup, the remaining migration-related priority was independent Yamanaka backup coverage on Motosu rather than preserving rollback copies on Kawaguchi. That coverage was later [verified](../backups/README.md#verified-yamanaka-to-motosu-recovery-path); do not treat this historical follow-up as an outstanding deployment task.

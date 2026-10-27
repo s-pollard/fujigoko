@@ -1,122 +1,69 @@
 # storage
 
-This document records storage ownership and recovery value. It intentionally avoids exact private addresses, credentials, serial numbers, and other sensitive identifiers.
+Storage ownership, pools, shares, and application data locations. Physical devices are recorded in [hosts](../hosts/README.md); schedules, retention, and recovery evidence are in [backups](../backups/README.md).
 
-```text
-kawaguchi = bulk media + media-service state
-motosu    = photos + Immich + backup storage
-yamanaka  = live non-media application state
-```
+## ownership
+
+| Host | Primary data | Recovery value |
+| --- | --- | --- |
+| Kawaguchi | Bulk media, downloads, manga, media-service state | Movie/TV/download payloads largely reacquirable; configuration, metadata, and manga can have greater recovery value |
+| Motosu | Immich/photo library, photo/archive storage, Yamanaka Restic repository, small service state | Irreplaceable photos and independent Yamanaka recovery copies |
+| Yamanaka | Live non-media application state on local NVMe | Personal records, databases, identity/vault state, service configuration |
+
+Gusuku storage is outside the Fujigoko production model.
 
 ## kawaguchi
 
-Kawaguchi is the bulk-media host.
+Unraid owns the bulk-media array and cache pool; device counts/models are in [hosts](../hosts/README.md#kawaguchi).
 
-- platform: Unraid
-- six HDDs in the main array
-- two Samsung 970 EVO Plus 1 TB NVMe devices in the cache pool
-- bulk movie/TV/download data is largely reacquirable
-- configuration, metadata, manga state, and retained application state have higher recovery value than media payloads
+| Share / data | Recorded path |
+| --- | --- |
+| Media | `/mnt/user/media` |
+| Movies | `/mnt/user/media/movies` |
+| TV | `/mnt/user/media/tv` |
+| Music | `/mnt/user/media/music` |
+| Manga | `/mnt/user/media/manga` |
+| Downloads | `/mnt/user/downloads` |
+| Application state | `/mnt/user/appdata` |
 
-Known production shares include appdata, downloads, media, domains, isos, and system. Legacy shares such as uppercase `Media` and `roms` should be removed only after dependency checks during cleanup.
+Other recorded production shares: `domains`, `isos`, and `system`.
 
-Manga remains on Kawaguchi.
+Legacy shares such as uppercase `Media` and `roms` should be removed only after dependency checks. Do not recreate `/mnt/user/Media` during recovery unless a still-active dependency is verified. Manga remains on Kawaguchi; the [backup policy](../backups/README.md#kawaguchi) intentionally treats routine media automation as reconstructable.
 
 ## motosu
 
-Motosu is the dedicated photo/backup-storage host.
+TrueNAS SCALE owns mirrored ZFS storage. The current documented mirror is healthy after a temporary spare replacement; replacement is planned maintenance, not an immediate fault response. Migration, Google Photos import, and mirror incident details are in [history](../history/motosu-storage-2026.md). Current drive models still need [confirmation](../history/documentation-review-2026-10-27.md#review-needed).
 
-- platform: TrueNAS SCALE
-- hardware: UGREEN NASync DXP2800
-- data drives: 2 × 6 TB Seagate ST6000NM0024-class HDDs in mirrored ZFS storage
-- Immich/photo data: `/mnt/motosu/photos/immich`
+| Data / role | Recorded location / state |
+| --- | --- |
+| Immich/photo library | `/mnt/motosu/photos/immich`; deployed and restoration validated |
+| Photo/archive storage | Motosu photo-storage role; additional deployed dataset names are not recorded here |
+| Yamanaka Restic repository | Dedicated Motosu backup dataset; exact path not recorded here |
+| Small service state | Motosu; exact paths not recorded here |
 
-The TrueNAS and Immich migration is complete and validated. The photo library is operational on the rebuilt system, and subsequent Google Photos import work has been completed successfully.
+The earlier `photos` / `backups/yamanaka` sketch described storage roles, not a complete deployed dataset inventory. Add exact dataset names only after they exist.
 
-One mirror member failed after the rebuild and was replaced temporarily with the best available older spare. The resilver completed successfully and redundancy was restored. Replacing that temporary member with a better drive remains planned maintenance rather than an immediate fault response.
-
-### storage roles
-
-```text
-motosu
-├── photos
-│   ├── immich
-│   └── gfx/archive data
-├── backups
-│   └── yamanaka
-└── small service state
-```
-
-Exact dataset names beyond those already deployed should be documented only after they exist.
-
-ZFS mirror redundancy protects against a single-drive failure; it is not an independent backup. Current local snapshot policy is daily with 30-day retention for photos and 14-day retention for backups. Selected high-value data is also protected off-site in Backblaze B2 through TrueNAS Cloud Sync with client-side remote encryption.
+ZFS mirroring provides single-drive fault tolerance, not an independent backup. Snapshot and encrypted off-site protection are documented in [Motosu backups](../backups/README.md#motosu).
 
 ### photo policy
 
 Immich is the convenient photo-library layer. GFX RAW/original files should also have a normal filesystem/archive structure rather than making Immich the only organizational copy.
 
-### yamanaka backup role
+The GFX archive's final primary location, recovery classification, and backup policy are still undecided. The prior layout sketch is not proof of a deployed GFX dataset. Resolve these during the [move](../runbooks/move-checklist.md#7-gfx-archive).
 
-Motosu is the deployed independent local backup target for important Yamanaka data.
+### yamanaka backup storage
 
-The production flow is:
-
-```text
-Yamanaka application-aware exports/dumps
--> staged backup tree
--> encrypted Restic repository on Motosu
--> Motosu snapshots/local protection
--> scheduled TrueNAS Cloud Sync to Backblaze B2
-```
-
-The Yamanaka Restic policy keeps 14 daily, 8 weekly, and 6 monthly snapshots. Nightly backup and weekly restore verification are deployed, and the current backup tree has been restored byte-for-byte from Motosu successfully.
-
-Protected state includes application exports, native database dumps, important persistent files, Compose definitions, and service configuration. PostgreSQL-backed services use native dumps; Vaultwarden's SQLite database is captured with SQLite's online backup mechanism rather than by blindly copying a live database.
-
-A representative recovery originating from the B2 off-site copy remains intentionally deferred until the move.
+Motosu is the deployed independent local target for Yamanaka's encrypted Restic repository. Application exports/dumps are staged on Yamanaka before transfer. Protected scope, off-site intent, schedules, retention, and byte-for-byte restore evidence belong in [Yamanaka backups](../backups/README.md#yamanaka).
 
 ## yamanaka
 
-Yamanaka stores live non-media application state on local NVMe.
+Live application state remains on local NVMe; bulk media and photo storage do not belong here.
 
-High-value state includes:
+| Recorded location | Scope |
+| --- | --- |
+| `/srv/compose`, `/srv/data`, `/srv/docker` | Production application/configuration roots; per-service mount mappings are not recorded here |
+| `/srv/backup-export` | Staged application-aware backup tree before Restic transfer |
 
-- Paperless documents and metadata
-- Actual Budget data
-- HomeBox inventory
-- Linkwarden database/application state
-- Mealie data
-- Endurain database/application state
-- Grocy data
-- TriliumNext data
-- Vaultwarden vault state and signing material
-- Kept PostgreSQL data, persistent application data, and recovery-critical configuration
-- Pocket ID identity state
-- FreshRSS and Uptime Kuma state
-- Grafana dashboards/configuration
-- AdGuard, Caddy, monitoring, Compose, and other important service configuration
+The production layout is primarily under these paths; this is not an exhaustive per-application mount inventory. Do not create empty application directories over existing/restored data.
 
-Bulk media and photo storage do not belong on Yamanaka.
-
-Independent Yamanaka-to-Motosu backup coverage is deployed and restore-verified. For future migrations or new stateful applications, establish independent backup coverage and a representative recovery test before treating the new state as safely protected.
-
-## ownership summary
-
-```text
-kawaguchi
-├── bulk media
-├── downloads
-├── manga
-└── media-service state
-
-motosu
-├── Immich/photo library
-├── photo archive
-├── encrypted off-site protection
-└── Yamanaka Restic repository
-
-yamanaka
-└── live non-media application state
-```
-
-Experimental/lab storage belongs in gusuku and is intentionally not part of the Fujigoko production-storage model.
+High-value state includes documents, budgets, inventories, saved links, activities, Grocy/TriliumNext data, Vaultwarden vault/signing material, Kept database/data/configuration, and Pocket ID identity state. The complete protected set and capture methods are maintained in [backups](../backups/README.md#yamanaka); application-specific restore steps are in [Yamanaka recovery](../runbooks/yamanaka-recovery.md).

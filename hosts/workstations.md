@@ -53,9 +53,7 @@ These personal PCs provide administration access to Fujigoko and Gusuku. Aso is 
 
 ## backup and access boundary
 
-Aso's photography images are backed up to Motosu. A whole-workstation backup is not established in this inventory.
-
-Ontake, Norikura, and Azuma are not backed up. An old or accessible Time Machine backup detected on Azuma does not represent an active backup arrangement.
+Backup scope and its limits are recorded in [workstation backups](../backups/README.md#workstations).
 
 The laptops provide alternative administration devices if Aso is unavailable. Installed clients do not by themselves prove that every server login or remote-access path has been tested. Keep credentials, keys, exact addresses, and tailnet identifiers private.
 

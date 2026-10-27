@@ -6,38 +6,14 @@ Restore basic Fujigoko network connectivity after gateway, switch, DNS, VLAN, or
 
 Exact IPs, VLAN IDs, MACs, WAN details, and management URLs are intentionally kept out of this public runbook.
 
-## current core path
+## recovery references
 
-```text
-internet
-  |
-current ISP handoff
-  |
-udm-pro
-  |
-usw-aggregation
-  |-- kawaguchi
-  |-- u7 pro
-  `-- usw-lite-8-poe
-       |-- motosu
-       `-- doorbell lite
-```
+- [Current physical topology](../network/topology.md#current-topology) — documented links; Yamanaka's attachment is not recorded
+- [Target topology](../network/topology.md#target-topology) — future layout, not deployed state
+- [Equipment and purchase/deployment states](../network/README.md)
+- [DNS](../network/README.md#dns) and [private ingress](../network/README.md#private-application-access)
 
-## target core path
-
-```text
-fiber handoff
-  |
-opnsense
-  |
-core / aggregation switching
-  |-- kawaguchi
-  |-- motosu
-  |-- yamanaka
-  `-- access / AP switching
-```
-
-The TP-Link Omada SX3016F is the main future core-switch candidate, not deployed hardware. The UDM-Pro remains relevant only until the replacement routing design is proven.
+The UDM-Pro remains the current gateway until replacement routing is proven. Do not assume OPNsense, candidate switching, or the second DNS resolver has been deployed.
 
 ## recovery order
 
@@ -118,17 +94,7 @@ If one resolver fails, verify clients continue using the other before changing i
 
 ## segmentation recovery
 
-The intended policy is:
-
-```text
-trusted -> IoT        allowed as needed
-IoT -> trusted        blocked by default
-IoT -> internet       allowed
-
-trusted -> servers    allowed as needed
-servers -> trusted    blocked by default for new connections
-servers -> internet   allowed as needed
-```
+Restore the [intended segmentation policy](../network/README.md#segmentation-policy) after basic LAN and DNS recovery. Test permitted and blocked paths from representative clients.
 
 Exact VLAN IDs, subnets, reservations, and gateway addresses belong in private operational documentation.
 
@@ -142,7 +108,7 @@ From a trusted client verify:
 3. DNS resolution works
 4. kawaguchi reachable
 5. motosu reachable
-6. yamanaka reachable when deployed
+6. yamanaka reachable
 7. active switches/APs reachable as expected
 8. segmentation policy behaves as intended
 ```

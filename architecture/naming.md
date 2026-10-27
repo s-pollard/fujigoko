@@ -22,13 +22,10 @@ The environments retain their existing Japan-based naming schemes. Names should 
 
 Major Fujigoko physical servers use Fuji Five Lakes names.
 
-```text
-kawaguchi  -> media / Unraid
-motosu     -> photos / TrueNAS / Immich / backups
-yamanaka   -> general applications
-saiko      -> reserved / currently unused in fujigoko
-shoji      -> reserved / currently unused
-```
+| Name | Assignment |
+| --- | --- |
+| `kawaguchi`, `motosu`, `yamanaka` | Active production hosts; see [host inventory](../hosts/README.md) |
+| `saiko`, `shoji` | Reserved / currently unused in Fujigoko |
 
 The physical machine that was briefly documented as `saiko` moved out of Fujigoko into the separate Gusuku environment and was renamed `shuri`. Do not use `saiko` and `shuri` interchangeably: `shuri` belongs to Gusuku; `saiko` is again only a reserved Fujigoko lake name.
 
@@ -69,18 +66,4 @@ Ordinary application containers should generally keep their normal upstream name
 9. Document old/new names during active transitions, then remove obsolete transition language afterward.
 10. Names must not encode personal information, physical addresses, usernames, account IDs, or other identifying data.
 
-## namespace
-
-```text
-homelab umbrella        -> /pleblab/
-production environment  -> Fujigoko
-lab environment         -> Gusuku
-Fujigoko major hosts    -> Fuji Five Lakes
-Gusuku physical hosts   -> Okinawan castles
-personal computers      -> Japanese mountains / volcanoes
-physical networking     -> Japanese rivers
-logical/transit network -> Shinkansen
-central hubs            -> stations / major hubs
-```
-
-This file defines naming policy. Host and network documents take precedence when documenting what is actually deployed.
+This file defines naming policy. [Hosts](../hosts/README.md) and [network](../network/README.md) take precedence for deployed state.

@@ -1,146 +1,42 @@
 # service classification
 
-Services are classified by function, intended production placement, and persistence value.
+This file records placement and lifecycle decisions. The [service inventory](README.md) owns deployed/target service lists, dependencies, and verified authentication. [Backups](../backups/README.md#service-priorities) owns backup priorities.
 
-```text
-kawaguchi = media + manga + host-specific monitoring agent
-motosu    = photos + Immich + backup storage + redundant DNS target
-yamanaka  = non-media applications + centralized monitoring/logging + DNS + private application access
-shoji     = reserved / unassigned
-```
+## states
 
-Experimental infrastructure belongs in gusuku, not Fujigoko.
+- **Current / deployed:** recorded as running or in use.
+- **Verified:** a specific check passed; keep its scope and date rather than implying full recovery is proven.
+- **Target / planned:** intended future state, not evidence of deployment.
+- **Candidate:** under consideration; purchase or deployment is not confirmed.
+- **Deferred:** evaluated but postponed until a concrete requirement exists.
+- **Retired / removed:** historical state, not current placement.
 
-## media — kawaguchi
+## placement decisions
 
-Permanent:
+| Workload | Decision |
+| --- | --- |
+| Media and manga | Keep on Kawaguchi; payloads are largely reacquirable, with configuration/metadata having greater recovery value. |
+| Photos and backup storage | Keep Motosu storage/photo focused; AdGuard Home there remains a target second DNS node. |
+| Personal applications | Use Yamanaka only when the application solves a home-use requirement. |
+| Supporting databases/caches | Keep with the parent application and private to its Compose network unless external access is required. |
+| Monitoring agents | Run on the monitored host; central monitoring/logging stays on Yamanaka. |
+| Experimental workloads | Keep in gusuku; Fujigoko must not depend on them. |
 
-- Plex
-- Sonarr
-- Radarr
-- SABnzbd
-- Bazarr
-- Seerr
-- Tautulli
-- Recyclarr
-- Unpackerr
-- Komga
-- Komf
-- Tachidesk
-- cAdvisor
-- smartctl-exporter
+See [architecture](../architecture/README.md) for the invariants behind these decisions.
 
-Manga remains on Kawaguchi. Movie/TV payloads are largely reacquirable; configuration and metadata have higher backup value than the bulk media.
+## application decisions
 
-Kawaguchi migration cleanup is complete. Retired non-media containers, unused Docker images/volumes, and obsolete appdata have been removed.
+- HomeBox remains deployed during Kept evaluation/import.
+- Nextcloud is deferred, not rejected; reconsider only for a concrete file-sync/collaboration need.
+- Grocy, TriliumNext, Vaultwarden, and Kept are deployed and included in the production backup path and restore verification. Exact evidence and limitations are in [backups](../backups/README.md#verified-yamanaka-to-motosu-recovery-path).
+- Application authentication exceptions and verified OIDC integrations are maintained in [services](README.md#authentication).
 
-## photos / storage — motosu
+Do not deploy an application merely because it is interesting or available. Remove ideas that are no longer useful rather than carrying them indefinitely.
 
-Permanent/target:
+## retired state
 
-- Immich server
-- Immich PostgreSQL
-- Immich Valkey/Redis
-- Immich machine learning
-- photo/archive storage
-- Yamanaka backup datasets
-- ZFS snapshots
-- selected Backblaze B2 protection
-- one AdGuard Home instance as the second DNS node
+Retired Kawaguchi services, migration rollback copies, cleanup counts, and completion dates are recorded in [migration history](../history/yamanaka-migration-2026.md#retired-from-kawaguchi). Presence in old notes or backups does not establish active production placement.
 
-Motosu is now on TrueNAS SCALE. Immich application/database restoration is complete and validated.
+## new services and migrations
 
-## personal applications — yamanaka
-
-The retained application migration from Kawaguchi is complete, and newer production applications are added here only when they solve a real home-use requirement.
-
-| service | status | backup priority |
-| --- | --- | --- |
-| Paperless-ngx | deployed | high |
-| Mealie | deployed | high |
-| Actual Budget | deployed | high |
-| HomeBox | deployed | high |
-| Linkwarden | deployed | high |
-| Endurain | deployed | high |
-| Grocy | deployed | high |
-| TriliumNext | deployed | high |
-| Vaultwarden | deployed | critical |
-| Kept | deployed | high |
-| Stirling PDF | deployed | low |
-| Homepage | deployed | medium |
-| SearXNG | deployed | low |
-| FreshRSS | deployed | medium |
-| Nextcloud | deferred | not applicable |
-
-Grocy covers pantry/fridge/freezer inventory, quantities, expiration tracking, and barcode-oriented household inventory.
-
-TriliumNext provides structured personal notes/wiki functionality and has verified Pocket ID OIDC integration.
-
-Vaultwarden is security-sensitive. Normal vault authentication and hardware-backed second-factor authentication are retained. Pocket ID SSO was evaluated but is not enabled because the current identity claim does not satisfy Vaultwarden's email-verification requirement; that requirement is intentionally not bypassed.
-
-Kept provides household inventory, location/box/item tracking, labels, and moving workflows. Pocket ID OIDC is verified. HomeBox remains deployed during evaluation/import rather than being removed immediately.
-
-Nextcloud is deferred because there is no current production need. Reconsider it only if a concrete file-sync/collaboration requirement appears that the existing stack does not cover well.
-
-Supporting PostgreSQL/Redis services stay with their parent application and remain private to the relevant Compose network unless external access is actually required.
-
-## monitoring / infrastructure
-
-| service | placement | status | backup priority |
-| --- | --- | --- | --- |
-| Prometheus | yamanaka | deployed | medium |
-| Grafana | yamanaka | deployed | medium-high |
-| Loki | yamanaka | deployed | low-medium |
-| Grafana Alloy | yamanaka | deployed | low |
-| Uptime Kuma | yamanaka | deployed | low-medium |
-| signal-cli-rest-api | yamanaka | deployed | low |
-| Dockhand | yamanaka | deployed | low-medium |
-| Caddy | yamanaka | deployed | medium |
-| Pocket ID | yamanaka | deployed | high |
-| cAdvisor/exporters | monitored host | deployed where needed | low |
-| smartctl-exporter | kawaguchi | deployed | low |
-| AdGuard Home | yamanaka | deployed | medium |
-| AdGuard Home | motosu | target | medium |
-
-Prometheus on Yamanaka continues to scrape Kawaguchi cAdvisor and smartctl-exporter. Alloy collects Yamanaka Docker logs into Loki. Uptime Kuma remains on Yamanaka rather than on an independent host, so a total Yamanaka outage also removes that monitoring path.
-
-Caddy, AdGuard Home, and Pocket ID form the private application-access layer on Yamanaka. Private HTTPS is intended for trusted LAN and Tailscale clients. Pocket ID OIDC has been verified with FreshRSS, Actual Budget, Mealie, Linkwarden, Grafana, Stirling PDF, Paperless-ngx, TriliumNext, and Kept. Exact hostnames beyond the documented namespace, client IDs, secrets, callback URLs, and other operational identity-provider configuration do not belong in this public repository.
-
-## deferred additions
-
-- Nextcloud — Yamanaka; reconsider only when a concrete file sync/collaboration requirement exists
-
-Deferred does not mean required. Remove ideas that are no longer useful rather than carrying them indefinitely.
-
-## retired / removed
-
-The following Kawaguchi services or appdata have been retired and removed:
-
-- RomM
-- MariaDB used by RomM
-- old shared Redis state
-- stopped copies of migrated non-media services
-- TitleCardMaker
-- Lidarr
-- Kometa
-- Listenarr
-
-Presence in old notes or backups should not be interpreted as active production placement.
-
-## migration rule
-
-Preferred procedure for future migrations or new stateful production services:
-
-```text
-1. identify persistence and dependencies
-2. create an independent backup/export
-3. deploy on the destination host
-4. restore/copy persistence when applicable
-5. verify application behavior
-6. verify dependencies and authentication
-7. establish independent backup coverage
-8. perform a representative restore test
-9. observe production behavior before removing fallback paths
-```
-
-The Yamanaka service cutover, reboot verification, Kawaguchi cleanup, and independent Yamanaka-to-Motosu backup coverage are complete. Grocy, TriliumNext, Vaultwarden, and Kept are included in the production backup path and restore verification.
+Use the [service deployment checklist](../runbooks/service-deployment.md). Independent backup coverage and a representative restore test are required before treating new state as safely protected.

@@ -1,6 +1,6 @@
 # Fujigoko move checklist
 
-This checklist tracks production work intentionally deferred until relocation. It is not a general migration backlog.
+Production work intentionally deferred until relocation, in execution order. Equipment choices and purchase/deployment states are in [network](../network/README.md#target-network); backup scope and evidence are in [backups](../backups/README.md).
 
 ## 1. physical setup
 
@@ -12,7 +12,7 @@ This checklist tracks production work intentionally deferred until relocation. I
 ## 2. network cutover
 
 - bring up the dedicated OPNsense router
-- verify the AT&T 620 ONT handoff before changing the production gateway
+- verify the [ISP handoff](../network/README.md#current-hardware) before changing the production gateway; the older AT&T 620 label conflicts with the current Bluepeak record
 - configure required LAN/VLAN interfaces, DHCP, firewall policy, and routing
 - deploy the target wireless AP
 - deploy the target core/aggregation switching design if the replacement switch has been purchased
@@ -51,7 +51,7 @@ Resolve network/DNS issues before changing unrelated application configuration.
 - confirm Motosu Cloud Sync continues to copy the Yamanaka Restic repository off-site
 - perform a representative restore from the B2 off-site copy and document the result
 
-The B2 test should prove that the off-site copy can be used for recovery rather than merely confirming that objects exist remotely.
+The B2 test should prove that the off-site copy can be used for recovery rather than merely confirming that objects exist remotely. Confirm the actual Yamanaka repository selection and completed off-site copy: current backup wording describes that path as intended, while the checklist assumes it continues. See the [review note](../history/documentation-review-2026-10-27.md#review-needed).
 
 ## 6. Motosu storage work
 
@@ -75,7 +75,7 @@ After the final storage layout and available capacity are known:
 - decide whether the GFX archive is irreplaceable, important, or reproducible
 - choose its primary storage location
 - decide whether it belongs in local snapshots, off-site backup, or neither
-- document the resulting policy in the storage and backup documentation
+- document the primary location in [storage](../storage/README.md#photo-policy) and protection/retention in [backups](../backups/README.md#deferred--remaining-work)
 
 ## 8. final acceptance
 

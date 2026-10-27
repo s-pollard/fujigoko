@@ -1,81 +1,29 @@
 # network
 
-This document intentionally omits exact private addressing, VLAN IDs, MAC addresses, WAN details, management URLs, and other sensitive operational identifiers.
-
-## current production topology
-
-```text
-internet
-  |
-Bluepeak ONT
-  |
-udm-pro
-  |
-usw-aggregation
-  |-- u7 pro
-  |-- kawaguchi
-  `-- usw-lite-8-poe
-       |-- motosu
-       `-- doorbell lite
-```
-
-The U7 Pro is the currently active AP. Other owned UniFi APs may remain offline during the move/rebuild period.
+Network equipment, DNS, ingress, segmentation, and planned changes. Recorded physical links belong in [topology](topology.md). Exact addressing, VLAN IDs, MAC addresses, WAN details, and sensitive management configuration stay private; see [SECURITY.md](../SECURITY.md) and the [policy conflict](#public-repo-boundary).
 
 ## current hardware
 
-### ISP handoff
+| Component | Hardware | State / capability |
+| --- | --- | --- |
+| ISP handoff | Bluepeak ONT | Current fiber handoff; retained when routing moves to OPNsense |
+| Gateway/controller | Ubiquiti UniFi Dream Machine Pro | Current gateway and UniFi Network controller; eventual sale after replacement is proven |
+| Aggregation | Ubiquiti UniFi Switch Aggregation (USW-Aggregation) | Current; 8 × 10 GbE SFP+ ports |
+| Access/PoE | Ubiquiti UniFi Switch Lite 8 PoE | Current access/PoE switching |
+| Active AP | Ubiquiti UniFi U7 Pro | Current; 2.5 GbE-capable uplink |
+| Other APs | Ubiquiti UniFi U6 Enterprise, U6 Lite, AC Pro | Owned; may remain offline during move/rebuild |
 
-- Bluepeak ONT
-  - current fiber handoff to the production gateway
-  - remains the ISP-side handoff when routing moves from the UDM-Pro to OPNsense
+See the [current topology](topology.md#current-topology) for recorded connections. Yamanaka's current physical attachment is not documented.
 
-### gateway / controller
-
-- Ubiquiti UniFi Dream Machine Pro
-  - current production gateway
-  - current UniFi Network controller
-  - leaves the routing role after the replacement network is proven
-  - planned for eventual sale
-
-### switching
-
-- Ubiquiti UniFi Switch Aggregation (USW-Aggregation)
-  - 8 × 10 GbE SFP+ ports
-  - current production aggregation switch
-- Ubiquiti UniFi Switch Lite 8 PoE
-  - current access/PoE switching
-
-### wireless inventory
-
-- Ubiquiti UniFi U7 Pro — current active AP; 2.5 GbE-capable uplink
-- Ubiquiti UniFi U6 Enterprise — owned
-- Ubiquiti UniFi U6 Lite — owned
-- Ubiquiti UniFi AC Pro — owned
+**Review needed:** the latest upstream correction identifies the current handoff as Bluepeak ONT. Older target/topology and move records called it AT&T 620 ONT. The exact current device model and target handoff need reconciliation; see the [review record](../history/documentation-review-2026-10-27.md#review-needed).
 
 ## target network
 
-```text
-AT&T 620 ONT
-     |
-  OPNsense
-     |
-core / aggregation
-     |
-  hosts + access switching + APs
-```
+The [target topology](topology.md#target-topology) replaces UDM-Pro routing with a dedicated OPNsense appliance. USW-Aggregation can remain during transition. Do not retire/sell the UDM-Pro until replacement routing and required management functions are stable.
 
 ### router / firewall
 
-The target OPNsense appliance has the following verified/recorded components:
-
-- Intel Core i5-8500
-- 8 GB DDR4
-- 128 GB SSD
-- dual-port Intel 82599ES/X520-family 10 GbE SFP+
-- dual-port Intel I350-family 1 GbE
-- Intel I219-LM onboard 1 GbE
-
-No reliable OEM/chassis model is documented, so do not invent one.
+OPNsense is the target platform; appliance hardware is acquired. Verified/recorded components and the unknown chassis/OEM model are documented in [hosts](../hosts/README.md#opnsense-router-appliance).
 
 ### core-switch candidate
 
@@ -110,63 +58,38 @@ Selling the UDM-Pro removes the current UniFi Network controller. If UniFi switc
 
 The design separates trusted clients, IoT, and server workloads. Exact VLAN IDs and subnets remain private.
 
-```text
-trusted -> IoT        allowed as needed
-IoT -> trusted        blocked by default
-IoT -> internet       allowed
+| From | To | Policy |
+| --- | --- | --- |
+| Trusted | IoT | Allowed as needed |
+| IoT | Trusted | Blocked by default |
+| IoT | Internet | Allowed |
+| Trusted | Servers | Allowed as needed |
+| Servers | Trusted | New connections blocked by default |
+| Servers | Internet | Allowed as needed |
 
-trusted -> servers    allowed as needed
-servers -> trusted    blocked by default for new connections
-servers -> internet   allowed as needed
-```
+Gusuku networking is separate and must not become a required Fujigoko dependency.
 
-Experimental gusuku networking is separate from this production design and must not become a required dependency for Fujigoko.
+## dns
 
-## DNS
+| State | Resolver placement | Behavior |
+| --- | --- | --- |
+| Current | AdGuard Home on Yamanaka | Filtering and private/split DNS; wildcard application rewrite to Caddy on Yamanaka |
+| Target, after relocation | AdGuard Home on Yamanaka and Motosu | Equivalent filtering and private application-DNS policy on separate physical hosts |
 
-Current:
-
-- AdGuard Home runs on Yamanaka
-- Yamanaka also serves private/split DNS for the internal application namespace
-- a wildcard private rewrite sends application names to the Yamanaka reverse-proxy entry point
-- exact resolver addresses and application hostnames remain private operational configuration
-
-Target:
-
-```text
-lan clients
-  |-- DNS --> yamanaka / AdGuard Home
-  `-- DNS --> motosu / AdGuard Home
-```
-
-Both instances should provide equivalent filtering and private application-DNS policy while remaining on separate physical hosts. Exact resolver addresses and synchronization details are private operational configuration.
+The Motosu resolver is not yet deployed. Exact resolver addresses and synchronization details remain private operational configuration. Deployment and failover testing are in the [move checklist](../runbooks/move-checklist.md#3-redundant-dns).
 
 ## private application access
 
-User-facing Yamanaka applications now use a private HTTPS front door:
+`plebworks.com` is the intentionally documented private application namespace. Trusted LAN and Tailscale clients use `*.plebworks.com`; private DNS sends those names to Caddy on Yamanaka, which reverse-proxies user-facing services on Yamanaka, Kawaguchi, and Motosu.
 
-```text
-trusted LAN / Tailscale client
-          |
-      private DNS
-          |
-        Caddy
-          |
-   Yamanaka applications
-```
+- Private application names are intended to resolve only through trusted network paths.
+- Direct public-internet exposure is not part of the design.
+- Caddy terminates HTTPS and uses DNS-01 certificate validation, so inbound public HTTP exposure is unnecessary.
+- Provider tokens and reverse-proxy credentials remain in private runtime configuration.
+- Pocket ID supplies OIDC/passkey identity where native integration is useful; [authentication policy](../architecture/README.md#private-access) and [verified integrations](../services/README.md#authentication) are maintained separately.
+- Direct container ports are implementation details and should be reduced where practical over time; this is not required for the current trusted-LAN model.
 
-Policy:
-
-- private application names are intended to resolve only through trusted network paths
-- direct public-internet exposure is not part of the design
-- trusted LAN and Tailscale access are both acceptable
-- Caddy terminates HTTPS and reverse-proxies user-facing applications
-- certificate issuance uses DNS-01 validation so inbound public HTTP exposure is unnecessary
-- Pocket ID provides OIDC/passkey identity for applications where native SSO is useful
-- services without a meaningful login requirement do not need an added authentication layer solely for uniformity
-- direct container ports should be treated as implementation details and reduced where practical over time, but this is not required for the current trusted-LAN model
-
-Do not publish the private application namespace, callback URLs, identity-provider client identifiers, API tokens, or reverse-proxy credentials in this repository.
+Existing published UI hostnames and access verification are recorded in [services](../services/README.md#private-application-access).
 
 ## power
 
@@ -184,11 +107,13 @@ Production power goals:
 
 - Yamanaka and Motosu should gracefully shut down on sustained battery operation
 - networking should use a separate long-runtime UPS path if practical
-- final runtime thresholds should be based on the actual deployed loads
+- final runtime thresholds should be based on actual deployed loads
 - verify receptacle/input-plug compatibility before deployment
 
-Lab/gusuku UPS decisions are intentionally outside this production-network document.
+Lab/gusuku UPS decisions are outside this production-network document.
 
 ## public-repo boundary
 
-Do not add WAN/public IPs, exact private IP assignments, DHCP reservations, MAC addresses, serial numbers, VPN keys/endpoints, management credentials, application hostnames, SSO client identifiers, callback URLs, or personal location details.
+Do not add WAN/public IPs, exact private IP assignments, DHCP reservations, MAC addresses, serial numbers, VPN keys/endpoints, credentials, SSO client identifiers, callback URLs, or personal location details.
+
+**Review needed:** the original network policy also forbids publishing the private application namespace and application hostnames. [SECURITY.md](../SECURITY.md#okay-to-document-publicly) explicitly permits the intentionally documented namespace and non-secret internal hostnames, and existing service docs publish them. These positions conflict. Existing published names are retained; resolve the policy before adding or changing published private names. See the [review record](../history/documentation-review-2026-10-27.md#review-needed).
