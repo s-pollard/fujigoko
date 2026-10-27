@@ -65,6 +65,7 @@ The retained application migration from Kawaguchi is complete, and newer product
 | Grocy | deployed | high |
 | TriliumNext | deployed | high |
 | Vaultwarden | deployed | critical |
+| Kept | deployed | high |
 | Stirling PDF | deployed | low |
 | Homepage | deployed | medium |
 | SearXNG | deployed | low |
@@ -76,6 +77,8 @@ Grocy covers pantry/fridge/freezer inventory, quantities, expiration tracking, a
 TriliumNext provides structured personal notes/wiki functionality and has verified Pocket ID OIDC integration.
 
 Vaultwarden is security-sensitive. Normal vault authentication and hardware-backed second-factor authentication are retained. Pocket ID SSO was evaluated but is not enabled because the current identity claim does not satisfy Vaultwarden's email-verification requirement; that requirement is intentionally not bypassed.
+
+Kept provides household inventory, location/box/item tracking, labels, and moving workflows. Pocket ID OIDC is verified. HomeBox remains deployed during evaluation/import rather than being removed immediately.
 
 Nextcloud is deferred because there is no current production need. Reconsider it only if a concrete file-sync/collaboration requirement appears that the existing stack does not cover well.
 
@@ -101,7 +104,7 @@ Supporting PostgreSQL/Redis services stay with their parent application and rema
 
 Prometheus on Yamanaka continues to scrape Kawaguchi cAdvisor and smartctl-exporter. Alloy collects Yamanaka Docker logs into Loki. Uptime Kuma remains on Yamanaka rather than on an independent host, so a total Yamanaka outage also removes that monitoring path.
 
-Caddy, AdGuard Home, and Pocket ID form the private application-access layer on Yamanaka. Private HTTPS is intended for trusted LAN and Tailscale clients. Pocket ID OIDC has been verified with FreshRSS, Actual Budget, Mealie, Linkwarden, Grafana, Stirling PDF, Paperless-ngx, and TriliumNext. Exact hostnames beyond the documented namespace, client IDs, secrets, callback URLs, and other operational identity-provider configuration do not belong in this public repository.
+Caddy, AdGuard Home, and Pocket ID form the private application-access layer on Yamanaka. Private HTTPS is intended for trusted LAN and Tailscale clients. Pocket ID OIDC has been verified with FreshRSS, Actual Budget, Mealie, Linkwarden, Grafana, Stirling PDF, Paperless-ngx, TriliumNext, and Kept. Exact hostnames beyond the documented namespace, client IDs, secrets, callback URLs, and other operational identity-provider configuration do not belong in this public repository.
 
 ## deferred additions
 
@@ -140,4 +143,4 @@ Preferred procedure for future migrations or new stateful production services:
 9. observe production behavior before removing fallback paths
 ```
 
-The Yamanaka service cutover, reboot verification, Kawaguchi cleanup, and independent Yamanaka-to-Motosu backup coverage are complete. Grocy, TriliumNext, and Vaultwarden were added to that backup path and restore verification after deployment.
+The Yamanaka service cutover, reboot verification, Kawaguchi cleanup, and independent Yamanaka-to-Motosu backup coverage are complete. Grocy, TriliumNext, Vaultwarden, and Kept are included in the production backup path and restore verification.
