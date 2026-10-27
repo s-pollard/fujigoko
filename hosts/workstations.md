@@ -20,7 +20,7 @@ These personal PCs provide administration access to Fujigoko and Gusuku. Aso is 
 - separate Intel 82599-family 10 GbE interface
 - Intel AX210-family Wi-Fi
 - OpenSSH installed; Git, FreeRDP 3, Firefox, and Tailscale available
-- Local AI administration experiments: [Hermes Agent and Odysseus in Gusuku](https://github.com/s-pollard/gusuku/tree/main/experiments/local-ai); neither is a required production dependency
+- prior local-AI model-comparison work is complete; Gusuku records Qwen3.8-27B-UD-Q4-K-M as the selected homelab-helper model, and local AI is not a required production dependency
 - Tailscale membership provides access to the existing tailnet; no gateway/exit-node role is assigned
 
 ## ontake
