@@ -42,6 +42,7 @@ Expected workloads include:
 - Grocy
 - TriliumNext
 - Vaultwarden
+- Kept + PostgreSQL
 
 ### monitoring / infrastructure
 
@@ -153,6 +154,7 @@ Mealie
 Endurain
 Grocy
 TriliumNext
+Kept
 Pocket ID
 FreshRSS
 Uptime Kuma
@@ -184,6 +186,22 @@ The backup job creates a PostgreSQL custom-format dump rather than copying the l
 Restore PostgreSQL and the separately protected backend/application data. Verify users, activities, settings, and representative history.
 
 The production backup verification has confirmed that the dump restored from Motosu is readable by `pg_restore`.
+
+### kept
+
+Kept is protected with a PostgreSQL custom-format dump plus its persistent data and recovery-critical configuration volumes. The live PostgreSQL data directory is not used as the database backup.
+
+For recovery:
+
+1. recreate the Kept Compose stack without starting the application against an empty database
+2. restore the protected Kept persistent data and configuration volumes
+3. restore PostgreSQL from the selected custom-format dump
+4. restore required private environment/OIDC configuration
+5. start Kept and verify locations, boxes, items, labels, and representative records
+6. verify Pocket ID OIDC after both Kept and Pocket ID are healthy
+7. confirm new writes persist after container recreation/restart
+
+The production backup verification has confirmed that the Kept dump restored from Motosu is readable by `pg_restore` and that its persistent data/configuration is present in the restored backup tree.
 
 ### vaultwarden
 
@@ -325,21 +343,23 @@ Replacement hardware does not need to duplicate the OptiPlex exactly. The recove
 
 ## verified backup state
 
-The production Yamanaka-to-Motosu path was first verified on 2026-10-26 and re-verified after adding Grocy, TriliumNext, and Vaultwarden on 2026-10-27.
+The production Yamanaka-to-Motosu path was first verified on 2026-10-26 and re-verified after adding Grocy, TriliumNext, Vaultwarden, and Kept on 2026-10-27.
 
 The current verification demonstrated:
 
 - successful application-aware export/dump generation
 - successful Grocy and TriliumNext consistent-state capture
 - successful Vaultwarden SQLite online backup and integrity validation
+- successful Kept PostgreSQL custom-format backup and `pg_restore` validation
+- successful capture of Kept persistent data and recovery-critical configuration volumes
 - successful Restic backup to Motosu
 - successful repository integrity check
 - successful restore of the latest production snapshot to an isolated temporary path
-- 2,301 source files and 2,301 restored files
-- about 873 MiB of logical staged backup data
+- 5,345 source files and 5,345 restored files
+- about 988 MiB of logical staged backup data
 - no differences in recursive source/restored comparison
 - successful restored SHA-256 manifest verification
-- successful restored Linkwarden and Endurain PostgreSQL archive validation
+- successful restored Linkwarden, Endurain, and Kept PostgreSQL archive validation
 - successful automated verification
 - separate successful isolated Vaultwarden application-level restore test
 
