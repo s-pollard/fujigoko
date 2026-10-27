@@ -16,7 +16,7 @@ Experimental and career-learning infrastructure belongs in the separate [`gusuku
 
 - **kawaguchi** — Unraid media server, manga, bulk media storage, and host-specific monitoring agent
 - **motosu** — TrueNAS SCALE photo/Immich host and backup target
-- **yamanaka** — Debian general-application server hosting retained non-media services, monitoring/logging, Uptime Kuma, and one AdGuard Home instance
+- **yamanaka** — Debian general-application server hosting retained non-media services, monitoring/logging, Uptime Kuma, AdGuard Home, Caddy, and Pocket ID
 - **shoji** — reserved; no assigned role
 
 The physical system formerly documented as **saiko** is no longer part of Fujigoko. It moved to gusuku and is now **shuri**.
@@ -24,6 +24,12 @@ The physical system formerly documented as **saiko** is no longer part of Fujigo
 ## Administration workstations
 
 **Aso** is the primary personal desktop and administration workstation. **Ontake**, **Norikura**, and **Azuma** provide alternative laptop access. See [workstation inventory](hosts/workstations.md) for hardware, roles, and backup scope.
+
+## Private application access
+
+`plebworks.com` is the private application namespace for Fujigoko. Trusted LAN and Tailscale clients use `*.plebworks.com`; private DNS directs those names to Caddy on Yamanaka, which reverse-proxies user-facing services hosted on Yamanaka, Kawaguchi, and Motosu.
+
+The namespace is for private access and is not intended to expose Fujigoko applications directly to the public internet.
 
 ## Network direction
 
