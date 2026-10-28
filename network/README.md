@@ -75,8 +75,12 @@ Gusuku networking is separate and must not become a required Fujigoko dependency
 
 | State | Resolver placement | Behavior |
 | --- | --- | --- |
-| Current | AdGuard Home on Yamanaka | Filtering and private/split DNS; wildcard application rewrite to Caddy on Yamanaka |
+| Current | AdGuard Home on Yamanaka | Filtering and private/split DNS; wildcard application rewrite to Caddy on Yamanaka; global DNS for Tailscale clients |
 | Target, after relocation | AdGuard Home on Yamanaka and Motosu | Equivalent filtering and private application-DNS policy on separate physical hosts |
+
+AdGuard Home on Yamanaka runs on a Docker macvlan network. Because the host cannot directly reach macvlan-attached containers through the parent interface, Yamanaka has a persistent host-side macvlan shim and host route for resolver reachability. This path is required for Yamanaka-originated and Tailscale-routed DNS traffic to reach AdGuard. Exact resolver and shim addresses remain private operational configuration.
+
+Tailscale uses AdGuard Home as the global DNS resolver, so connected clients use the same filtering policy as trusted LAN clients. Private application DNS remains available through the same resolver path. Yamanaka advertises the trusted LAN subnet into Tailscale for private-service reachability.
 
 The Motosu resolver is not yet deployed. Exact resolver addresses and synchronization details remain private operational configuration. Deployment and failover testing are in the [move checklist](../runbooks/move-checklist.md#3-redundant-dns).
 
