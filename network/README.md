@@ -84,6 +84,10 @@ Tailscale uses AdGuard Home as the global DNS resolver, so connected clients use
 
 The Motosu resolver is not yet deployed. Exact resolver addresses and synchronization details remain private operational configuration. Deployment and failover testing are in the [move checklist](../runbooks/move-checklist.md#3-redundant-dns).
 
+### Caddy container DNS recovery
+
+On 2026-10-29, Caddy's embedded Docker resolver returned SERVFAIL for the ACME directory hostname. Its generated resolver configuration reported no external nameservers, while host resolution and direct container queries to a public resolver succeeded. Explicit external DNS servers were added to the private Caddy Compose service, then only Caddy was recreated. Container DNS resolution recovered and the new Navidrome HTTPS route was verified. Preserve the service-level DNS configuration during recovery; successful Caddy configuration validation alone does not prove certificate issuance works.
+
 ## private application access
 
 Trusted LAN and Tailscale clients use private application DNS names. Private DNS sends those names to Caddy on Yamanaka, which reverse-proxies user-facing services on Yamanaka, Kawaguchi, and Motosu. The namespace and DNS names remain in private operational configuration.
