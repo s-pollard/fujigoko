@@ -80,6 +80,8 @@ Gusuku networking is separate and must not become a required Fujigoko dependency
 
 AdGuard Home on Yamanaka runs on a Docker macvlan network. Because the host cannot directly reach macvlan-attached containers through the parent interface, Yamanaka has a persistent host-side macvlan shim and host route for resolver reachability. This path is required for Yamanaka-originated and Tailscale-routed DNS traffic to reach AdGuard. Exact resolver and shim addresses remain private operational configuration.
 
+Yamanaka's LAN address used as the private application-DNS target must remain stable. The current host networking therefore uses persistent static addressing rather than relying on a changing DHCP lease. Exact addresses remain private operational configuration. When changing resolver or interface settings, verify the host address before and after reloading the network client; an address change breaks the wildcard application-DNS path even when AdGuard and Caddy themselves are healthy.
+
 Tailscale uses AdGuard Home as the global DNS resolver, so connected clients use the same filtering policy as trusted LAN clients. Private application DNS remains available through the same resolver path. Yamanaka advertises the trusted LAN subnet into Tailscale for private-service reachability.
 
 The Motosu resolver is not yet deployed. Exact resolver addresses and synchronization details remain private operational configuration. Deployment and failover testing are in the [move checklist](../runbooks/move-checklist.md#3-redundant-dns).
@@ -87,6 +89,8 @@ The Motosu resolver is not yet deployed. Exact resolver addresses and synchroniz
 ### Caddy container DNS recovery
 
 On 2026-10-29, Caddy's embedded Docker resolver returned SERVFAIL for the ACME directory hostname. Its generated resolver configuration reported no external nameservers, while host resolution and direct container queries to a public resolver succeeded. Explicit external DNS servers were added to the private Caddy Compose service, then only Caddy was recreated. Container DNS resolution recovered and the new Navidrome HTTPS route was verified. Preserve the service-level DNS configuration during recovery; successful Caddy configuration validation alone does not prove certificate issuance works.
+
+Caddy's configuration is bind-mounted into the container. Editing the host Caddyfile with a tool that replaces the file inode can leave the running container attached to the old mounted file even though the host path shows the new content. After changing a bind-mounted Caddyfile, verify the file from inside the running container before relying on `caddy reload`; if host and container content differ, restart or recreate Caddy so the bind mount is re-established, then validate the active route.
 
 ## private application access
 
