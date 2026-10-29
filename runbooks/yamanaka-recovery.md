@@ -94,9 +94,10 @@ Caddy configuration
 Grafana configuration
 Homepage
 Prometheus/Loki/Alloy configuration
-Stirling PDF
 SearXNG
 ```
+
+BentoPDF is a stateless/redeployable utility in the current deployment. Recreate it from its Compose definition after core applications and ingress are healthy; there is no application database or persistent user state to restore.
 
 Historical Prometheus metrics and Loki logs are intentionally lower priority than personal application state and are not part of the current protected production set.
 
@@ -208,7 +209,7 @@ Grocy and TriliumNext were added to the production backup path and included in t
 
 ## configuration-only / lower-value state
 
-Restore configuration according to the [protected set and exclusions](../backups/README.md#service-priorities). Rebuild disposable images, caches, historical metrics/logs, and temporary test state rather than assuming they are in the backup. Restore PostgreSQL from its native dumps rather than raw live data directories.
+Restore configuration according to the [protected set and exclusions](../backups/README.md#service-priorities). Rebuild disposable images, caches, historical metrics/logs, temporary test state, and stateless utilities such as BentoPDF rather than assuming they contain protected application data. Restore PostgreSQL from its native dumps rather than raw live data directories.
 
 ## monitoring
 
