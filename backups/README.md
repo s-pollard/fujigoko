@@ -11,7 +11,7 @@ Backup effort follows data value and rebuild cost rather than raw storage size.
 | Immich/photo data on Motosu | Encrypted TrueNAS Cloud Sync to a dedicated B2 bucket | Sync coverage confirmed; photo upload completed; representative B2 restore deferred |
 | Yamanaka application-aware staged tree | Encrypted Restic repository on Motosu | Deployed and byte-for-byte restore-verified on 2026-10-26/27 |
 | Yamanaka Restic repository on Motosu | TrueNAS Cloud Sync to a separate dedicated B2 bucket | Sync coverage confirmed; latest upload completion and off-site recovery still need verification |
-| Kawaguchi selected Unraid/appdata state | Encrypted Restic repository on Motosu | Deployed and restore-verified on 2026-10-28; bulk media and manga intentionally excluded |
+| Kawaguchi selected Unraid/appdata state | Encrypted Restic repository on Motosu | Deployed and restore-verified on 2026-10-28/29; bulk media and manga intentionally excluded |
 | Kawaguchi Restic repository on Motosu | TrueNAS Cloud Sync to a dedicated B2 target | Configured; representative off-site recovery still needs verification |
 | Personal workstations | See [workstation scope](#workstations) | Aso photography to Motosu; no whole-PC protection established |
 
@@ -102,6 +102,7 @@ Protected material is deliberately selective:
 
 - Unraid `/boot/config`, excluding the private Restic credential/key directory
 - Radarr, Sonarr, Prowlarr, SABnzbd, Bazarr, Seerr, Tautulli, Komga, Komf, Tachidesk, Unpackerr, and Recyclarr application state
+- Navidrome application state, captured with the container stopped and restarted only if it was running
 - Plex database/application state under `Plug-in Support` plus small top-level configuration files
 - Jellyfin configuration, core data/database state, plugins, users, and ASP.NET key state
 
@@ -133,6 +134,8 @@ Verified:
 - restore verification was repeated successfully after reboot, confirming Restic runtime persistence and recovery access
 
 The restore verifier intentionally validates regular-file counts, the captured SHA-256 manifest, and symlink definitions instead of recursively following live symlink targets. Tachidesk/KCEF creates transient Chromium-style symlinks whose targets may not exist after the application restarts; following those links produced false verification failures even though the Restic snapshot itself was intact.
+
+Navidrome was added to the production backup on 2026-10-29. The expanded snapshot contained 22,983 regular files and 10.585 GiB of logical data. Repository checking reported no errors; restoration to an isolated temporary path reproduced all 22,983 files, the SHA-256 manifest passed, and symlink definitions matched. This verifies recovery of the staged files; launching Navidrome from restored state has not been tested. Music files remain excluded.
 
 ### deployed schedule and retention
 
