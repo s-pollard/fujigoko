@@ -11,7 +11,8 @@ Backup effort follows data value and rebuild cost rather than raw storage size.
 | Immich/photo data on Motosu | Encrypted TrueNAS Cloud Sync to a dedicated B2 bucket | Sync coverage confirmed; photo upload completed; representative B2 restore deferred |
 | Yamanaka application-aware staged tree | Encrypted Restic repository on Motosu | Deployed and byte-for-byte restore-verified on 2026-10-26/27 |
 | Yamanaka Restic repository on Motosu | TrueNAS Cloud Sync to a separate dedicated B2 bucket | Sync coverage confirmed; latest upload completion and off-site recovery still need verification |
-| Kawaguchi media automation | Rebuild/reconstruct | Full independent Arr-stack backup intentionally not required; flash/config and manga backup work is [planned](#kawaguchi-backup-to-do-list) |
+| Kawaguchi selected Unraid/appdata state | Encrypted Restic repository on Motosu | Deployed and restore-verified on 2026-10-28; bulk media and manga intentionally excluded |
+| Kawaguchi Restic repository on Motosu | TrueNAS Cloud Sync to a dedicated B2 target | Configured; representative off-site recovery still needs verification |
 | Personal workstations | See [workstation scope](#workstations) | Aso photography to Motosu; no whole-PC protection established |
 
 Schedules and retention are in the [schedule table](#deployed-schedule-and-retention).
@@ -37,20 +38,22 @@ Current protection and recorded verification:
 - B2 transfer uses encrypted backup content and private credentials kept outside this public repository
 - the current B2 photo upload has completed
 - the Yamanaka Restic repository on Motosu syncs to its own B2 bucket, separate from the Immich bucket
+- the Kawaguchi Restic repository on Motosu has its own Cloud Sync target, separate from Yamanaka and Immich
 - TrueNAS email alerting is configured and tested so Cloud Sync failures do not depend on Yamanaka being available
 
 Migration recovery material and the temporary mirror replacement are documented in [Motosu history](../history/motosu-storage-2026.md).
 
 ### off-site copies
 
-Both copies sync from Motosu through TrueNAS Cloud Sync, using separate B2 buckets:
+The protected sets sync from Motosu through TrueNAS Cloud Sync using separate B2 targets:
 
 | Source on Motosu | Destination |
 | --- | --- |
 | Immich/photo data | Dedicated Immich bucket |
 | Yamanaka Restic repository | Dedicated Yamanaka bucket |
+| Kawaguchi Restic repository | Dedicated Kawaguchi target |
 
-The owner confirmed both sync paths. Bucket identifiers and credentials remain private. The latest Yamanaka upload completion is not recorded, and representative recovery from B2 remains a move-time test. The earlier completed photo upload and local Restic restore do not establish either result.
+Bucket identifiers and credentials remain private. The latest Yamanaka upload completion is not recorded, the Kawaguchi Cloud Sync path is configured but representative B2 recovery is not yet recorded, and representative off-site recovery remains a move-time test. The earlier completed photo upload and local Restic restores do not establish off-site recovery for the Restic repositories.
 
 ### protection model
 
@@ -67,7 +70,7 @@ host loss / theft / disaster
 
 The ZFS mirror is fault tolerance, not an independent backup.
 
-Off-site scope includes Immich/photo data and Yamanaka backups. The GFX archive's final location and protection policy remain deferred until the move.
+Off-site scope includes Immich/photo data, Yamanaka backups, and the Kawaguchi Restic repository. The GFX archive's final location and protection policy remain deferred until the move.
 
 ### motosu follow-up
 
@@ -79,25 +82,75 @@ The target second AdGuard Home instance has medium-priority configuration; it is
 
 ## kawaguchi
 
-Kawaguchi is comparatively rebuildable, and its media automation state is intentionally treated as disposable/reconstructable.
+Kawaguchi remains comparatively rebuildable. Bulk media, downloads, caches, generated media metadata, and manga are intentionally outside independent backup scope; the goal is fast host/service recovery rather than preserving the entire media server byte-for-byte.
 
-No full independent backup of the Arr stack or other routine media automation state is required. If Kawaguchi or its Unraid installation fails catastrophically, the intended response is to rebuild or migrate the media services rather than preserve the existing Unraid installation exactly.
+The deployed backup flow is:
 
-Movies, TV, downloads, caches, and associated automation state are therefore outside the high-value backup scope unless that policy changes later.
+```text
+selected Unraid configuration and application state on Kawaguchi
+-> staged backup tree
+-> encrypted Restic repository on a dedicated Motosu ZFS dataset over SSH/SFTP via Tailscale
+-> Motosu local snapshots
+-> scheduled TrueNAS Cloud Sync to Backblaze B2
+```
 
-Recorded recovery priorities: Unraid/retained application configuration and metadata are medium priority; cAdvisor/exporters and smartctl-exporter are low priority. These rankings do not establish an independent backup or override the rebuild policy.
+Kawaguchi uses a dedicated restricted Restic account/key on Motosu and a repository password kept outside the public repository. Restic is installed persistently from the Unraid flash configuration into the runtime filesystem at array startup. Backup and verification are run through Unraid User Scripts.
 
-### kawaguchi backup to-do list
+### protected scope
 
-Planned work; independent flash/config and manga backup coverage is not yet established here. A full backup of rebuildable Arr-stack state is not required by the current policy.
+Protected material is deliberately selective:
 
-- [ ] Confirm the retained scope: Unraid flash/configuration, useful media-service configuration/metadata, and manga that is difficult to reacquire.
-- [ ] Choose an independent destination; source-host loss must not also remove the backup.
-- [ ] Create the flash/config export and copy the selected persistent data.
-- [ ] Choose and document backup frequency and retention.
-- [ ] Restore representative configuration and data to an isolated location and record the result.
+- Unraid `/boot/config`, excluding the private Restic credential/key directory
+- Radarr, Sonarr, Prowlarr, SABnzbd, Bazarr, Seerr, Tautulli, Komga, Komf, Tachidesk, Unpackerr, and Recyclarr application state
+- Plex database/application state under `Plug-in Support` plus small top-level configuration files
+- Jellyfin configuration, core data/database state, plugins, users, and ASP.NET key state
 
-Destination, frequency, and retention are not yet decided; this checklist does not describe deployed backup jobs.
+Intentionally excluded:
+
+- movies, TV, music, manga, and downloads
+- Plex transcodes, cache, generated media, generated metadata, and drivers
+- Jellyfin cache, generated metadata, transcodes, and logs
+- cAdvisor and smartctl-exporter persistent state
+- Restic repository password and private SSH key from the staged flash copy
+
+The retained application state is backed up to reduce rebuild time even though the underlying media automation stack remains reconstructable.
+
+### verified Kawaguchi-to-Motosu recovery path
+
+The first production backup and restore verification completed successfully on 2026-10-28.
+
+Verified:
+
+- selected configuration/appdata was staged successfully with stateful containers stopped briefly for consistent copies
+- the encrypted Restic repository was initialized on a dedicated Motosu ZFS dataset
+- transport works through the dedicated restricted SFTP account over Tailscale
+- the first production snapshot represented about 10.097 GiB of logical backup data
+- Restic repository checking reported no errors
+- the latest production snapshot restored successfully to an isolated temporary path
+- source and restored trees each contained 17,946 regular files
+- the restored SHA-256 manifest validated successfully
+- symlink definitions matched without following transient KCEF/Chromium runtime targets
+- restore verification was repeated successfully after reboot, confirming Restic runtime persistence and recovery access
+
+The restore verifier intentionally validates regular-file counts, the captured SHA-256 manifest, and symlink definitions instead of recursively following live symlink targets. Tachidesk/KCEF creates transient Chromium-style symlinks whose targets may not exist after the application restarts; following those links produced false verification failures even though the Restic snapshot itself was intact.
+
+### deployed schedule and retention
+
+Kawaguchi uses Unraid User Scripts; Yamanaka uses systemd timers.
+
+| Job / dataset | Schedule | Retention / behavior |
+| --- | --- | --- |
+| Yamanaka Restic backup | Nightly around 03:00 local time, small randomized delay | 14 daily, 8 weekly, 6 monthly snapshots; repository check after backup/retention processing |
+| Yamanaka restore verification | Sunday around 05:00 local time, small randomized delay | Latest production snapshot restored to an isolated path; SHA-256 manifest, recursive 1:1 source comparison, restored database archive validation |
+| Kawaguchi Restic backup | Nightly through Unraid User Scripts, after the Yamanaka backup window | 14 daily, 8 weekly, 6 monthly snapshots; repository check after backup/retention processing |
+| Kawaguchi restore verification | Weekly through Unraid User Scripts | Latest production snapshot restored to an isolated path; regular-file count, SHA-256 manifest, and symlink-definition validation |
+| Motosu photo snapshots | Daily | 30 days |
+| Motosu backup snapshots | Daily | 14 days |
+| Motosu B2 Cloud Sync | After the nightly local backup window | Separate cloud-sync tasks; exact times and remote retention are not recorded here |
+
+Failures of the Yamanaka backup and verification services trigger Signal alerts through the local Signal service. TrueNAS alerting independently sends email for Motosu-side/Cloud Sync failures.
+
+Exact addresses, phone numbers, credentials, repository passwords, bucket identifiers, and cloud-account details remain private.
 
 ## yamanaka
 
@@ -147,27 +200,11 @@ Recorded recovery priorities and protected material. Service placement and lifec
 | signal-cli-rest-api | Signal-cli state | Low |
 | Compose / private deployment configuration | Definitions, environment/configuration required for recovery | Not separately ranked |
 
-Nextcloud is deferred; backup priority is not applicable. Kawaguchi's configuration/metadata can have greater recovery value than bulk media, but its [rebuild policy](#kawaguchi) does not require a full independent media-automation backup. Independent flash/config and manga protection is on the [Kawaguchi backup to-do list](#kawaguchi-backup-to-do-list).
+Nextcloud is deferred; backup priority is not applicable. Kawaguchi's selected configuration/appdata now has independent Restic protection, while bulk media and manga remain intentionally outside backup scope.
 
 Redis/Valkey cache data, Docker images, Docker sockets, raw live PostgreSQL database directories, disposable restore-test trees, Prometheus historical metrics, and Loki historical logs are intentionally excluded where recovery value does not justify them.
 
 Database-backed services use database-native dumps, SQLite-aware snapshots, or application-aware exports rather than copying live database directories blindly.
-
-### deployed schedule and retention
-
-Yamanaka runs the production backup through a root-owned backup script and systemd timer.
-
-| Job / dataset | Schedule | Retention / behavior |
-| --- | --- | --- |
-| Yamanaka Restic backup | Nightly around 03:00 local time, small randomized delay | 14 daily, 8 weekly, 6 monthly snapshots; repository check after backup/retention processing |
-| Yamanaka restore verification | Sunday around 05:00 local time, small randomized delay | Latest production snapshot restored to an isolated path; SHA-256 manifest, recursive 1:1 source comparison, restored database archive validation |
-| Motosu photo snapshots | Daily | 30 days |
-| Motosu backup snapshots | Daily | 14 days |
-| Motosu B2 Cloud Sync | After the nightly local backup window | Separate cloud-sync step; exact time and remote retention not recorded here |
-
-Failures of the Yamanaka backup and verification services trigger Signal alerts through the local Signal service. TrueNAS alerting independently sends email for Motosu-side/Cloud Sync failures.
-
-Exact addresses, phone numbers, credentials, repository passwords, bucket identifiers, and cloud-account details remain private.
 
 ### verified Yamanaka-to-Motosu recovery path
 
@@ -260,6 +297,5 @@ Periodically:
 - representative recovery from the B2 off-site copy is intentionally deferred until the move
 - GFX archive backup policy is intentionally deferred until the move
 - Motosu drive upgrades are opportunistic; the current pair is deployed and healthy
-- Kawaguchi flash/config and manga backup work is [planned](#kawaguchi-backup-to-do-list), with no assigned timing
 
-Backup-failure alerting is deployed and tested on both Yamanaka and Motosu. See the [move checklist](../runbooks/move-checklist.md) for execution order and the [documentation review](../history/documentation-review-2026-10-27.md#review-needed) for remaining decisions and verification work.
+Backup-failure alerting is deployed and tested on Yamanaka and Motosu. Kawaguchi backup/verify scheduling is deployed through Unraid User Scripts; separate Kawaguchi failure alerting is not recorded here. See the [move checklist](../runbooks/move-checklist.md) for execution order and the [documentation review](../history/documentation-review-2026-10-27.md#review-needed) for remaining decisions and verification work.
