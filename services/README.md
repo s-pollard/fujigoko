@@ -9,6 +9,7 @@ All services below are deployed. The non-media migration and retired services ar
 | Service | Purpose | Major dependency / data |
 | --- | --- | --- |
 | Plex | Media library | Media storage |
+| Navidrome | Music streaming; Last.fm integration configured | Read-only music library; writable application database/settings; Symfonium Android client |
 | Sonarr | TV automation | Downloads + TV library |
 | Radarr | Movie automation | Downloads + movie library |
 | SABnzbd | Downloads | Download storage |
@@ -19,6 +20,10 @@ All services below are deployed. The non-media migration and retired services ar
 | smartctl-exporter | SMART device metrics | Local block-device access; scraped by Prometheus on Yamanaka |
 
 The smartctl exporter requires privileged mode and an explicit root runtime user. Its configuration, 2026-10-21 restoration evidence, and device-access troubleshooting are in the [smartctl runbook](../runbooks/smartctl-exporter.md).
+
+### navidrome
+
+Deployed on 2026-10-29 using the Unraid container template. Music is mounted read-only from `/mnt/user/media/music` to `/music`; application state is writable at `/mnt/user/appdata/navidrome`, mounted as `/data`. Local playback and private Caddy HTTPS access were verified. Last.fm API configuration and user authorization were completed; successful scrobble delivery has not yet been explicitly recorded. Track titles follow embedded metadata, which can differ from filenames.
 
 ### media dependencies
 
@@ -122,6 +127,8 @@ Verified Pocket ID/OIDC integrations:
 - Paperless-ngx
 - TriliumNext
 - Kept
+
+Navidrome currently uses application-local authentication for browser and Subsonic/OpenSubsonic clients. Pocket ID integration is not deployed; external authentication would require an authentication proxy and explicit client API handling.
 
 Grocy retains application-local authentication rather than adding a separate authentication proxy solely for SSO.
 
