@@ -195,13 +195,14 @@ Recorded recovery priorities and protected material. Service placement and lifec
 | AdGuard Home | Configuration | Medium |
 | Homepage | Configuration | Medium |
 | SearXNG | Configuration | Low |
-| Stirling PDF | Configuration | Low |
 | Prometheus | Configuration, not historical metrics | Medium |
 | Loki | Configuration, not historical logs | Low-medium |
 | Grafana Alloy | Configuration | Low |
 | Caddy | Configuration | Medium |
 | signal-cli-rest-api | Signal-cli state | Low |
 | Compose / private deployment configuration | Definitions, environment/configuration required for recovery | Not separately ranked |
+
+BentoPDF is intentionally not listed as protected application state: the current simple deployment is stateless/redeployable and has no application database or persistent user data. Its Compose definition is covered by the general deployment-configuration recovery path.
 
 Nextcloud is deferred; backup priority is not applicable. Kawaguchi's selected configuration/appdata now has independent Restic protection, while bulk media and manga remain intentionally outside backup scope.
 
