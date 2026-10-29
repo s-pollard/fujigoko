@@ -72,7 +72,7 @@ All listed applications are deployed. — means no supporting dependency is reco
 | Actual Budget | Budget data | — |
 | HomeBox | Inventory | — |
 | Linkwarden | Saved links and archive data | PostgreSQL |
-| Stirling PDF | PDF utilities | — |
+| BentoPDF | Browser-based PDF utilities; stateless/redeployable | — |
 | Endurain | Activities and history | PostgreSQL + Redis |
 | Homepage | Convenience dashboard | — |
 | SearXNG | Search | — |
@@ -81,6 +81,8 @@ All listed applications are deployed. — means no supporting dependency is reco
 | TriliumNext | Structured personal notes/wiki | — |
 | Vaultwarden | Bitwarden-compatible password vault | SQLite |
 | Kept | Locations, boxes, items, labels, moving workflows | PostgreSQL |
+
+BentoPDF replaced Stirling PDF on 2026-10-29. The deployed simple image is `ghcr.io/alam00000/bentopdf-simple:latest`; Caddy provides the private HTTPS entry point. BentoPDF has no application database or persistent user state in the current deployment.
 
 HomeBox remains deployed during Kept evaluation/import; it has not been retired.
 
@@ -123,10 +125,11 @@ Verified Pocket ID/OIDC integrations:
 - Mealie
 - Linkwarden
 - Grafana
-- Stirling PDF
 - Paperless-ngx
 - TriliumNext
 - Kept
+
+BentoPDF does not have a Pocket ID/OIDC integration in the current deployment; access is limited by the existing trusted LAN/Tailscale boundary.
 
 Navidrome currently uses application-local authentication for browser and Subsonic/OpenSubsonic clients. Pocket ID integration is not deployed; external authentication would require an authentication proxy and explicit client API handling.
 
