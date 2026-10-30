@@ -15,8 +15,10 @@ Production work intentionally deferred until relocation, in execution order. Equ
 - request the 620 ONT from AT&T for the move; verify the actual supplied handoff before changing the production gateway
 - follow the [ISP plan](../network/README.md#isp-handoff); the current Bluepeak ONT model is unknown
 - configure required LAN/VLAN interfaces, DHCP, firewall policy, and routing
-- deploy the target wireless AP
-- deploy the target core/aggregation switching design if the replacement switch has been purchased
+- receive and deploy the ordered SG3218XP-M2 V2 access switch and EAP775-Wall AP
+- power the EAP775-Wall from a PoE++ port on the access switch; verify 2.5 GbE link and required downstream PoE functionality
+- complete the pending SX3008F purchase only if the seller responds and the transaction proceeds; receive and verify the switch before cutover
+- deploy the SX3008F aggregation switch with a 10 GbE link to the access switch once acquired; retain USW-Aggregation during transition if needed
 - verify management access to any retained UniFi hardware without depending on the UDM-Pro
 - verify normal LAN access, internet access, and Tailscale before proceeding
 
