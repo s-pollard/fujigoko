@@ -31,7 +31,7 @@ OPNsense is the target platform; appliance hardware is acquired. Verified/record
 
 - **TP-Link Omada SX3008F**
   - selected aggregation switch: 8 × 10 GbE SFP+ slots
-  - not yet purchased, received, or deployed
+  - ordered on 2026-10-29; delivery and deployment pending
   - existing USW-Aggregation can remain during transition
 - **TP-Link Omada SG3218XP-M2 V2**
   - ordered on 2026-10-29; delivery and deployment pending
