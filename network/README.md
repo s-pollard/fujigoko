@@ -31,7 +31,6 @@ OPNsense is the target platform; appliance hardware is acquired. Verified/record
 
 - **TP-Link Omada SX3008F**
   - selected aggregation switch: 8 × 10 GbE SFP+ slots
-  - used offer: $180 from a Reddit seller; awaiting seller response
   - not yet purchased, received, or deployed
   - existing USW-Aggregation can remain during transition
 - **TP-Link Omada SG3218XP-M2 V2**
