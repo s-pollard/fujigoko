@@ -27,30 +27,31 @@ After relocation, the ISP will be AT&T. The plan is to request the 620 ONT; that
 
 OPNsense is the target platform; appliance hardware is acquired. Verified/recorded components and the unknown chassis/OEM model are documented in [hosts](../hosts/README.md#opnsense-router-appliance).
 
-### core-switch candidate
+### switching
 
-- **TP-Link Omada SX3016F**
-  - main candidate; not yet purchased/deployed
-  - 16 × 10 GbE SFP+ slots
-  - redundant internal power supplies
+- **TP-Link Omada SX3008F**
+  - selected aggregation switch: 8 × 10 GbE SFP+ slots
+  - used offer: $180 from a Reddit seller; awaiting seller response
+  - not yet purchased, received, or deployed
+  - existing USW-Aggregation can remain during transition
+- **TP-Link Omada SG3218XP-M2 V2**
+  - ordered on 2026-10-29; delivery and deployment pending
+  - 16 × 2.5 GbE RJ45 ports and 2 × 10 GbE SFP+ slots
+  - 4 × PoE++ ports and 12 × PoE+ ports; 240 W shared PoE budget
+  - selected access switch for wired household devices and the wireless AP
+
+This replaces the earlier SX3016F candidate and SG3210XHP-M2 eight-port access-switch option. Connect aggregation and access switching over a 10 GbE SFP+ link; final cabling and port assignments remain deployment decisions.
 
 ### target wireless
 
 - **TP-Link Omada EAP775-Wall**
-  - planned target AP
+  - ordered on 2026-10-29; delivery and deployment pending
   - Wi-Fi 7 wall-plate AP
-  - 2.5 GbE-capable uplink/access connectivity
+  - 2.5 GbE uplink
+  - planned power: a PoE++ port on the SG3218XP-M2 V2, supporting the AP's downstream PoE functionality
+  - no separate PoE injector required for this design
 
-Preferred AP power option:
-
-- **TP-Link Omada POE370S** — preferred injector; purchase/deployment not confirmed
-- 802.3af/at/bt Type 3, up to 60 W, with multi-gigabit/10 GbE data support
-- preferred over the used MokerLink 10GINJ65W considered during equipment review
-- verify the selected SFP+-to-copper module supports the AP's negotiated Ethernet speed; injector data capability does not change the AP uplink speed
-
-The EAP775-Wall remains the target; the seller's EAP773 bundle does not replace it. The SX3016F remains the main core-switch candidate; the eight-port SX3008F was considered but is not a confirmed purchase.
-
-Final AP placement and controller/management method are deployment decisions.
+The previously considered POE370S injector is no longer part of the selected design. Final AP placement and controller/management method are deployment decisions.
 
 ## management-plane dependency
 
