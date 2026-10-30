@@ -17,8 +17,8 @@ Production work intentionally deferred until relocation, in execution order. Equ
 - configure required LAN/VLAN interfaces, DHCP, firewall policy, and routing
 - receive and deploy the ordered SG3218XP-M2 V2 access switch and EAP775-Wall AP
 - power the EAP775-Wall from a PoE++ port on the access switch; verify 2.5 GbE link and required downstream PoE functionality
-- receive and verify the SX3008F before cutover if purchased
-- deploy the SX3008F aggregation switch with a 10 GbE link to the access switch once acquired; retain USW-Aggregation during transition if needed
+- receive and verify the ordered SX3008F before cutover
+- deploy the SX3008F aggregation switch with a 10 GbE link to the access switch once received; retain USW-Aggregation during transition if needed
 - verify management access to any retained UniFi hardware without depending on the UDM-Pro
 - verify normal LAN access, internet access, and Tailscale before proceeding
 
